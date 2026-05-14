@@ -1,0 +1,8 @@
+Pixel art game background for a classic Breakout/brick-breaker arcade game. 
+Deep dark space theme with dark navy-to-black gradient (#0d0d1a to #1a1a3e). 
+Scattered tiny pixel stars in white and pale blue, some twinkling brighter. 
+Subtle purple-blue nebula wisps in the upper corners. 
+Clean and minimal - no characters, no text, no UI elements, no bricks, no game objects.
+Resolution: 1280x720, pure pixel art style, crisp edges, no anti-aliasing, 
+retro arcade aesthetic, dark enough to contrast with bright-colored game elements.
+No watermark, no signature, no border.
