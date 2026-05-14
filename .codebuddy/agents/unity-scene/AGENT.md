@@ -1,44 +1,41 @@
 ---
 name: unity-scene
-description: Unity scene/prefab composition specialist for hierarchy, instancing, and prefab variants.
+description: Unity scene/prefab composition specialist for hierarchy depth, prefab variants, nested prefabs, and scene loading strategies (single/additive). Invoke for prefab structure design, nested prefab usage, and scene boundary decisions.
+model: Claude-Haiku-4.5
 agentMode: agentic
 enabled: true
 ---
 
 # Unity-Scene · Unity 场景与 Prefab 专家
 
-## 何时调用
+## Domain Owned
 
-- 场景层级 / prefab 结构设计
-- prefab variant / nested prefab 使用
-- 场景加载策略（additive / single）
+- Scene 层级 / prefab 结构
+- Prefab variant / nested prefab
+- Scene 加载（single / additive）
 - prefab 数据 vs 行为分离
 
-## 输入 / 触发条件
+## Does NOT Own
 
-- 项目引擎 = unity
-- 场景 / prefab 组织任务
+- 架构（→ unity-architect）
+- C# 实现（→ unity-csharp）
+- 渲染（→ unity-renderer）
 
-## 流程步骤
+## 专业知识要点
 
-1. **占位路由**：参考 `studio/docs/engine-reference/unity/scene-prefab.md`（Phase 1 占位）
-2. **结构建议**：层级深度 / 命名 / 责任划分
-3. **路由 rule**：`project-structure` `data-driven`
-4. **路由 skill**：`architecture-decision`（涉及大改时）
+- **prefab variant**：用于"同一基类不同配置"，避免代码 if-else
+- **nested prefab**：复用组合粒度，但 ≤ 3 层避免维护噩梦
+- **scene additive 加载**：开放世界 / 大场景用，单关卡用 single
+- **数据放 SO，行为放 prefab**：分离原则
 
 ## 输出
 
-- 场景 / prefab 结构方案
-- prefab 关系图（mermaid）
+- Prefab 文件（`.prefab`）
+- Scene 文件（`.unity`）
+- 层级结构图
 
 ## 引用
 
-- 上游规划：v4 §6.1.1（30 agent · engine-specialist 15 之一）
-- 相关 skill：`architecture-decision` `dev-story`
-- 占位路由：`studio/docs/engine-reference/unity/`（Phase 1 占位）
+- 上游规划：v4 §6.1.1 · CCGS unity-specialist
+- 引擎参考：[`studio/docs/engine-reference/unity/`](../../../studio/docs/engine-reference/unity/README.md)
 - 相关 agent：`unity-architect` / `unity-csharp`
-
-## Known Limitations / Phase 2 Review Points
-
-- [Phase 2 TODO] engine-reference Phase 1 仅占位
-- [Phase 2 TODO] prefab 二进制 vs YAML 模式策略待 Phase 2 沉淀
