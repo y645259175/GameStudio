@@ -75,13 +75,17 @@ func generate_level(level_num: int, parent: Node) -> void:
 				GameManager.register_brick()
 
 			brick.brick_destroyed.connect(_on_brick_destroyed)
+			# 连接视觉回调到 main
+			var main_node := get_tree().current_scene
+			if main_node and main_node.has_method("_on_brick_destroyed_visual"):
+				brick.brick_destroyed.connect(main_node._on_brick_destroyed_visual)
 
 
-func _on_brick_destroyed(pos: Vector2, brick_type: int, score: int) -> void:
+func _on_brick_destroyed(pos: Vector2, brick_color: Color, score: int) -> void:
 	GameManager.destroy_brick(score)
 
 
 func get_ball_speed(level_num: int) -> float:
 	var level_key := str(level_num)
-	var level := level_data.get("levels", {}).get(level_key, {})
+	var level: Dictionary = level_data.get("levels", {}).get(level_key, {})
 	return float(level.get("ball_speed", 300))

@@ -73,7 +73,7 @@ func bounce_off_brick() -> void:
 
 func _enforce_min_angle() -> void:
 	# 防卡死：水平角度 < 15° 时修正
-	var angle := abs(rad_to_deg(atan2(direction.y, direction.x)))
+	var angle: float = abs(rad_to_deg(atan2(direction.y, direction.x)))
 	if angle < MIN_ANGLE_DEG or angle > (180.0 - MIN_ANGLE_DEG):
 		var sign_y := signf(direction.y)
 		if sign_y == 0:
