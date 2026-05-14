@@ -1,0 +1,8 @@
+Pixel art space background for an arcade game, 1280x720 pixels.
+Dark navy blue gradient from top (#0d0d2e) to bottom (#080810), seamless and smooth.
+Small scattered pixel stars (2-4px white and pale blue dots) across the entire image.
+Two subtle purple-pink nebula clouds in the upper left and upper right corners, soft and faded.
+The image must be completely uniform with NO horizontal lines, NO grid patterns, NO checkerboard artifacts, NO banding.
+The lower half should be very dark (almost black) to contrast with game UI elements.
+Pure pixel art style, crisp square pixels, retro arcade aesthetic.
+No text, no characters, no objects, no watermark, no border.
