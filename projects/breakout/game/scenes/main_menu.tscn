@@ -14,64 +14,42 @@ offset_bottom = 720.0
 texture = ExtResource("2")
 stretch_mode = 6
 
-[node name="TitleLabel" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -200.0
-offset_right = 400.0
-offset_bottom = -100.0
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TitleLabel" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 140.0
+offset_bottom = 240.0
 theme_override_colors/font_color = Color(0.96, 0.95, 1.0, 1.0)
 theme_override_font_sizes/font_size = 84
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "BREAKOUT"
 
-[node name="SubtitleLabel" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -90.0
-offset_right = 400.0
-offset_bottom = -50.0
+[node name="SubtitleLabel" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 250.0
+offset_bottom = 290.0
 theme_override_colors/font_color = Color(0.6, 0.7, 1.0, 0.85)
 theme_override_font_sizes/font_size = 22
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Classic Arcade · 5 Levels · Powerups"
 
-[node name="StartHint" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = 50.0
-offset_right = 300.0
-offset_bottom = 90.0
+[node name="StartHint" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 380.0
+offset_bottom = 430.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Press SPACE to Start"
 
-[node name="ControlsLabel" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = 110.0
-offset_right = 300.0
-offset_bottom = 230.0
+[node name="ControlsLabel" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 460.0
+offset_bottom = 600.0
 theme_override_colors/font_color = Color(0.85, 0.85, 0.95, 0.7)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
@@ -81,17 +59,12 @@ text = "← / A : Move Left
 SPACE : Launch / Restart
 ESC   : Pause / Quit"
 
-[node name="QuitHint" type="Label" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -60.0
-offset_right = 150.0
-offset_bottom = -20.0
+[node name="QuitHint" type="Label" parent="UI"]
+anchor_right = 1.0
+offset_top = 660.0
+offset_bottom = 700.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.4)
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
+vertical_alignment = 1
 text = "ESC to Quit"

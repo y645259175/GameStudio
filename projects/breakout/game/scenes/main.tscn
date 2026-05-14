@@ -92,78 +92,66 @@ script = ExtResource("5")
 [node name="ScoreLabel" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 10.0
-offset_right = 250.0
-offset_bottom = 40.0
+offset_right = 320.0
+offset_bottom = 50.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1.0, 1.0)
 theme_override_font_sizes/font_size = 20
 text = "Score: 0000"
 
 [node name="LivesLabel" type="Label" parent="HUD"]
-offset_left = 500.0
+anchor_right = 1.0
 offset_top = 10.0
-offset_right = 780.0
-offset_bottom = 40.0
+offset_bottom = 50.0
 theme_override_colors/font_color = Color(0.914, 0.271, 0.376, 1.0)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 text = "Lives: ♥♥♥"
 
 [node name="LevelLabel" type="Label" parent="HUD"]
-offset_left = 1060.0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
 offset_top = 10.0
-offset_right = 1260.0
-offset_bottom = 40.0
+offset_right = -20.0
+offset_bottom = 50.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1.0, 1.0)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 2
 text = "Lv: 1"
 
-[node name="GameOverLabel" type="Label" parent="."]
+[node name="UIOverlay" type="CanvasLayer" parent="."]
+layer = 50
+
+[node name="GameOverLabel" type="Label" parent="UIOverlay"]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -120.0
-offset_right = 300.0
-offset_bottom = 120.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 220.0
+offset_bottom = 460.0
 theme_override_colors/font_color = Color(0.914, 0.271, 0.376, 1.0)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "GAME OVER"
 
-[node name="WinLabel" type="Label" parent="."]
+[node name="WinLabel" type="Label" parent="UIOverlay"]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -120.0
-offset_right = 300.0
-offset_bottom = 120.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 220.0
+offset_bottom = 460.0
 theme_override_colors/font_color = Color(0.086, 0.784, 0.604, 1.0)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "YOU WIN!"
 
-[node name="LaunchHint" type="Label" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = 80.0
-offset_right = 150.0
-offset_bottom = 110.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.5)
-theme_override_font_sizes/font_size = 16
+[node name="LaunchHint" type="Label" parent="UIOverlay"]
+anchor_right = 1.0
+offset_top = 440.0
+offset_bottom = 480.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 text = "Press SPACE to launch"
 
@@ -180,32 +168,22 @@ offset_bottom = 720.0
 color = Color(0, 0, 0, 0.6)
 
 [node name="PauseLabel" type="Label" parent="PauseOverlay"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -60.0
-offset_right = 200.0
-offset_bottom = 60.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 280.0
+offset_bottom = 380.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 64
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "PAUSED"
 
 [node name="PauseHint" type="Label" parent="PauseOverlay"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = 30.0
-offset_right = 200.0
-offset_bottom = 60.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 400.0
+offset_bottom = 440.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.6)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 text = "Press ESC to resume"
