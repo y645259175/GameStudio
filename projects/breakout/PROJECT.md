@@ -1,9 +1,11 @@
 ---
 project_name: breakout
 engine: godot
-engine_version: 4.x LTS
-status: draft
+engine_version: 4.6.2
+phase: dev
+status: playable
 created_at: 2026-05-14
+last_updated: 2026-05-14
 lead: ZStodio
 ---
 
@@ -25,10 +27,25 @@ lead: ZStodio
 
 | 里程碑 | 目标日期 | 状态 |
 |---|---|---|
-| M1 · 核心玩法原型（挡板 + 球 + 砖块） | — | `[ ]` |
-| M2 · 完整单关（道具 + 分数 + 生命） | — | `[ ]` |
-| M3 · 多关卡 + 难度递增 | — | `[ ]` |
-| M4 · 打磨（音效 + 特效 + 主菜单） | — | `[ ]` |
+| M1 · 核心玩法原型（挡板 + 球 + 砖块） | 2026-05-14 | `[x]` ✅ |
+| M2 · 完整单关（道具 + 分数 + 生命） | 2026-05-14 | `[x]` ✅ |
+| M3 · 多关卡 + 难度递增 | 2026-05-14 | `[x]` ✅ |
+| M4 · 打磨（主菜单 + 暂停 + UX）| 2026-05-14 | `[x]` ✅ |
+| M5 · 音效 + 完整 polish | — | `[ ]` |
+
+## 当前状态
+
+- **Phase**：dev → 接近 test
+- **可玩**：✅（启动 → 主菜单 → 5 关 → Win/Game Over → 重启 / 回菜单）
+- **测试**：52/52 自动化用例 PASS
+- **代码**：godot --check-only EXIT 0
+
+## 已知缺口（Phase 2+）
+
+1. 无音效 SFX/BGM
+2. multi_ball 简化为"清除一行"（详见 .codebuddy/plans/autorun-2026-05-14.md Issue #1）
+3. 道具数值未做 playtest 校准
+4. 无设置菜单
 
 ## 引擎配置
 
