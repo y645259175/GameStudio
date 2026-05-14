@@ -1,49 +1,124 @@
 ---
 name: consistency-check
-description: Cross-artifact consistency scan that checks GDD, stories, code, and config alignment.
-allowed-tools:
+description: Cross-artifact consistency scan. Use when user says "查一致性 / consistency check / GDD 和代码对得上吗 / cross-check". Validates GDD ↔ stories ↔ code ↔ data alignment. Called by dev-story (gating), smoke-check, story-done.
+allowed-tools: read_file, list_dir, search_content
 disable: false
 ---
 
-# Consistency-Check · 跨产物一致性扫描
+# consistency-check · 跨产物一致性扫
 
-## 何时使用
+## 何时加载
 
-跨 GDD ↔ stories ↔ 代码 ↔ 配置的一致性扫描，被 `dev-story` skill 内自动调用，也在 sprint 末由 `smoke-check` 调用。对应 v4 §4.5（Q5=D 双触发）。
+- `dev-story` 提交前 gating
+- `smoke-check` 中调用
+- `story-done` 收尾前
+- 用户说"查一下 GDD 和代码对得上"
 
-典型触发：
-- `dev-story` 内自动（写完 story 时）
-- `smoke-check` 末段
-- 手动 `/consistency-check`
+**不加载场景**：仅看代码风格 → `reviewer` agent；GDD 内部 → `review-all-gdds`。
 
-## 输入 / 触发条件
+## 输入契约
 
-- 当前项目根（必有 `PROJECT.md` + `gdd/`）
-- 扫描范围：默认全量，可指定单 story / 单模块
+| 输入 | 来源 | 必需 |
+|---|---|---|
+| GDD 章节 | `projects/<name>/gdd/*.md` | ✅ |
+| 数值表 | `projects/<name>/data/*.json` | ✅ |
+| 代码 | `projects/<name>/game/scripts/**` | ✅ |
+| ADR | `projects/<name>/adr/*.md` | 推荐 |
+| 范围 | full / story-id / files | ✅ |
 
-## 流程步骤
+## 流程
 
-1. **GDD 完整性**：`gdd/` 下文档是否含 8 节（§4 Q7-C）
-2. **GDD ↔ stories 映射**：每个 user story 是否能追溯到 GDD 某节
-3. **stories ↔ 代码映射**：done 状态的 story 是否有对应代码改动
-4. **代码 ↔ 配置映射**：硬编码扫（违反 `data-driven` rule）
-5. **报告生成**：按 `templates/consistency-report.md.tpl` 填空，分级标注（critical / warn / info）
-6. **退出条件**：critical = 0 → 通过；critical > 0 → 阻塞调用方 skill（如 `dev-story` 不让 commit）
+### Step 1 · 范围定位
 
-## 输出
+| 范围 | 触发场景 |
+|---|---|
+| `full` | smoke-check |
+| `story-id` | dev-story / story-done |
+| `files` | 用户指定 |
 
-- `projects/<name>/reports/consistency-YYYY-MM-DD-HHmm.md`
-- 终端摘要（critical / warn / info 计数 + top issues）
+### Step 2 · 4 维度扫描
 
-## 引用
+#### A. GDD ↔ 代码
 
-- 上游规划：v4 §4.5 Q5=D、§6.1.1
-- 相关 skill：`dev-story` `smoke-check` `daily-check`
-- 相关 rule：`design-authoring` `data-driven`
-- 相关 template：`templates/consistency-report.md.tpl`
+- GDD 提到的系统是否有代码实现（grep 关键字 / 文件名）
+- 代码中的核心循环是否和 GDD §2 一致
 
-## Known Limitations / Phase 2 Review Points
+#### B. 数值表 ↔ 代码常量
 
-- [Phase 2 TODO] 代码 ↔ 配置映射当前靠正则扫魔法数字，准确性有限
-- [Phase 2 TODO] story ↔ 代码映射依赖 commit message 含 story id，需 `commit-discipline` rule 强制
-- [Phase 2 TODO] 大项目扫描性能未优化，scan 耗时 > 30s 时需要改增量扫
+- `data/*.json` 中的数值
+- 代码中 `const` / `var` 硬编码的数值
+- 二者不一致 → 标 DRIFT
+
+#### C. ADR ↔ 代码模式
+
+- ADR 决定的架构（单例 / 事件 / 状态机）
+- 代码是否遵循
+
+#### D. story AC ↔ 代码行为
+
+仅在 story 范围内：
+- 每条 AC 是否有对应代码 / 测试覆盖
+
+### Step 3 · 列冲突清单
+
+```
+| # | 类型 | 位置 A | 位置 B | 建议 |
+|---|---|---|---|---|
+| 1 | 数值漂移 | data/levels.json:ball_speed=300 | scripts/ball.gd:speed=350 | 以表为准 |
+```
+
+### Step 4 · 委托 reviewer 复核
+
+冲突清单交 `reviewer` agent (sonnet) 二次审：
+- 假阳性过滤（如代码里的数值是测试常量，故意与表不同）
+
+### Step 5 · 落盘报告
+
+`projects/<name>/reports/consistency-<scope>-<date>.md`，按 `templates/consistency-report.md`。
+
+### Step 6 · gate 决策
+
+| 冲突数 | verdict |
+|---|---|
+| 0 | `CLEAN` |
+| 1-3 | `MINOR` |
+| ≥ 4 或含 critical（核心循环、关键数值）| `MAJOR` |
+
+## 输出契约
+
+| 字段 | 内容 |
+|---|---|
+| `verdict` | `CLEAN` / `MINOR` / `MAJOR` |
+| `report_path` | reports/consistency-*.md |
+| `conflicts_count` | int |
+| `by_type` | {gdd_code, data_code, adr_code, ac_code} 各计数 |
+
+## 调用的 agent
+
+- `reviewer` (sonnet)（复核）
+- 多领域冲突时升级 `architect` (opus) / `qa-lead` (opus)
+
+## 加载的 rule
+
+- `data-driven`（数据驱动检查）
+- `design-authoring`
+- `language-policy`
+
+## 失败 / 降级
+
+| 异常 | 策略 |
+|---|---|
+| 数值表缺 | 跳过 B 维度 + 标提醒 |
+| ADR 缺 | 跳过 C 维度 |
+| 关键字匹配失败导致大量假阳性 | reviewer 过滤后再决策 |
+
+## 验收标准
+
+- 4 维度全跑或显式跳过 + 原因
+- 报告清单完整
+- verdict 明确
+
+## Known Limitations
+
+- 关键字匹配粗（无 AST 分析）
+- 跨语言数值（中文资料 vs 英文常量名）依赖 reviewer 判断

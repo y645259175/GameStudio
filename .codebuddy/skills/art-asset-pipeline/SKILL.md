@@ -1,62 +1,117 @@
 ---
 name: art-asset-pipeline
-description: Art asset production pipeline that calls the workshop-level timiai-image skill for image generation and editing.
-allowed-tools:
+description: Art asset production pipeline. Use when user says "出图 / 生成资产 / generate art / sprite / 概念图 / 风格". Calls timiai-image skill for generation, art-director agent for review, manages naming and placement under projects/<name>/assets and projects/<name>/art.
+allowed-tools: read_file, write_to_file, list_dir, execute_command
 disable: false
 ---
 
-# Art-Asset-Pipeline · 美术资产生产管线
+# art-asset-pipeline · 美术资产生产流水线
 
-## 何时使用
+## 何时加载
 
-项目需要生成 / 编辑美术资产（角色立绘 / UI 视觉 / 海报 / 概念图 / icon / texture）时调用。本 skill 是 `art-director` agent 的工具入口，最终调用工作室级已接入的 `timiai-image` skill。
+- 项目需要新美术资产（背景 / 角色 / UI / 道具图）
+- 用户说"出图 / 生成贴图 / 找参考"
+- `dev-story` 中遇到资产缺失
 
-典型触发：
-- "/art-asset-pipeline"
-- "生成英雄立绘"
-- "做一张主菜单背景图"
-- 由 `art-director` agent 自动调用
+**不加载场景**：纯设计 → `design-review`；调代码 → `dev-story`。
 
-## 输入 / 触发条件
+## 输入契约
 
-- 当前在项目根
-- 资产需求（用途 / 尺寸 / 风格 / 数量）
-- 可选：参考图（1-4 张）
+| 输入 | 来源 | 必需 |
+|---|---|---|
+| 资产用途（"游戏背景"/"角色立绘"等） | 用户 | ✅ |
+| 风格参考（已有 art bible 或参考图） | `projects/<name>/art/` | 推荐 |
+| 尺寸要求 | 项目 / 用户 | ✅ |
+| 落盘类型（game asset / 参考图） | 用户 | ✅ |
 
-## 流程步骤
+## 流程
 
-1. **意图识别**：分类资产类型（character / ui / poster / icon / concept / texture）
-2. **信息检查 · 主动澄清**（按 `timiai-image` skill 的工作流要求）：
-   - 尺寸（如 2160x3840 海报 / 512x512 icon）
-   - 用途（落地 UI / 概念探索 / 抽卡）
-   - 风格（项目美术风格库引用 / 参考图）
-   - 文字（是否含中文 / 英文文字）
-   - 是否抽卡（随机 N 个变体 / 定向单图）
-3. **Prompt 扩写**：把用户口语化描述扩写为多模态模型友好的结构化 prompt
-4. **用户确认**：回显扩写后的 prompt（如抽卡则回显 N 个变体）
-5. **调用 timiai-image**：路由到 `.codebuddy/skills/timiai-image/`，参数包括：
-   - 文生图 → `text2image.py`
-   - 多图编辑 → `image_edit.py`（1-4 张参考）
-   - 多轮迭代 → `chat_image.py`
-6. **资产落盘**：`projects/<name>/assets/<category>/<filename>.png`
-7. **元信息落盘**：`projects/<name>/assets/<category>/<filename>.json`（含 prompt / 模型 / 时间 / 变体编号）
-8. **commit 建议**：`[story] art: <category> <topic>` 或 `[quick] art: <category> tweak`
+### Step 1 · art-director 介入
 
-## 输出
+调用 `art-director` agent (opus)：
+- 确认风格（color palette / 画风 / 时代感）
+- 是否复用已有资产
+- 是否需要 art bible 更新
 
-- 美术资产文件（PNG / JPG）
-- 资产元信息 JSON（用于追溯）
-- 终端内 fallback 链记录（如有降级）
+### Step 2 · prompt 起草
 
-## 引用
+art-director 协助起草英文 prompt（timiai-image 偏好英文）：
+- 主体 + 风格 + 色调 + 排除项（no watermark / no text 等）
+- 落到 `projects/<name>/art/<slug>-prompt.txt`
 
-- 上游规划：v4 §6.1.1（美术资产 1 之一）、§9.1（timiai-image 作为 R4 既存事实豁免）
-- 上游 skill：`.codebuddy/skills/timiai-image/`（**已存在的工作室级能力，本规划不重建、不改造**）
-- 相关 agent：`art-director`（30 agent 之一，由本 skill 协同）
-- 相关 rule：`commit-discipline`（双通道）
+### Step 3 · 调用 timiai-image
 
-## Known Limitations / Phase 2 Review Points
+按 `timiai-image` skill 流程：
+- 默认不抽卡（first round）
+- 用 `text2image.py`（无参考）或 `image_edit.py`（有参考）
+- 模型：gpt-image-2 / 自动 fallback
 
-- [Phase 2 TODO] 资产元信息 JSON 格式未标准化，需定 schema
-- [Phase 2 TODO] 项目美术风格库（多张参考图打包成一个风格）的引用规范未设计
-- [Phase 2 TODO] 美术资产版本管理（同一资产迭代 v1/v2/v3）的命名 / 归档规则未定
+### Step 4 · 落盘命名
+
+按约定：`<category>_<desc>_<timestamp>.png`
+
+| 用途 | 落盘位置 | 进交付包 |
+|---|---|---|
+| 游戏运行时资产 | `projects/<name>/game/assets/` | ✅ |
+| 概念图 / 参考 | `projects/<name>/art/` | ❌ |
+| 推广素材 | `projects/<name>/art/promo/` | ❌ |
+
+### Step 5 · art-director 验收
+
+art-director 按 verdict：
+- `APPROVED`：直接接入
+- `ITERATE`：再调用 timiai-image 启用抽卡 / 微调 prompt
+- `REJECTED`：换思路 / 换风格
+
+### Step 6 · 引擎接入（如游戏资产）
+
+如落到 `game/assets/`：
+- 提示用户在 Godot/Unity/Unreal 中导入
+- 可选：自动 update 场景文件（仅 godot 简单情况）
+
+### Step 7 · 元信息记录
+
+在 `projects/<name>/art/index.md` 追加一行：
+```
+- <slug>: <用途> / <尺寸> / <风格> / <date> / <commit>
+```
+
+## 输出契约
+
+| 字段 | 内容 |
+|---|---|
+| `verdict` | `APPROVED` / `ITERATE` / `REJECTED` |
+| `asset_path` | 落盘路径 |
+| `prompt_path` | art/<slug>-prompt.txt |
+| `iterations` | 抽卡 / 重试次数 |
+
+## 调用的 agent / skill
+
+- `art-director` (opus)（风格 + 验收）
+- `timiai-image` skill（生成）
+- 必要时 `designer` (opus)（如设计意图不清）
+
+## 加载的 rule
+
+- `language-policy`（prompt 英文 / 描述中文）
+- `project-structure`（assets/ vs art/ 分流）
+
+## 失败 / 降级
+
+| 异常 | 策略 |
+|---|---|
+| timiai-image 限流 | 自动 fallback 到备用模型 |
+| art-director REJECTED 多次 | 升级 `designer` 或回到 GDD §3 |
+| 风格漂移 | art-director 必须同步更新 art bible |
+
+## 验收标准
+
+- 资产落盘 + 命名规范
+- art-director APPROVED
+- index.md 同步
+
+## Known Limitations
+
+- 资产元信息 JSON schema 未标准化（Phase 2）
+- 版本管理（v1/v2/v3 同资产）规则未定
+- 项目美术风格库（多张参考打包）引用规范未设计

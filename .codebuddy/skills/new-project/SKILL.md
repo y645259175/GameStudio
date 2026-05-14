@@ -1,87 +1,130 @@
 ---
 name: new-project
-description: New project initialization wizard that scaffolds a project directory under projects/ with PROJECT.md, gdd/, and stories/.
-allowed-tools:
+description: New project initialization wizard. Use when user says "新项目 / 建项目 / 创建项目 / new project / start a project / let's make X". Scaffolds projects/<name>/ with PROJECT.md, 14 subdirectories, README, and routes to setup-engine for engine-specific scaffolding.
+allowed-tools: read_file, write_to_file, list_dir, execute_command
 disable: false
 ---
 
-# New-Project · 新项目初始化向导
+# new-project · 新建项目向导
 
-## 何时使用
+## 何时加载
 
-用户要在工作室下新建一个项目时调用，建出符合 v4 §3 项目结构规范的骨架。
+- 用户明确表达"建项目 / 新项目 / start a new game"
+- 工作室根目录下，`projects/` 为空或需要再开一个新项目
+- `start` skill 路由到本 skill
 
-典型触发：
-- "/new-project"
-- "我要做一个新游戏"
-- 由 `start` skill 路由进入
+**不加载场景**：项目已存在（走 `dev-story`）；只是想要个原型脚本（走 `quick-fix`）。
 
-## 输入 / 触发条件
+## 输入契约（必需）
 
-- 工作室根目录（必须存在 `studio/` `.codebuddy/`）
-- 用户回答的项目元信息：
-  - 项目名（kebab-case，符合 R5）
-  - 引擎（godot / unity / unreal）
-  - 类型（jam / prototype / production）
-  - stage（concept / pre-production / production / polish）
-  - 一句话定位
+| 输入 | 默认值 / 来源 | 必需 |
+|---|---|---|
+| `project_name`（kebab-case）| 用户提供 | ✅ |
+| 一句话游戏概念 | 用户提供 | ✅ |
+| `engine`（godot / unity / unreal）| 用户提供 | ✅ |
+| 类型 / 平台 / 团队规模 | 用户或 default | 推荐 |
 
-## 流程步骤
+如缺失任意必需项，必须先问清楚再继续。
 
-1. **前置校验**：当前是否在工作室根；`projects/<name>/` 是否已存在（已存在则中止）
-2. **元信息采集**：交互式问 5 个字段（中文引导，输入存为英文）
-3. **目录骨架建立**：
-   ```
-   projects/<name>/
-   ├── PROJECT.md          ← 用 templates/PROJECT.md.tpl 填充
-   ├── README.md           ← 项目级 README（含 smoke checklist 占位）
-   ├── gdd/
-   │   └── .gitkeep        ← 8 节 GDD 待用 design-review 起草
-   ├── stories/
-   │   └── .gitkeep
-   ├── epics/
-   │   └── .gitkeep
-   ├── adr/
-   │   └── .gitkeep
-   ├── sprints/
-   │   └── .gitkeep        ← plan / smoke / retro 统一放此目录
-   ├── data/
-   │   └── .gitkeep        ← 数值表（JSON / TOML / CSV）
-   ├── reports/
-   │   └── .gitkeep
-   ├── retros/
-   │   └── .gitkeep
-   ├── releases/
-   │   └── .gitkeep
-   ├── qa/
-   │   └── .gitkeep
-   ├── art/
-   │   └── .gitkeep        ← style guide / 参考图
-   ├── assets/
-   │   └── .gitkeep        ← 美术资产（art-asset-pipeline 产出）
-   └── docs/
-       └── .gitkeep        ← 项目级文档（README 之外）
-   ```
-4. **引擎路由提示**：根据所选引擎，提示用户调用 `setup-engine` skill
-5. **下一步路由**：
-   - 如 stage=concept → 路由到 `design-review` 起草 GDD
-   - 如 stage=pre-production → 路由到 `create-epics`
-6. **commit 建议**（如已 init git）：`[story] init project <name>`
+## 流程
 
-## 输出
+### Step 1 · 输入校验
 
-- 完整的 `projects/<name>/` 骨架
-- 终端内一段中文引导（明确告知"接下来调用什么 skill"）
+- 项目名 kebab-case 检查（`^[a-z][a-z0-9-]+$`）
+- 检查 `projects/<name>/` 是否已存在 → 存在则报错
+- 引擎名 ∈ {godot, unity, unreal}
 
-## 引用
+### Step 2 · 目录骨架建立
 
-- 上游规划：v4 §3、§4 Q7-B、§6.1.1 工作室级 8
-- 相关 skill：`setup-engine` `design-review` `create-epics`
-- 相关 rule：`project-structure`
-- 相关 template：`templates/PROJECT.md.tpl`
+```
+projects/<name>/
+├── PROJECT.md          ← 用 templates/PROJECT.md.tpl 填充
+├── README.md           ← 项目级 README（含 smoke checklist）
+├── gdd/                ← 8 节 GDD（design-review 起草）
+├── stories/
+├── epics/
+├── adr/
+├── sprints/            ← plan / smoke / retro 统一目录
+├── data/               ← 数值表（JSON / TOML / CSV）
+├── reports/
+├── retros/
+├── releases/
+├── qa/
+├── art/                ← style guide / 参考图
+├── assets/             ← 美术资产（art-asset-pipeline 产出）
+└── docs/
+```
 
-## Known Limitations / Phase 2 Review Points
+每个子目录建 `.gitkeep`。
 
-- [Phase 2 TODO] 项目级 README.md 模板未在 9 template 清单中，待 §9.4 兜底审计
-- [Phase 2 TODO] 与 `adopt` skill（接管已有项目，v4 可选）的边界待打磨
-- [Phase 2 TODO] stage 字段的 4 个枚举值与 `release-checklist` 4 级的映射需对齐
+### Step 3 · 元数据填充
+
+读 `templates/PROJECT.md.tpl`，替换占位符：
+- `${PROJECT_NAME}` `${ENGINE}` `${CONCEPT}` `${CREATED_AT}`
+- `${PHASE}` 默认 `concept`
+
+落盘 `projects/<name>/PROJECT.md`。
+
+### Step 4 · README 生成
+
+模板包含：
+- 项目概述（一句话）
+- 引擎与版本
+- 快速开始（如何打开 / 运行）
+- Smoke Checklist 占位
+- 目录索引
+
+### Step 5 · 引擎相关脚手架（路由）
+
+调用 `setup-engine` skill，传入 `engine` 参数，由它建：
+- godot：`game/project.godot`
+- unity：`game/Assets/` `game/ProjectSettings/`
+- unreal：`game/<Name>.uproject`
+
+### Step 6 · 验证
+
+- `list_dir projects/<name>/` 确认 14 子目录就位
+- `read_file projects/<name>/PROJECT.md` 确认元数据正确
+
+### Step 7 · 输出与下一步建议
+
+明确告诉用户：
+- 项目骨架已建在 `projects/<name>/`
+- 下一步：调用 `design-review` skill 起草 GDD
+
+## 输出契约
+
+| 字段 | 内容 |
+|---|---|
+| `verdict` | `CREATED` / `ABORTED:<reason>` |
+| `project_path` | `projects/<name>/` |
+| `next_skill` | `design-review` |
+
+## 调用的 agent
+
+- `producer`（确认项目目标 / 范围合理性，可选）
+- `setup-engine` skill（必选）
+
+## 加载的 rule
+
+- `project-structure`（强制四层架构 + 14 子目录约束）
+- `language-policy`（README 中英文规范）
+
+## 失败 / 降级
+
+| 异常 | 策略 |
+|---|---|
+| 项目名冲突 | 报错 + 建议改名或归档旧项目 |
+| 引擎不在白名单 | 拒绝 + 列出支持的引擎 |
+| `setup-engine` 失败 | 保留主骨架，引擎部分标 `[Phase 2 TODO]` |
+
+## 验收标准
+
+- 14 子目录 + 2 文件全部就位
+- PROJECT.md 占位符全部替换
+- 不引入 placeholder 路径污染
+
+## Known Limitations
+
+- 模板 `${VAR}` 当前手动替换，未做自动化 fill
+- `setup-engine` 对 unity/unreal 仅占位（Phase 1）

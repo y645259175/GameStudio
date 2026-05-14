@@ -1,50 +1,86 @@
 ---
 name: help
-description: Workshop capability index that explains available skills, agents, hooks, rules, and templates with usage examples.
-allowed-tools:
+description: Capability catalog and "what can I do" guide. Use when the user asks "有哪些 skill / 能做什么 / how do I / 这个 skill 是干嘛的 / 列一下能力 / list capabilities / show commands". Reads current phase, lists relevant skills/agents/rules, distinguishes REQUIRED vs OPTIONAL next steps.
+allowed-tools: read_file, list_dir, search_content
 disable: false
 ---
 
-# Help · 工作室能力说明书
+# help · 能力索引与说明书
 
-## 何时使用
+## 何时加载
 
-用户想了解工作室提供哪些能力、某个 skill 怎么用、或在多个 skill 之间犹豫时调用。区别于 `start`：
-- `start` = 路由（"我帮你切到对的 skill"）
-- `help` = 说明书（"工作室有哪些能力 / 某能力怎么用"）
+- 用户问"有哪些能力 / 能做什么 / 怎么用"
+- 用户想了解某个具体 skill / agent / rule 的用途
+- 用户卡在流程中不知道下一步该用什么
 
-典型触发：
-- "/help"
-- "工作室能做什么"
-- "consistency-check 是干嘛的"
-- "skill 列表"
+**不加载场景**：用户已经知道要做什么（直接走那个 skill）；用户问"开始吧"（走 `start`）。
 
-## 输入 / 触发条件
+## 输入契约
 
-- 可选：具体能力名（skill / agent / hook / rule / template 之一）
-- 无参时默认输出工作室能力总览
+| 输入 | 来源 |
+|---|---|
+| 用户的查询关键词（可选）| 当前消息 |
+| 当前项目 phase | `projects/<name>/PROJECT.md` |
+| 已有产物清单 | 项目目录扫描 |
 
-## 流程步骤
+## 流程
 
-1. **参数判断**：有具体名字 → 详细说明；无参 → 总览
-2. **总览模式**：列出 5 类能力（skill 22 / agent 30 / hook 5 / rule 6 / template 9）+ 每类前 3 个常用项
-3. **详细模式**：读对应文件（如 `.codebuddy/skills/<name>/SKILL.md`）→ 提炼"何时使用 + 流程 + 典型输入/输出"
-4. **关联引导**：列出与查询项相关的其他 skill / rule
-5. **使用示例**：给 1-2 个真实触发语示例
+### Step 1 · 范围识别
 
-## 输出
+判断用户问的是：
+- **A 全局清单**：列出所有 22 skill / 30 agent / 6 rule
+- **B 阶段相关**：根据当前 phase（concept/design/dev/test/release）筛选
+- **C 单项详情**：解释某个具体 skill/agent/rule 用法
 
-- 终端内中文说明（不落盘）
-- 详细模式可附"完整文档地址"链接
+### Step 2 · 信息组织
 
-## 引用
+按下表输出（中文）：
 
-- 上游规划：v4 §6.1.1
-- 数据源：`.codebuddy/{skills,agents,hooks,rules,templates}/`
-- 相关 skill：`start`
+| 类别 | 数量 | 关键代表 |
+|---|---|---|
+| skill | 22 | start / new-project / design-review / dev-story / smoke-check |
+| agent | 30 | producer / pm / architect / engineer / qa-lead |
+| rule | 6 | project-structure / commit-discipline / language-policy |
+| template | 9 | gdd-8-sections / sprint-plan / retro / adr |
 
-## Known Limitations / Phase 2 Review Points
+### Step 3 · REQUIRED vs OPTIONAL 区分
 
-- [Phase 2 TODO] 与 `start` 的边界靠 AI 判断，未来积累若干会话后可固化分流规则
-- [Phase 2 TODO] 当能力数量增长（>50）时，总览模式需分页 / 索引
-- [Phase 2 TODO] 跨语言用户（非中文母语）的英文输出模式未考虑
+读 `projects/<name>/PROJECT.md` 的 `phase`，按 `studio/docs/workflow-guide.md` 给出：
+- **REQUIRED 下一步**（流程必须走的）
+- **OPTIONAL 加分项**（推荐但非必须）
+
+### Step 4 · 输出
+
+- 用 markdown 表格给出能力清单
+- 每个能力一句话描述 + 触发关键词
+- 必要时给一个最小调用示例
+
+## 输出契约
+
+| 字段 | 内容 |
+|---|---|
+| `verdict` | `INFO_DELIVERED` |
+| `phase` | 当前项目所处 phase（若有项目）|
+| `required_next` | REQUIRED 下一步 skill 列表 |
+| `optional_next` | OPTIONAL 加分项 |
+
+## 调用的 agent / rule
+
+- agent：无
+- rule：`project-structure`（识别工作区结构）
+
+## 失败 / 降级
+
+| 异常 | 策略 |
+|---|---|
+| 用户询问不存在的 skill | 模糊匹配 + 推荐最相近的 3 个 |
+| `studio/docs/workflow-guide.md` 不存在 | 仅给静态清单，不做阶段化推荐 |
+
+## 验收标准
+
+- 用户查询后能在 1 轮内拿到清单 + 推荐
+- 推荐的"REQUIRED 下一步"准确反映流程文档
+
+## Known Limitations
+
+- 当前清单写在 SKILL.md 中，新增能力需手动同步（Phase 2 评估自动扫描 `.codebuddy/` 生成）

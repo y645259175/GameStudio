@@ -1,54 +1,108 @@
 ---
 name: review-all-gdds
-description: Cross-chapter GDD review that surfaces conflicts, gaps, and naming inconsistencies across all design documents.
-allowed-tools:
+description: Cross-chapter GDD audit. Use when user says "审一遍所有 GDD / 全 GDD 一致性 / cross-check design / 章节冲突". Runs across projects/<name>/gdd/*.md, surfaces conflicts, gaps, and naming inconsistencies. Heavier than consistency-check (which spans GDD + code + config).
+allowed-tools: read_file, list_dir, search_content
 disable: false
 ---
 
-# Review-All-GDDs · 跨 GDD 全量审视
+# review-all-gdds · 跨章节 GDD 审计
 
-## 何时使用
+## 何时加载
 
-milestone 节点 / sprint 末 / 重大设计变更后，对项目所有 GDD 章节做横向扫描，找冲突 / 缺口 / 命名不一致。
+- GDD 章节数 ≥ 3 且彼此引用频繁
+- 进入下一阶段前的设计 gate
+- 用户说"我担心章节之间有矛盾"
 
-典型触发：
-- "/review-all-gdds"
-- "看看所有 GDD"
-- `milestone-review` 内自动调用
+**不加载场景**：单章修改 → 走 `design-review`；跨产物（GDD + 代码） → 走 `consistency-check`。
 
-## 输入 / 触发条件
+## 输入契约
 
-- 当前在项目根
-- `projects/<name>/gdd/` 下至少有 2 章 GDD
+| 输入 | 来源 |
+|---|---|
+| `projects/<name>/gdd/*.md` 全部章节 | 项目目录 |
+| 数值表 `data/*.json` | 项目数据 |
+| `rules/design-authoring/RULE.mdc` | 规则 |
 
-## 流程步骤
+## 流程
 
-1. **扫描清单**：列出 `gdd/` 下所有 .md 文件
-2. **章节级别 8 节扫**：每章是否含 8 节（依赖 `design-review` 的产物）
-3. **跨章一致性扫**：
-   - 同名实体（角色 / 系统 / 资源）的定义是否一致
-   - 数值是否冲突（同属性在不同章节给出不同值）
-   - 玩法循环是否闭合（A 章节引用 B 章节，B 是否真的存在）
-   - 引擎 / 工具假设是否一致
-4. **缺口扫**：列出"被引用但未起草"的章节
-5. **报告生成**：分级（critical / warn / info）输出建议修订项
-6. **落盘**：`projects/<name>/reports/gdd-review-YYYY-MM-DD.md`
-7. **路由提示**：critical > 0 时建议 `design-review` 修订对应章节
+### Step 1 · 全量收集
 
-## 输出
+`list_dir projects/<name>/gdd/` → 拿到全部 md。
 
-- `projects/<name>/reports/gdd-review-YYYY-MM-DD.md`
-- 终端内问题数表 + top issues
+### Step 2 · 三类一致性扫描
 
-## 引用
+| 类别 | 检查内容 |
+|---|---|
+| **命名** | 角色 / 系统 / 道具名是否多写法（如 "boss" vs "Boss" vs "首领"）|
+| **数值** | 各章节给出的数值是否互斥（如玩法说 100HP，平衡说 80HP）|
+| **逻辑** | 玩法循环依赖的系统在系统章节是否定义？|
 
-- 上游规划：v4 §4 Q7-C、§6.1.1
-- 相关 skill：`design-review` `consistency-check` `milestone-review`
-- 相关 rule：`design-authoring`
-- 相关 template：`templates/consistency-report.md.tpl`（复用一致性报告模板）
+### Step 3 · 章节交叉引用图
 
-## Known Limitations / Phase 2 Review Points
+构建简单图：
+- 节点 = 章节 / 系统名 / 角色名
+- 边 = 引用关系
+- 找：孤立节点（被定义但无引用）、悬空引用（引用了未定义的）
 
-- [Phase 2 TODO] 大项目 GDD 数 > 30 时扫描性能未优化
-- [Phase 2 TODO] 跨章一致性的判定靠 AI 语义匹配，错报率有待校准
-- [Phase 2 TODO] 与 `consistency-check` 的边界：本 skill 偏 GDD 内部、`consistency-check` 偏 GDD↔代码↔配置
+### Step 4 · 委托 reviewer 复核
+
+调用 `reviewer` agent 复核 Step 2 结果，给 verdict：
+- `CLEAN`：无冲突
+- `MINOR`：< 5 处命名差异，建议批量修
+- `MAJOR`：≥ 1 处数值/逻辑矛盾，需 designer 介入
+
+### Step 5 · 输出报告
+
+`projects/<name>/reports/gdd-cross-review-<date>.md`：
+
+```
+## 命名差异
+| 概念 | 写法 | 出现位置 |
+|---|---|---|
+| boss | "Boss"/"首领"/"boss" | gdd-1.md:15, gdd-3.md:42 |
+
+## 数值冲突
+| 概念 | 章 A | 章 B | 建议 |
+|---|---|---|---|
+
+## 悬空引用
+| 引用方 | 被引用名 | 状态 |
+```
+
+## 输出契约
+
+| 字段 | 内容 |
+|---|---|
+| `verdict` | `CLEAN` / `MINOR` / `MAJOR` |
+| `report_path` | 报告路径 |
+| `naming_issues` | 数量 |
+| `numeric_conflicts` | 数量 |
+| `dangling_refs` | 数量 |
+
+## 调用的 agent
+
+- `reviewer`（sonnet）
+- 冲突时升级 `designer`
+
+## 加载的 rule
+
+- `design-authoring`
+- `language-policy`（中英术语一致性）
+
+## 失败 / 降级
+
+| 异常 | 策略 |
+|---|---|
+| GDD 章节 < 2 | 直接返回 `CLEAN`（无可比对）|
+| 数值表与 GDD 矛盾 | 优先以数值表为准，标注 GDD 待修 |
+
+## 验收标准
+
+- 命名差异 ≤ 5 处或全部修复
+- 0 数值冲突
+- 0 悬空引用（或全部加 TODO 标注）
+
+## Known Limitations
+
+- 命名相似度判断靠字符串匹配（无 NLP）
+- 跨语言术语对照（中文/英文）需手维护
