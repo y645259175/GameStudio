@@ -1,19 +1,21 @@
 ---
-description: Project structure rule - three-layer architecture (.codebuddy/ capability / studio/ workspace / projects/ projects) with path constraints. Enforces that Phase 1 never references analysis-report/ or my-game/ original paths.
+description: Project structure rule - four-layer architecture (.codebuddy/ capability / studio/ workspace / engine/ binaries / projects/ projects) with path constraints and engine/ gitignored.
 alwaysApply: true
 enabled: true
-updatedAt: 2026-05-14T16:38:00.000Z
+updatedAt: 2026-05-14T21:08:00.000Z
 provider:
 ---
 
 # project-structure · 项目结构规范
 
-## 三层架构
+## 四层架构
 
 ```
 <workspace-root>/
 ├── .codebuddy/       ← 能力层（skill / agent / hook / rule / template）
 ├── studio/           ← 工作室层（docs / reference / config）
+├── engine/           ← 引擎层（引擎二进制，gitignored，不进版本控制）
+│   └── Godot/        ← Godot_v4.6.2-stable_win64.exe
 └── projects/         ← 项目层（<project-name>/ gdd/ stories/ adr/ ...）
 ```
 
