@@ -39,10 +39,28 @@ disable: false
    │   └── .gitkeep        ← 8 节 GDD 待用 design-review 起草
    ├── stories/
    │   └── .gitkeep
+   ├── epics/
+   │   └── .gitkeep
+   ├── adr/
+   │   └── .gitkeep
+   ├── sprints/
+   │   └── .gitkeep        ← plan / smoke / retro 统一放此目录
+   ├── data/
+   │   └── .gitkeep        ← 数值表（JSON / TOML / CSV）
    ├── reports/
    │   └── .gitkeep
-   └── retros/
-       └── .gitkeep
+   ├── retros/
+   │   └── .gitkeep
+   ├── releases/
+   │   └── .gitkeep
+   ├── qa/
+   │   └── .gitkeep
+   ├── art/
+   │   └── .gitkeep        ← style guide / 参考图
+   ├── assets/
+   │   └── .gitkeep        ← 美术资产（art-asset-pipeline 产出）
+   └── docs/
+       └── .gitkeep        ← 项目级文档（README 之外）
    ```
 4. **引擎路由提示**：根据所选引擎，提示用户调用 `setup-engine` skill
 5. **下一步路由**：

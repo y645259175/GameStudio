@@ -52,9 +52,9 @@
 
 | # | 任务 | 状态 |
 |---|---|---|
-| 1 | `git init` 工作区根 | `[ ]` |
-| 2 | `git add -A && git commit -m "[story] v4 foundation: studio incubator migration phase 1+1.5 complete"` | `[ ]` |
-| 3 | `git tag v4-foundation` | `[ ]` |
+| 1 | `git init` 工作区根 | `[x]` |
+| 2 | `git add -A && git commit -m "[story] v4 foundation: studio incubator migration phase 1+1.5 complete"` | `[x]` |
+| 3 | `git tag v4-foundation` | `[x]` |
 
 之后进入 Phase 2 的 skill 自我消化 / Phase 3 的真实项目落地（详见 v4 §6.5）。
 

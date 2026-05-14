@@ -29,12 +29,12 @@ disable: false
 3. **集成检查**：列出本 sprint 新增 / 改动的功能边界，标注是否做过端到端测试
 4. **冒烟测试 checklist**：按项目 README 中的 smoke checklist 逐项跑（如未定义则提示用户补）
 5. **velocity 5 数**：统计本 sprint 的 planned / done / carry-over / blocked / abandoned
-6. **报告落盘**：`projects/<name>/sprint-reports/sprint-N-smoke.md`
+6. **报告落盘**：`projects/<name>/sprints/sprint-N-smoke.md`
 7. **postmortem 触发**：如有 abandoned ≥ 1 或 blocked ≥ 2，提示调用 `retrospective` skill
 
 ## 输出
 
-- `projects/<name>/sprint-reports/sprint-N-smoke.md`
+- `projects/<name>/sprints/sprint-N-smoke.md`
 - 终端内 velocity 5 数表 + 风险提示
 
 ## 引用

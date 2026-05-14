@@ -31,13 +31,13 @@ disable: false
 4. **装载**：填充到本 sprint 容量上限，留 10-20% buffer
 5. **风险标注**：标注高风险 / 强依赖外部资产的 stories
 6. **交互修订**：用户拍板"换 / 加 / 减 / 拆"
-7. **落盘**：`projects/<name>/sprint-plans/sprint-<N>.md`，按 `templates/sprint-plan.md` 填充
+7. **落盘**：`projects/<name>/sprints/sprint-<N>-plan.md`，按 `templates/sprint-plan.md` 填充
 8. **carry-over 处理**：如上 sprint 有 carry-over，自动占位入本 sprint
 9. **commit 建议**：`[story] sprint <N> plan`
 
 ## 输出
 
-- `projects/<name>/sprint-plans/sprint-<N>.md`
+- `projects/<name>/sprints/sprint-<N>-plan.md`
 - 终端内 sprint 装载摘要（容量 / 装载 / buffer / 风险数）
 
 ## 引用

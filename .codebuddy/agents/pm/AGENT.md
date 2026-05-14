@@ -17,7 +17,7 @@ enabled: true
 ## 输入 / 触发条件
 
 - 当前在某项目根
-- `sprint-plans/` 与 `stories/` 目录已建
+- `sprints/` 与 `stories/` 目录已建
 - 至少 1 个 sprint 数据（首 sprint 例外）
 
 ## 流程步骤

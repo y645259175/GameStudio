@@ -1,6 +1,6 @@
 # sprint-plan · Sprint 计划模板
 
-> 本模板由 `sprint-plan` skill 调用。落盘到 `projects/<name>/sprints/sprint-<N>.md`。
+> 本模板由 `sprint-plan` skill 调用。落盘到 `projects/<name>/sprints/sprint-<N>-plan.md`。
 
 ---
 
