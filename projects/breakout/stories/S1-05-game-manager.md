@@ -1,3 +1,13 @@
+﻿---
+id: S1-05
+epic: E1
+priority: P0
+estimate: 2
+status: done
+gdd-anchor: gdd/gdd-breakout.md#§4-生命与状态
+completed-at: 2026-05-14
+---
+
 # S1-05 · GameManager（生命 + 通关 + Game Over）
 
 **Epic**：E1 · 核心玩法原型
@@ -21,3 +31,4 @@
 - 脚本：`game_manager.gd`（Autoload）
 - 信号监听：`ball_lost` `brick_destroyed`
 - 状态：`lives` `score` `current_level` `bricks_remaining`
+

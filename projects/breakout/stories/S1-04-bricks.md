@@ -1,3 +1,13 @@
+﻿---
+id: S1-04
+epic: E1
+priority: P0
+estimate: 2
+status: done
+gdd-anchor: gdd/gdd-breakout.md#§4-S2-砖块
+completed-at: 2026-05-14
+---
+
 # S1-04 · 砖块阵列
 
 **Epic**：E1 · 核心玩法原型
@@ -21,3 +31,4 @@
 - 场景：`brick.tscn`（StaticBody2D + CollisionShape2D）
 - 关卡生成器：`level_generator.gd` 读取数据配置砖块矩阵
 - 数据：`projects/breakout/data/levels.json`（L1 配置）
+

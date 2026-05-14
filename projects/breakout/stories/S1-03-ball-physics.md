@@ -1,3 +1,13 @@
+﻿---
+id: S1-03
+epic: E1
+priority: P0
+estimate: 3
+status: done
+gdd-anchor: gdd/gdd-breakout.md#§4-S1-球
+completed-at: 2026-05-14
+---
+
 # S1-03 · 球弹射与反弹
 
 **Epic**：E1 · 核心玩法原型
@@ -22,3 +32,4 @@
 - 场景：`ball.tscn`（Area2D 或 CharacterBody2D + 自定义移动）
 - 不使用 Godot 内置物理引擎的 RigidBody2D（反弹行为需精确控制）
 - 信号：`ball_lost` → 通知 GameManager
+
