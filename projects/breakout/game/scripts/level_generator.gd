@@ -1,0 +1,87 @@
+extends Node
+
+## 关卡生成器
+## 读取 levels.json 配置砖块矩阵
+
+const BRICK_WIDTH: float = 80.0
+const BRICK_HEIGHT: float = 24.0
+const BRICK_GAP: float = 4.0
+const START_Y: float = 80.0
+
+var brick_scene: PackedScene = preload("res://scenes/brick.tscn")
+var level_data: Dictionary = {}
+
+
+func _ready() -> void:
+	_load_level_data()
+
+
+func _load_level_data() -> void:
+	var file := FileAccess.open("res://data/levels.json", FileAccess.READ)
+	if file:
+		var json := JSON.new()
+		var err := json.parse(file.get_as_text())
+		if err == OK:
+			level_data = json.data
+		file.close()
+
+
+func generate_level(level_num: int, parent: Node) -> void:
+	# 清除旧砖块
+	for child in parent.get_children():
+		if child.is_in_group("bricks"):
+			child.queue_free()
+
+	var level_key := str(level_num)
+	if level_key not in level_data.get("levels", {}):
+		push_warning("Level %s not found" % level_key)
+		return
+
+	var level := level_data["levels"][level_key] as Dictionary
+	var layout: Array = level.get("layout", [])
+	var brick_types: Dictionary = level_data.get("brick_types", {})
+
+	# 计算起始 X 使砖块阵列居中
+	var cols: int = 12
+	if layout.size() > 0:
+		cols = layout[0].size()
+	var total_width := cols * BRICK_WIDTH + (cols - 1) * BRICK_GAP
+	var start_x := (1280.0 - total_width) / 2.0 + BRICK_WIDTH / 2.0
+
+	for row_idx in layout.size():
+		var row: Array = layout[row_idx]
+		for col_idx in row.size():
+			var type_key := str(int(row[col_idx]))
+			if type_key == "0":
+				continue
+
+			var brick_info: Dictionary = brick_types.get(type_key, {})
+			if brick_info.is_empty():
+				continue
+
+			var brick := brick_scene.instantiate()
+			var x := start_x + col_idx * (BRICK_WIDTH + BRICK_GAP)
+			var y := START_Y + row_idx * (BRICK_HEIGHT + BRICK_GAP)
+			brick.position = Vector2(x, y)
+
+			var is_indestructible: bool = brick_info.get("indestructible", false)
+			var score: int = int(brick_info.get("score", 0))
+
+			parent.add_child(brick)
+			brick.add_to_group("bricks")
+			brick.setup(int(row[col_idx]), score, is_indestructible)
+
+			if not is_indestructible:
+				GameManager.register_brick()
+
+			brick.brick_destroyed.connect(_on_brick_destroyed)
+
+
+func _on_brick_destroyed(pos: Vector2, brick_type: int, score: int) -> void:
+	GameManager.destroy_brick(score)
+
+
+func get_ball_speed(level_num: int) -> float:
+	var level_key := str(level_num)
+	var level := level_data.get("levels", {}).get(level_key, {})
+	return float(level.get("ball_speed", 300))
