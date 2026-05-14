@@ -1,0 +1,80 @@
+---
+description: Test standards rule - defines unit/integration/smoke/regression test requirements, coverage expectations, and the test pyramid ratio for game projects. Referenced by tester agent and qa-lead agent.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-05-14T16:38:00.000Z
+provider:
+---
+
+# test-standards · 测试标准
+
+## 测试金字塔
+
+```
+        /\
+       /  \        冒烟测试（E2E 关键路径）
+      /────\       ~5%
+     /  集成  \    跨系统交互
+    /──────────\   ~15%
+   /   单元测试  \  纯逻辑 / 纯数据
+  /────────────────\ ~80%
+```
+
+**比例**：单元 80% / 集成 15% / 冒烟 5%（起点，按项目风险调整）
+
+## 测试类型定义
+
+### 单元测试
+
+- **范围**：纯函数 / 数据变换 / 公式计算 / 状态机转换
+- **要求**：零外部依赖 / 可重复 / ≤ 50ms / 命名 `test_<what>_<condition>_<expected>`
+- **覆盖目标**：GDD §5 数值公式 100% / 工具函数 100% / 核心逻辑 ≥ 80%
+
+### 集成测试
+
+- **范围**：跨系统交互（战斗 ↔ 经济 / 存档 ↔ 配置 / UI ↔ 数据）
+- **要求**：可用 mock / 不依赖完整游戏运行
+- **覆盖目标**：GDD §4 系统间接口 ≥ 60%
+
+### 冒烟测试
+
+- **范围**：E2E 关键路径（启动 → 主菜单 → 战斗 → 结算 → 存档）
+- **要求**：可在 CI 跑 / ≤ 5 分钟
+- **覆盖目标**：`smoke-check` skill 执行
+
+### 回归测试
+
+- **范围**：`qa-lead` 维护的回归矩阵
+- **要求**：每个 fixed bug 必须加回归用例
+- **覆盖目标**：核心路径 + 高风险模块
+
+## 引擎测试框架
+
+| 引擎 | 框架 | 位置 |
+|---|---|---|
+| Godot | GUT / GDScript 内置 | `tests/unit/` `tests/integration/` |
+| Unity | Unity Test Framework (NUnit) | `Assets/Tests/` |
+| Unreal | Automation Spec | `Tests/` |
+
+## 命名约定
+
+```
+test_<module>_<what>_<condition>_<expected>
+
+例：
+test_combat_damage_full_hp_fireball_reduces_hp_by_150
+test_economy_purchase_insufficient_gold_returns_false
+```
+
+## CI 集成（Phase 2+）
+
+- `validate-commit.sh` 重通道 commit 触发全量单元测试
+- `smoke-check` skill 在 sprint 结束时跑冒烟
+- 测试失败 → 阻塞 commit（重通道）/ 警告（轻通道）
+
+## 关联 skill / agent
+
+- `smoke-check` → 冒烟测试执行
+- `release-checklist` → 发版前测试门禁
+- `tester` agent → 用例编写
+- `qa-lead` agent → 测试策略 + 回归矩阵

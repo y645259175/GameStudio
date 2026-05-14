@@ -1,0 +1,77 @@
+{
+  "_comment": "TimiAI 图像模型配置。维护入口：https://iwiki.woa.com/p/4016346347 及子文档；模型库页面：https://timiai.woa.com/art/model/lib。新增/下线模型只改此文件，不需要改脚本。fallback 字段：主模型限流/上游异常时按顺序自动切换的备用模型链（脚本 --fallback auto 时生效）。",
+  "default": "gpt-image-2",
+  "models": {
+    "gpt-image-2": {
+      "id": "gpt-image-2",
+      "endpoint": "llmproxy",
+      "description": "OpenAI 图像模型。综合能力最强，擅长复杂指令、精准文字渲染、多主体构图、风格切换、UI 设计稿。",
+      "_comment": "资源紧张，耗时久（high 质量可达 3-5 分钟），建议复杂生图/UI 设计稿使用。size 宽高必须是 16 的倍数。Azure 限流较常见，已配置 fallback 链。",
+      "max_n": 1,
+      "fallback": ["gemini-3-pro-image-preview", "gpt-image-1"],
+      "params": {
+        "size": "1024x1024（可自定义，宽高须 16 整除）",
+        "quality": "low | medium | high",
+        "n": "1~4"
+      }
+    },
+    "gpt-image-1": {
+      "id": "gpt-image-1",
+      "endpoint": "llmproxy",
+      "description": "OpenAI 图像模型（老版本）。综合能力强，gpt-image-2 不可用时的 fallback。",
+      "_comment": "gpt-image-2 失败时备用。",
+      "max_n": 1,
+      "fallback": ["gemini-3-pro-image-preview"],
+      "params": {
+        "size": "1024x1024（可自定义，宽高须 16 整除）",
+        "quality": "low | medium | high"
+      }
+    },
+    "FLUX.2-pro": {
+      "id": "FLUX.2-pro",
+      "endpoint": "llmproxy",
+      "description": "Black Forest Labs 专业级图像模型。擅长写实摄影风、精细纹理、光影效果。适合产品渲染、建筑可视化、照片级真实感场景。",
+      "_comment": "推荐工业/产品/建筑设计使用。速度中等。",
+      "max_n": 1,
+      "fallback": ["gpt-image-2", "gemini-3-pro-image-preview"],
+      "params": {
+        "size": "1024x1024（可自定义）"
+      }
+    },
+    "gemini-3-pro-image-preview": {
+      "id": "gemini-3-pro-image-preview",
+      "endpoint": "llmproxy",
+      "description": "Google Gemini 图像模型（Nano Banana）。擅长风格化插画、动漫二次元、概念设计。中文 prompt 效果较好。注意：size 用宽高比而非像素，如 aspect_ratio=16:9。",
+      "_comment": "日常使用推荐。速度适中，质量稳定。也可走 chat/completions 做图生图多轮迭代。",
+      "max_n": 1,
+      "fallback": ["gemini-3.1-flash-image-preview"],
+      "params": {
+        "aspect_ratio": "1:1 | 4:3 | 16:9 | 21:9 | 9:16 | 4:5（用 --param 传）",
+        "imageSize": "1K | 2K | 4K（用 --param 传）"
+      }
+    },
+    "gemini-3.1-flash-image-preview": {
+      "id": "gemini-3.1-flash-image-preview",
+      "endpoint": "llmproxy",
+      "description": "Google Gemini Flash 图像模型（Nano Banana 2）。比 gemini-3-pro 更快，适合快速出草图迭代。",
+      "_comment": "需要快速验证创意时首选，质量略低于 pro 版。",
+      "max_n": 1,
+      "fallback": ["gemini-3-pro-image-preview"],
+      "params": {
+        "aspect_ratio": "1:1 | 4:3 | 16:9 | 21:9 | 9:16 | 4:5",
+        "imageSize": "1K | 2K | 4K"
+      }
+    },
+    "hunyuan-image-v3.0-v1.0.4": {
+      "id": "hunyuan-image-v3.0-v1.0.4",
+      "endpoint": "hunyuan",
+      "description": "腾讯混元图像模型。中文理解能力最强，擅长中国风、国潮、古风、水墨等东方美学风格，以及腾讯自有 IP 同人图（王者荣耀等）。prompt 建议直接用中文。",
+      "_comment": "生成国风内容、腾讯游戏相关插画时首选。走独立接口 /hunyuan/images/generations，脚本自动路由。无 fallback：风格独特，降级到其他模型会破坏国风调性。",
+      "max_n": 1,
+      "fallback": [],
+      "params": {
+        "size": "1024x1024（可自定义）"
+      }
+    }
+  }
+}

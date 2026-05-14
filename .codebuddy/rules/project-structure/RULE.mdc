@@ -1,0 +1,70 @@
+---
+description: Project structure rule - three-layer architecture (.codebuddy/ capability / studio/ workspace / projects/ projects) with path constraints. Enforces that Phase 1 never references analysis-report/ or my-game/ original paths.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-14T16:38:00.000Z
+provider:
+---
+
+# project-structure · 项目结构规范
+
+## 三层架构
+
+```
+<workspace-root>/
+├── .codebuddy/       ← 能力层（skill / agent / hook / rule / template）
+├── studio/           ← 工作室层（docs / reference / config）
+└── projects/         ← 项目层（<project-name>/ gdd/ stories/ adr/ ...）
+```
+
+### `.codebuddy/` 能力层
+
+| 子目录 | 内容 |
+|---|---|
+| `skills/<name>/SKILL.md` | 技能定义 + 资源 |
+| `agents/<name>/AGENT.md` | Agent 定义 |
+| `hooks/<name>.sh` | Hook 脚本 |
+| `rules/<name>/RULE.mdc` | 规则定义 |
+| `templates/<name>.tpl` | 模板文件 |
+| `plans/` | 迁移规划 + 日志 |
+
+### `studio/` 工作室层
+
+| 子目录 | 内容 |
+|---|---|
+| `docs/` | 工作室级文档（language-policy 等）|
+| `docs/engine-reference/<engine>/` | 引擎参考（Phase 1 占位）|
+| `reference/` | 只读参考区（Phase 1.5 归位 analysis-report/ my-game/）|
+
+### `projects/` 项目层
+
+| 子目录 | 内容 |
+|---|---|
+| `<name>/PROJECT.md` | 项目元数据 |
+| `<name>/gdd/` | GDD 文档 |
+| `<name>/stories/` | User stories |
+| `<name>/adr/` | Architecture Decision Records |
+| `<name>/releases/` | Release notes |
+| `<name>/retros/` | Retro 归档 |
+| `<name>/qa/` | 测试策略 / 回归矩阵 |
+
+## 路径约束（Phase 1 期间强制）
+
+### 约束 1：不引用原路径
+
+skill / agent / hook / rule / template 的正文**不得**引用 `analysis-report/` 或 `my-game/` 的原始路径。
+
+### 约束 2：使用未来位置
+
+需要引用上游内容时，使用 Phase 1.5 归位后的路径 `studio/reference/<name>/` 并标注 `[Phase 1.5+ TODO]`。
+
+### 约束 3：占位显式标注
+
+占位内容必须以 `[Phase 1.5+ TODO]` 或 `[Phase 2 TODO]` 显式标注，不得留空无说明。
+
+## 关联 skill / agent
+
+- `new-project` → 在 `projects/` 下创建项目骨架
+- `setup-engine` → 创建引擎相关目录
+- `consistency-check` → 验证路径约束
+- `architect` agent → 架构决策影响目录结构时参考

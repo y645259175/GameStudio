@@ -1,0 +1,64 @@
+---
+description: Double-channel commit message convention. Heavy channel [story] requires story-id + GDD validation via validate-commit.sh; light channel [fix][refactor][quick][chore][docs] uses minimal lint. All subjects in English imperative, max 72 chars.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-05-14T16:38:00.000Z
+provider:
+---
+
+# commit-discipline · Commit 纪律
+
+## 双通道分类
+
+### 重通道（story 级 / 重大变更）
+
+格式：`[story] <story-id> <短描述>`
+
+- 触发条件：完成 user story / 重大架构变更 / GDD 章节定稿
+- 必须满足：story 已 Done / GDD 8 节完整 / consistency-check 通过
+- hook 校验：story-id 存在 + GDD 8 节完整 + JSON 配置可解析
+
+### 轻通道（局部 / 不阻塞）
+
+格式：
+- `[fix] <短描述>` — bug 修复
+- `[refactor] <短描述>` — 不改行为的结构调整
+- `[quick] <短描述>` — quick-fix skill 产物
+- `[chore] <短描述>` — 杂项（依赖升级 / 文档微调）
+- `[docs] <短描述>` — 仅文档变更
+
+hook 校验：仅消息格式 + 大文件检查
+
+## 禁止形式
+
+- ❌ 无前缀：`update something`
+- ❌ 无意义：`fix bug` / `wip` / `update`
+- ❌ 中文前缀：`[修复]` `[重构]`
+- ❌ 多前缀：`[fix][refactor]`
+
+## 主题要求
+
+- 英文 / 祈使句 / 小写开头 / 无句号
+- ≤ 72 字符
+- 描述"做了什么"而非"为什么"
+
+## Body 规范
+
+- Subject 后空一行，Body 中文叙述（language-policy R1）
+- 说明"为什么改 / 改了什么 / 影响范围"
+
+## 关联 hook
+
+- `validate-commit.sh`（commit-msg 阶段，重通道强校验）
+- `pre-commit-lite.sh`（pre-commit 阶段，轻通道极简 lint）
+
+## 关联 skill / agent
+
+- `dev-story` → 重通道
+- `quick-fix` → `[quick]` 轻通道
+- `story-done` → 重通道 commit + tag
+- `reviewer` → PR 阶段二审 commit message
+
+## 生效时机
+
+Phase 2 git init 后生效。Phase 1 期间无 git，本规则为待生效基线。

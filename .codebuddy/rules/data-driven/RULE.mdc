@@ -1,0 +1,77 @@
+---
+description: Data-driven design rule - game values must live in external data files (JSON/TOML/CSV/DataTable/SO), never hardcoded. Covers numeric tables, balance formulas, configuration, and the separation of data from behavior.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-05-14T16:38:00.000Z
+provider:
+---
+
+# data-driven · 数据驱动原则
+
+## 核心规则
+
+**游戏数值必须外置到数据文件，不得硬编码在代码中。**
+
+"数值"包括但不限于：
+- 角色属性（HP / ATK / DEF / SPD ...）
+- 技能参数（伤害倍率 / 冷却 / 范围 / 消耗 ...）
+- 经济参数（价格 / 掉率 / 经验曲线 ...）
+- 关卡配置（波次 / 难度系数 / 生成权重 ...）
+- UI 配置（布局参数 / 颜色 / 字号 ...）
+
+## 数据格式约定
+
+| 引擎 | 推荐格式 | 文件位置 |
+|---|---|---|
+| Godot | `.tres` / `.json` / `.csv` | `resources/data/` |
+| Unity | ScriptableObject / `.json` | `Assets/Data/` |
+| Unreal | DataTable / `.json` | `Content/Data/` |
+
+通用跨引擎格式：JSON（最广兼容）/ TOML（人类友好）/ CSV（表格数据）
+
+## 分离原则
+
+### ✅ 正确做法
+
+```
+# 代码只读数值，不定义数值
+var damage = Data.get("skills/fireball/damage_multiplier") * base_attack
+```
+
+### ❌ 错误做法
+
+```
+# 硬编码数值——策划改数值必须改代码
+var damage = 1.5 * base_attack  # 1.5 是什么？谁定的？什么时候改的？
+```
+
+## 数值表结构
+
+每个数值表文件**必须**包含：
+
+```json
+{
+  "_meta": {
+    "version": "1.0",
+    "last_modified": "2026-05-14",
+    "author": "designer"
+  },
+  "data": { ... }
+}
+```
+
+`_meta` 版本号用于运行时校验和热更新兼容。
+
+## 数值平衡工作流
+
+1. `designer` agent 在 GDD §5 定义公式框架
+2. 数值表落 `projects/<name>/data/`
+3. `consistency-check` 验证 GDD §5 ↔ 数值表 ↔ 代码引用闭合
+4. 策划改数值 → 改数据文件 → 不动代码 → 不开 PR
+
+## 关联 skill / agent
+
+- `design-review` → GDD §5 数值与平衡审校
+- `consistency-check` → 数值表 ↔ 代码引用闭合
+- `designer` agent → 数值表主笔
+- `data-driven` rule → 本规则

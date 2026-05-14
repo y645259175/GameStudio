@@ -1,0 +1,37 @@
+---
+description: Language policy thin shell - delegates to studio/docs/language-policy.md for the full 7-rule specification (R1-R7). This rule loads the policy into agent context on demand.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-05-14T16:38:00.000Z
+provider:
+---
+
+# language-policy · 语言策略（薄壳）
+
+**完整策略**：[`studio/docs/language-policy.md`](../../studio/docs/language-policy.md)
+
+本 rule 是薄壳，仅在 agent 上下文中加载以下摘要。详细规则和正反例请查阅上方完整文档。
+
+## 7 条规则速查
+
+| # | 规则 | 一句话 |
+|---|---|---|
+| R1 | 业务叙述用中文 | 文档正文 / 规划说明 / postmortem / commit body 中文 |
+| R2 | 代码 / 路径 / 命令 / API 用英文 | 机器执行或解析的 token 必须英文 |
+| R3 | 技术术语保留英文 | agent / skill / hook / commit / lint 不翻译 |
+| R4 | 引用外部内容保留原文 | 引擎文档 / API 报错 / 第三方 skill 原样引用 |
+| R5 | 文件名 / 标识符全英文 | kebab-case / snake_case / PascalCase |
+| R6 | frontmatter / 配置字段值用英文 | YAML / TOML / JSON key + value 英文 |
+| R7 | 注释紧贴语境 | 代码块内中文注释 + 英文 API 调用是允许的混排 |
+
+## 常见违规速判
+
+- ❌ `type: agent / status: 启用中` → frontmatter 值必须英文（R6）
+- ❌ `这个 hook 在 commit 前运行` 中 hook / commit 不翻译（R3）
+- ❌ 文件名 `素材生成.py` → 必须 `asset_generate.py`（R5）
+- ✅ `# 调用 validate-commit.sh 校验 commit message`（R7 混排合规）
+
+## 豁免
+
+- 既存外部 skill（如 timiai-image）保留原样（R4）
+- 工作室自建产物必须 7 条全合规

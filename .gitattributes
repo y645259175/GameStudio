@@ -1,0 +1,18 @@
+# Force LF for shell scripts (hooks)
+*.sh text eol=lf
+
+# Markdown / MDC as text
+*.md text
+*.mdc text
+
+# YAML / TOML / JSON as text
+*.yaml text
+*.yml text
+*.toml text
+*.json text
+
+# Python as text
+*.py text
+
+# Templates
+*.tpl text
