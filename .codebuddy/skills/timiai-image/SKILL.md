@@ -1,13 +1,26 @@
 ---
 name: timiai-image
-description: 腾讯天美 AI Hub（api.timiai.woa.com / TimiAI / 天美AI 平台）图像生成与编辑能力。当用户有生成图片、画图、做海报/插画/UI视觉稿、图像编辑、图片改风格、图生图、多图风格迁移、基于参考图做视觉稿、文生图等需求时，主动使用此 skill；用户显式提及 TimiAI / 天美AI / gpt-image-2 / gpt-image-1 / gemini-3-pro-image-preview / Nano Banana / FLUX.2-pro 等模型名时也使用。支持三种能力：(1) 文生图 text2image.py，(2) 多图图像编辑 image_edit.py（支持 1-4 张参考图、精确像素尺寸如 2160x3840、quality 档位），(3) 多模态聊天式图像生成 chat_image.py（支持多轮迭代）。抽卡模式分两种：【随机抽卡（默认）】AI 生成 N 个 prompt 变体写入 variants.json，每次 draw 用不同变体，多样性最大；【定向抽卡】只传固定 prompt，N 次靠模型随机性。**自动 fallback**：text2image / image_edit 默认 `--fallback auto`，主模型遇 429/限流/上游异常时按 models.json 配置的链自动切到备用模型重试，对调用方透明，stdout JSON 的 `fallbacks` 字段记录降级详情；高品质需求可显式 `--fallback off` 关闭。工作流要求：生图前必须先走"意图识别→信息检查→主动澄清→Prompt扩写+用户确认"四步，对缺失的尺寸/用途/风格/文字/参考图/是否抽卡等关键信息主动提问澄清，再把用户的口语化描述扩写为结构化、对多模态模型友好的完整 prompt（随机抽卡则生成 N 个有实质差异的变体），回显给用户确认后才调脚本。首次使用若无 api key，会返回 [NEED_API_KEY] 标记，此时应主动向用户索要 key 并调用 save_key.py 永久保存到 skill 目录下 .timiai_key 文件，之后无需再问。
-allowed-tools: 
+description: Studio image generation & editing via TimiAI Hub. Use when any agent or user needs to generate, edit, or iterate on images - game assets (backgrounds, sprites, UI), concept art, promotional materials, style transfer, or multi-round visual refinement. Supports text-to-image (text2image.py), multi-reference image editing (image_edit.py), and chat-based iterative generation (chat_image.py). Called by art-asset-pipeline skill and art-director agent.
+allowed-tools:
 disable: false
 ---
 
 # TimiAI 图像能力
 
+> **工作室集成说明**：本 skill 是 GameStudio 的核心图像生成能力，被以下组件引用：
+> - `art-asset-pipeline` skill → 调用本 skill 生成/编辑美术资产
+> - `art-director` agent → 通过本 skill 审核和迭代视觉风格
+> - `designer` agent → 概念图 / 参考图生成
+> - 任何需要图像输出的 agent 均可通过 `art-asset-pipeline` 间接调用
+>
+> **资产落盘约定**：
+> - 游戏内资产 → `projects/<name>/game/assets/` （进交付包）
+> - 参考图 / 概念图 → `projects/<name>/art/`（不进交付包）
+> - 输出文件名：`<category>_<desc>_<timestamp>.png`
+
 调用腾讯天美 AI Hub（`api.timiai.woa.com`）的图像类 API，统一 `Authorization: <apikey>` 鉴权。
+
+提供三个生图脚本（文生图 / 图像编辑 / 多轮对话）+ 抽卡 + 自动 fallback + 模型探测，详见下文。
 
 ## 一、主动触发条件（重要）
 

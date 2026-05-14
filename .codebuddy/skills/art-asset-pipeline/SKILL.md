@@ -57,8 +57,6 @@ disable: false
 
 ## Known Limitations / Phase 2 Review Points
 
-- [Phase 2 TODO] 资产元信息 JSON 格式未标准化，需在 Phase 2 定 schema
-- [Phase 2 TODO] `projects/<name>/assets/` 目录结构未在 §6.1.1 列出（new-project 也未建），§9.4 兜底审计
+- [Phase 2 TODO] 资产元信息 JSON 格式未标准化，需定 schema
 - [Phase 2 TODO] 项目美术风格库（多张参考图打包成一个风格）的引用规范未设计
-- [Phase 2 TODO] timiai-image 自身是中英混写（既存事实豁免），本 skill 调用时按 R4 引用其原始描述，不强制改写
 - [Phase 2 TODO] 美术资产版本管理（同一资产迭代 v1/v2/v3）的命名 / 归档规则未定
