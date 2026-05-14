@@ -71,7 +71,7 @@ func _on_life_lost() -> void:
 
 
 func _on_game_over() -> void:
-	game_over_label.text = "GAME OVER\nScore: %d\n\nPress SPACE to restart" % GameManager.score
+	game_over_label.text = "GAME OVER\nScore: %d\n\nSPACE: Restart   ESC: Menu" % GameManager.score
 	game_over_label.visible = true
 	launch_hint.visible = false
 	ball.reset()
@@ -82,7 +82,7 @@ func _on_level_cleared() -> void:
 	if GameManager.is_last_level():
 		var life_bonus := GameManager.lives * 50
 		GameManager.add_score(life_bonus)
-		win_label.text = "YOU WIN!\nScore: %d\nLife Bonus: %d\n\nPress SPACE to restart" % [GameManager.score, life_bonus]
+		win_label.text = "YOU WIN!\nScore: %d\nLife Bonus: %d\n\nSPACE: Replay   ESC: Menu" % [GameManager.score, life_bonus]
 		win_label.visible = true
 		launch_hint.visible = false
 		ball.reset()
@@ -222,22 +222,23 @@ func powerup_clear_row() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# 重启
-	if (game_over_label.visible or win_label.visible) and event.is_action_pressed("launch_ball"):
-		game_over_label.visible = false
-		win_label.visible = false
-		GameManager.reset_game()
-		_start_level()
-		hud.update_all()
+	# Game Over / Win 状态：SPACE 重启 / ESC 回主菜单
+	if game_over_label.visible or win_label.visible:
+		if event.is_action_pressed("launch_ball"):
+			game_over_label.visible = false
+			win_label.visible = false
+			GameManager.reset_game()
+			_start_level()
+			hud.update_all()
+		elif event.is_action_pressed("ui_cancel"):
+			get_tree().paused = false
+			get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 		return
-	# 暂停
+	# 正常游戏中：ESC 切换暂停
 	if event.is_action_pressed("ui_cancel"):
 		_toggle_pause()
 
 
 func _toggle_pause() -> void:
-	# Game Over / Win 时不允许暂停
-	if game_over_label.visible or win_label.visible:
-		return
 	get_tree().paused = not get_tree().paused
 	pause_overlay.visible = get_tree().paused
