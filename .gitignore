@@ -2,9 +2,6 @@
 .godot/
 *.import
 
-# === Engine binaries (large files, don't track) ===
-engine/
-
 # === OS ===
 Thumbs.db
 Desktop.ini
