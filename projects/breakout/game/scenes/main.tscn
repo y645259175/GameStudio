@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://main001"]
+[gd_scene load_steps=12 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/paddle.gd" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/ball_trail.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/brick_particles.gd" id="9"]
 [ext_resource type="Texture2D" path="res://assets/bg_starfield.png" id="10"]
+[ext_resource type="Script" path="res://scripts/powerup_manager.gd" id="11"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_paddle"]
 size = Vector2(120, 16)
@@ -34,6 +35,11 @@ script = ExtResource("6")
 
 [node name="BrickParticles" type="Node2D" parent="."]
 script = ExtResource("9")
+
+[node name="PowerupContainer" type="Node2D" parent="."]
+
+[node name="PowerupManager" type="Node" parent="."]
+script = ExtResource("11")
 
 [node name="Paddle" type="CharacterBody2D" parent="." groups=["paddle"]]
 position = Vector2(640, 680)
@@ -160,3 +166,46 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.5)
 theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 text = "Press SPACE to launch"
+
+[node name="PauseOverlay" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 100
+visible = false
+
+[node name="PauseBg" type="ColorRect" parent="PauseOverlay"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0, 0, 0, 0.6)
+
+[node name="PauseLabel" type="Label" parent="PauseOverlay"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "PAUSED"
+
+[node name="PauseHint" type="Label" parent="PauseOverlay"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 30.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+text = "Press ESC to resume"

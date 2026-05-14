@@ -81,7 +81,7 @@ func generate_level(level_num: int, parent: Node) -> void:
 				brick.brick_destroyed.connect(main_node._on_brick_destroyed_visual)
 
 
-func _on_brick_destroyed(pos: Vector2, brick_color: Color, score: int) -> void:
+func _on_brick_destroyed(_pos: Vector2, _brick_color: Color, score: int, _brick_type: int) -> void:
 	GameManager.destroy_brick(score)
 
 

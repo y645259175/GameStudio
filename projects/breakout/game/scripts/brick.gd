@@ -3,7 +3,7 @@ extends StaticBody2D
 ## 砖块（带边框 + 高光效果）
 ## GDD §4 S2 砖块系统
 
-signal brick_destroyed(pos: Vector2, brick_color: Color, score: int)
+signal brick_destroyed(pos: Vector2, brick_color: Color, score: int, brick_type: int)
 
 const COLORS := {
 	1: Color("#0f3460"),
@@ -42,7 +42,7 @@ func hit() -> void:
 		return
 	hp -= 1
 	if hp <= 0:
-		brick_destroyed.emit(global_position, current_color, score_value)
+		brick_destroyed.emit(global_position, current_color, score_value, brick_type)
 		queue_free()
 	else:
 		_update_color()
