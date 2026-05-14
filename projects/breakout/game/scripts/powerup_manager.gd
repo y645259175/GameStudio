@@ -78,7 +78,10 @@ func apply(powerup_type: String, paddle: Node, ball: Node, main: Node = null) ->
 			if main and main.has_method("powerup_clear_row"):
 				main.powerup_clear_row()
 		"extra_life":
-			GameManager.add_life()
+			# 通过 Engine.get_main_loop() 路径访问 autoload，避免编译期硬依赖
+			var tree := Engine.get_main_loop() as SceneTree
+			if tree and tree.root.has_node("GameManager"):
+				tree.root.get_node("GameManager").add_life()
 		_:
 			push_warning("Unknown powerup: %s" % powerup_type)
 
