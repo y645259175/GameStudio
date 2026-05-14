@@ -117,14 +117,13 @@ func _check_brick_collisions() -> void:
 		)
 		if ball_rect.intersects(brick_rect):
 			# 判断碰撞方向：从哪个方向进入的
-			var ball_center := ball.position
-			var brick_center := brick.position
+			var ball_center: Vector2 = ball.position
+			var brick_center: Vector2 = brick.position
 
-			# 计算球心到砖块中心的相对位置
-			var diff := ball_center - brick_center
+			var diff: Vector2 = ball_center - brick_center
 			# 比较水平和垂直穿透深度来决定反弹方向
-			var overlap_x := (40.0 + 8.0) - abs(diff.x)
-			var overlap_y := (12.0 + 8.0) - abs(diff.y)
+			var overlap_x: float = 48.0 - absf(diff.x)
+			var overlap_y: float = 20.0 - absf(diff.y)
 
 			if overlap_x < overlap_y:
 				# 水平碰撞（从左或右撞入）
