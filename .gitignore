@@ -1,3 +1,7 @@
+# === Godot ===
+.godot/
+*.import
+
 # === OS ===
 Thumbs.db
 Desktop.ini
