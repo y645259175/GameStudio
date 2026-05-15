@@ -1,14 +1,14 @@
 {
   "_meta": { "version": "1.0", "description": "Mario 角色控制 + 状态机数值。所有数值可调，复刻 NES 原作手感。" },
-  "walk": { "maxSpeed": 90, "accel": 200 },
-  "run": { "maxSpeed": 150, "accel": 300 },
-  "turnAround": { "decel": 400 },
+  "walk": { "maxSpeed": 120, "accel": 250 },
+  "run": { "maxSpeed": 200, "accel": 400 },
+  "turnAround": { "decel": 500 },
   "jump": {
-    "initialV": -340,
-    "holdGravity": 600,
-    "releaseGravity": 1500,
+    "initialV": -420,
+    "holdGravity": 700,
+    "releaseGravity": 1600,
     "minHoldFrames": 4,
-    "maxHoldFrames": 18
+    "maxHoldFrames": 22
   },
   "air": { "accelMultiplier": 0.6 },
   "crouch": { "enabled": true },

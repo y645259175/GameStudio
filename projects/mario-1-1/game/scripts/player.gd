@@ -4,6 +4,8 @@ extends CharacterBody2D
 ## 实现 walk/run/jump/turnaround/可变高度跳/状态机
 ## 数值全部从 ConfigLoader 读取
 
+signal did_bump
+
 # 状态枚举
 enum State { SMALL, BIG, FIRE, INVINCIBLE, DEAD }
 
@@ -34,9 +36,26 @@ var iframes_remaining: int = 0
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
 
+var _cheat_invincible: bool = false
+
+
 func _ready() -> void:
+	collision_layer = 2  # player layer
+	collision_mask = 1   # collide with world
+	add_to_group("player")
 	_load_config()
 	_apply_state_size()
+
+
+func set_cheat_invincible(v: bool) -> void:
+	_cheat_invincible = v
+
+
+func on_stomp_enemy() -> void:
+	# 玩家踩敌后弹起
+	velocity.y = -240.0
+	is_jumping = true
+	jump_held_frames = 0
 
 
 func _load_config() -> void:
@@ -176,6 +195,8 @@ func transform_to(new_state: State) -> void:
 func take_damage() -> void:
 	if iframes_remaining > 0:
 		return
+	if _cheat_invincible:
+		return
 	match current_state:
 		State.FIRE:
 			transform_to(State.BIG)
@@ -185,5 +206,9 @@ func take_damage() -> void:
 			iframes_remaining = 180
 		State.SMALL:
 			transform_to(State.DEAD)
+			# 通知主场景触发死亡流程
+			var main := get_tree().get_root().get_node_or_null("Main")
+			if main and main.has_method("on_player_died"):
+				main.on_player_died()
 		_:
 			pass
