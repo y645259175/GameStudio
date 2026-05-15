@@ -18,7 +18,7 @@ GameStudio 是一个 **AI 辅助游戏开发工作室**，使用 CodeBuddy 作�
 │   ├── skills/       22 个 skill（工作流程定义）
 │   ├── agents/       30 个 agent（角色定义）
 │   ├── rules/        6 个 rule（强制规范）
-│   ├── hooks/        5 个 hook（git 自动化脚本）
+│   ├── hooks/        5 个 hook（2 git hook + 3 CodeBuddy 生命周期 hook）
 │   ├── templates/    9 个 template（文档模板）
 │   └── plans/        迁移规划 + 日志
 ├── studio/           ← 工作室层（共享文档和参考）
