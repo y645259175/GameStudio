@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## HUD · 4 区显示：MARIO+分数 / coin / WORLD / TIME
+## HUD · 4 区显示：BOLTY+分数 / Cog / SECTOR / TIME
 
 var _label_score: Label
 var _label_coin: Label
@@ -10,20 +10,20 @@ var _label_lives: Label
 
 
 func _ready() -> void:
-	layer = 100  # 顶层
+	layer = 100
 
 	var bg := ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.0)  # 透明，HUD 在天空背景上直接读
+	bg.color = Color(0, 0, 0, 0.0)
 	bg.size = Vector2(1280, 60)
 	bg.position = Vector2(0, 0)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
-	_label_score = _make_label("MARIO\n000000", Vector2(64, 16))
-	_label_coin = _make_label("×00", Vector2(400, 32))
-	_label_world = _make_label("WORLD\n1-1", Vector2(640, 16))
+	_label_score = _make_label("BOLTY\n000000", Vector2(64, 16))
+	_label_coin = _make_label("COG x00", Vector2(400, 32))
+	_label_world = _make_label("SECTOR\n1-1", Vector2(640, 16))
 	_label_time = _make_label("TIME\n300", Vector2(960, 16))
-	_label_lives = _make_label("× 3", Vector2(1200, 32))
+	_label_lives = _make_label("x 3", Vector2(1200, 32))
 
 	GameManager.score_changed.connect(_on_score_changed)
 	GameManager.coins_changed.connect(_on_coin_changed)
@@ -42,11 +42,11 @@ func _make_label(text: String, pos: Vector2) -> Label:
 
 
 func _on_score_changed(s: int) -> void:
-	_label_score.text = "MARIO\n%06d" % s
+	_label_score.text = "BOLTY\n%06d" % s
 
 
 func _on_coin_changed(c: int) -> void:
-	_label_coin.text = "×%02d" % c
+	_label_coin.text = "COG x%02d" % c
 
 
 func _on_time_changed(t: int) -> void:
@@ -58,4 +58,4 @@ func _on_time_changed(t: int) -> void:
 
 
 func _on_lives_changed(l: int) -> void:
-	_label_lives.text = "× %d" % l
+	_label_lives.text = "x %d" % l

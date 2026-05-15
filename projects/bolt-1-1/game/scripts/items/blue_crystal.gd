@@ -1,7 +1,8 @@
 extends CharacterBody2D
-class_name OneUpMushroom
+class_name BlueCrystal
 
-## 1UP 蘑菇：与超级蘑菇同移动，但效果是 +1 命
+## BlueCrystal · 蓝色棱晶（原 OneUpMushroom）
+## 水平移动，碰墙反向，被玩家拾取 → +1 命
 
 const SIZE := Vector2(28, 28)
 
@@ -21,10 +22,11 @@ func _ready() -> void:
 	add_to_group("item")
 
 	_sprite = ColorRect.new()
-	_sprite.color = Color("#00C800")
+	_sprite.color = Color("#3878F0")  # 水晶蓝
 	_sprite.size = SIZE
 	_sprite.position = -SIZE / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -46,7 +48,7 @@ func _ready() -> void:
 
 	var cl := _get_cl()
 	if cl:
-		_walk_speed = float(cl.get_value("items.oneUp.walkSpeed", 60))
+		_walk_speed = float(cl.get_value("items.blueCrystal.walkSpeed", 60))
 		_gravity = float(cl.get_value("physics.gravity.default", 800))
 
 

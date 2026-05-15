@@ -41,11 +41,11 @@ func _ready() -> void:
 
 func _render() -> void:
 	if overlay_type == TYPE_CLEAR:
-		_title.text = "WORLD CLEAR!"
+		_title.text = "SECTOR CLEAR!"
 		_title.add_theme_color_override("font_color", Color("#FFE060"))
-		_detail.text = "TIME BONUS: %d × 50 = %d\n\nFINAL SCORE: %d\n\nPress ESC to quit" % [time_left, time_left * 50, final_score]
+		_detail.text = "TIME BONUS: %d x 50 = %d\n\nFINAL SCORE: %d\n\nPress ESC to quit" % [time_left, time_left * 50, final_score]
 	else:
-		_title.text = "GAME OVER"
+		_title.text = "SYSTEM FAILURE"
 		_title.add_theme_color_override("font_color", Color("#FF4040"))
 		_detail.text = "FINAL SCORE: %d\n\nPress SPACE to retry, ESC to quit" % final_score
 

@@ -1,10 +1,11 @@
 extends CharacterBody2D
-class_name Koopa
+class_name Shellpod
 
-## Koopa Green · 被踩缩壳，再踩弹射
+## Shellpod · 金属甲虫敌人
 ## States: WALK / SHELL_STATIC / SHELL_SPIN
+## 行为：被踩 → 缩进甲壳；再踩/碰 → 甲壳高速弹射，沿途清杀其他敌人
 
-enum KState { WALK, SHELL_STATIC, SHELL_SPIN }
+enum SState { WALK, SHELL_STATIC, SHELL_SPIN }
 
 const SIZE_WALK := Vector2(28, 40)
 const SIZE_SHELL := Vector2(28, 28)
@@ -14,7 +15,7 @@ var _shell_speed: float = 200.0
 var _gravity: float = 800.0
 var _max_fall: float = 600.0
 var _direction: int = -1
-var _state: KState = KState.WALK
+var _state: SState = SState.WALK
 var _shell_timer: int = 0
 var _shell_static_max_frames: int = 300
 var _score: int = 100
@@ -29,10 +30,11 @@ func _ready() -> void:
 	add_to_group("enemy")
 
 	_sprite = ColorRect.new()
-	_sprite.color = Color("#FAC000")
+	_sprite.color = Color("#8B9090")  # 金属灰（bolt shellpod 主色）
 	_sprite.size = SIZE_WALK
 	_sprite.position = -SIZE_WALK / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	_collision = CollisionShape2D.new()
@@ -59,12 +61,12 @@ func _ready() -> void:
 func _load_config() -> void:
 	var cl := _get_cl()
 	if cl:
-		_walk_speed = float(cl.get_value("enemies.koopaGreen.walkSpeed", 30))
-		_shell_speed = float(cl.get_value("enemies.koopaGreen.shellSpeed", 200))
-		_shell_static_max_frames = int(cl.get_value("enemies.koopaGreen.shellWaitFrames", 300))
+		_walk_speed = float(cl.get_value("enemies.shellpod.walkSpeed", 30))
+		_shell_speed = float(cl.get_value("enemies.shellpod.shellSpeed", 200))
+		_shell_static_max_frames = int(cl.get_value("enemies.shellpod.shellWaitFrames", 300))
 		_gravity = float(cl.get_value("physics.gravity.default", 800))
 		_max_fall = float(cl.get_value("physics.maxFallSpeed", 600))
-		_score = int(cl.get_value("enemies.koopaGreen.score", 100))
+		_score = int(cl.get_value("enemies.shellpod.score", 100))
 
 
 func _get_cl() -> Node:
@@ -76,14 +78,14 @@ func _get_cl() -> Node:
 
 func _physics_process(delta: float) -> void:
 	match _state:
-		KState.WALK:
+		SState.WALK:
 			velocity.x = _direction * _walk_speed
-		KState.SHELL_STATIC:
+		SState.SHELL_STATIC:
 			velocity.x = 0
 			_shell_timer += 1
 			if _shell_timer >= _shell_static_max_frames:
 				_to_walk()
-		KState.SHELL_SPIN:
+		SState.SHELL_SPIN:
 			velocity.x = _direction * _shell_speed
 
 	velocity.y += _gravity * delta
@@ -91,7 +93,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y = _max_fall
 	move_and_slide()
 
-	# 撞墙反向（任何状态）
 	for i in range(get_slide_collision_count()):
 		var col := get_slide_collision(i)
 		if col == null:
@@ -101,8 +102,7 @@ func _physics_process(delta: float) -> void:
 			_direction *= -1
 			break
 
-	# SHELL_SPIN 状态撞到敌人 → 杀敌
-	if _state == KState.SHELL_SPIN:
+	if _state == SState.SHELL_SPIN:
 		_check_kill_enemies_in_path()
 
 
@@ -122,41 +122,41 @@ func _check_kill_enemies_in_path() -> void:
 func _on_hit_player(body: Node) -> void:
 	if not body.has_method("take_damage"):
 		return
-	var player_y: float = body.global_position.y
+	# 修复 BL-001: 用底部 Y 比较代替中心 Y 比较
+	var player_bottom: float = body.global_position.y
+	var current_size: Vector2 = SIZE_WALK if _state == SState.WALK else SIZE_SHELL
+	var enemy_top: float = global_position.y - current_size.y / 2.0
+	var stomped: bool = (player_bottom < enemy_top + 8)
+
 	match _state:
-		KState.WALK:
-			if player_y < global_position.y - 4:
+		SState.WALK:
+			if stomped:
 				_to_shell_static()
 				if body.has_method("on_stomp_enemy"):
 					body.on_stomp_enemy()
 				GameManager.add_score(_score)
 			else:
 				body.take_damage()
-		KState.SHELL_STATIC:
-			# 玩家踢壳
-			if player_y < global_position.y - 4:
-				# 踩到壳 → 也算踢
-				_kick_shell(1)  # 默认右
+		SState.SHELL_STATIC:
+			if stomped:
+				_kick_shell(1)
 				if body.has_method("on_stomp_enemy"):
 					body.on_stomp_enemy()
 			else:
-				# 侧面碰壳 → 踢出
 				var dir: int = 1 if body.global_position.x < global_position.x else -1
 				_kick_shell(dir)
-		KState.SHELL_SPIN:
-			# 玩家被快速壳撞 → 受击
+		SState.SHELL_SPIN:
 			body.take_damage()
 
 
 func _to_shell_static() -> void:
-	_state = KState.SHELL_STATIC
+	_state = SState.SHELL_STATIC
 	_shell_timer = 0
-	_sprite.color = Color("#00A800")
+	_sprite.color = Color("#3C9050")  # 铜绿甲壳
 	_sprite.size = SIZE_SHELL
 	_sprite.position = -SIZE_SHELL / 2.0
 	if _collision.shape is RectangleShape2D:
 		(_collision.shape as RectangleShape2D).size = SIZE_SHELL
-	# 同步 hitbox 大小
 	var hb := get_node_or_null("Hitbox") as Area2D
 	if hb:
 		var hb_col := hb.get_child(0) as CollisionShape2D
@@ -165,8 +165,8 @@ func _to_shell_static() -> void:
 
 
 func _to_walk() -> void:
-	_state = KState.WALK
-	_sprite.color = Color("#FAC000")
+	_state = SState.WALK
+	_sprite.color = Color("#8B9090")
 	_sprite.size = SIZE_WALK
 	_sprite.position = -SIZE_WALK / 2.0
 	if _collision.shape is RectangleShape2D:
@@ -174,7 +174,7 @@ func _to_walk() -> void:
 
 
 func _kick_shell(dir: int) -> void:
-	_state = KState.SHELL_SPIN
+	_state = SState.SHELL_SPIN
 	_direction = dir
 
 

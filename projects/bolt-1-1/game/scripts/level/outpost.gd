@@ -1,17 +1,18 @@
 extends Node2D
-class_name Castle
+class_name Outpost
 
-## 城堡 · 视觉 + 进入触发
+## Outpost · 原 Castle，基地哨站视觉占位
 
 const SIZE := Vector2(80, 80)
 
 
 func _ready() -> void:
 	var rect := ColorRect.new()
-	rect.color = Color("#A0A0A0")
+	rect.color = Color("#A0A0A8")  # bolt 灰金属
 	rect.size = SIZE
 	rect.position = Vector2(-SIZE.x / 2.0, -SIZE.y)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.name = "_PLACEHOLDER_Body"
 	add_child(rect)
 
 	# 门
@@ -20,4 +21,5 @@ func _ready() -> void:
 	door.size = Vector2(20, 32)
 	door.position = Vector2(-10, -32)
 	door.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	door.name = "_PLACEHOLDER_Door"
 	add_child(door)

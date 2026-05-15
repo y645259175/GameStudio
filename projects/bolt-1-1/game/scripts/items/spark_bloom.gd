@@ -1,7 +1,8 @@
 extends CharacterBody2D
-class_name FireFlower
+class_name SparkBloom
 
-## 火之花：原地不动，被拾取 → 变火力态
+## SparkBloom · 白蓝电花（原 FireFlower）
+## 原地不动，被拾取 → 任意态 → 火力态
 
 const SIZE := Vector2(28, 28)
 
@@ -19,10 +20,11 @@ func _ready() -> void:
 	add_to_group("item")
 
 	_sprite = ColorRect.new()
-	_sprite.color = Color("#FCFCFC")
+	_sprite.color = Color("#FFFFFF")  # 白色花瓣（电弧由 sprite 表现）
 	_sprite.size = SIZE
 	_sprite.position = -SIZE / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -61,7 +63,6 @@ func _physics_process(delta: float) -> void:
 		if _emerge_t >= EMERGE_DURATION:
 			_emerging = false
 		return
-	# 原地不动，但仍受重力
 	velocity.x = 0
 	velocity.y += _gravity * delta
 	move_and_slide()

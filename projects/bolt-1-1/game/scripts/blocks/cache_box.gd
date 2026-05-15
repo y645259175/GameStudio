@@ -1,13 +1,12 @@
 extends StaticBody2D
-class_name QuestionBlock
+class_name CacheBox
 
-## QuestionBlock · 问号块
-## 状态：active（金黄闪烁）/ used（暗棕）
-## 顶撞后从 contains_type 产出对应物品
+## CacheBox · 原 ?-block，金黄金属箱体，正面 ? 字符闪烁
+## 顶撞后产出对应物品（cog / power_berry / spark_bloom / blue_crystal / pulse_core）
 
 const SIZE := Vector2(32, 32)
 
-var contains_type: String = "coin"  # coin / mushroom / fireFlower / star / oneUp
+var contains_type: String = "cog"  # cog / powerBerry / sparkBloom / blueCrystal / pulseCore
 var _used: bool = false
 
 var _sprite: ColorRect
@@ -23,6 +22,7 @@ func _ready() -> void:
 	_sprite.size = SIZE
 	_sprite.position = -SIZE / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -49,7 +49,6 @@ func _process(delta: float) -> void:
 	if _used:
 		return
 	_flicker_t += delta
-	# 简易闪烁：金黄 → 浅黄 0.4s 周期
 	var phase: float = fmod(_flicker_t, 0.4) / 0.4
 	if phase < 0.5:
 		_sprite.color = Color("#FAC000")
@@ -70,24 +69,24 @@ func _on_bumped(body: Node) -> void:
 func _spawn_content(player: Node) -> void:
 	var spawn_pos: Vector2 = position + Vector2(0, -SIZE.y)
 	match contains_type:
-		"coin":
+		"cog":
 			GameManager.add_coin()
-			_spawn_coin_anim()
-		"mushroom":
-			# 大态/火力态 → 出 fireFlower（按原作）
+			_spawn_cog_anim()
+		"powerBerry":
+			# 大态/火力态 → 出 spark_bloom（保留原作"已大态时出火花"机制）
 			var is_big: bool = false
 			if "current_state" in player:
 				is_big = (player.current_state != 0)
 			if is_big:
-				_spawn_item("res://scripts/items/fire_flower.gd", spawn_pos)
+				_spawn_item("res://scripts/items/spark_bloom.gd", spawn_pos)
 			else:
-				_spawn_item("res://scripts/items/super_mushroom.gd", spawn_pos)
-		"fireFlower":
-			_spawn_item("res://scripts/items/fire_flower.gd", spawn_pos)
-		"oneUp":
-			_spawn_item("res://scripts/items/oneup_mushroom.gd", spawn_pos)
-		"star":
-			# 自主模式：跳过 star（无敌道具）
+				_spawn_item("res://scripts/items/power_berry.gd", spawn_pos)
+		"sparkBloom":
+			_spawn_item("res://scripts/items/spark_bloom.gd", spawn_pos)
+		"blueCrystal":
+			_spawn_item("res://scripts/items/blue_crystal.gd", spawn_pos)
+		"pulseCore":
+			# Phase 2 TODO（无敌道具暂不实现）
 			GameManager.add_coin()
 		_:
 			GameManager.add_coin()
@@ -102,13 +101,13 @@ func _spawn_item(script_path: String, spawn_pos: Vector2) -> void:
 	get_parent().add_child(item)
 
 
-func _spawn_coin_anim() -> void:
-	# 简易金币飘字（视觉占位）
+func _spawn_cog_anim() -> void:
 	var coin := ColorRect.new()
-	coin.color = Color("#FAC000")
+	coin.color = Color("#E8A018")  # 黄铜齿轮色
 	coin.size = Vector2(8, 12)
 	coin.position = Vector2(-4, -SIZE.y - 4)
 	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	coin.name = "_PLACEHOLDER_CogAnim"
 	add_child(coin)
 	var tween := create_tween()
 	tween.tween_property(coin, "position:y", -SIZE.y - 28, 0.3)

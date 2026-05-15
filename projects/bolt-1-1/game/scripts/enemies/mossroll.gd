@@ -1,7 +1,7 @@
 extends CharacterBody2D
-class_name Goomba
+class_name Mossroll
 
-## Goomba · 巡逻敌人
+## Mossroll · 长腿苔藓滚子，巡逻敌人
 ## 行为：恒定速度行走，碰墙反向；被踩压扁；从侧面伤害玩家
 
 const SIZE := Vector2(28, 28)
@@ -10,7 +10,7 @@ const FLAT_DURATION_FRAMES: int = 30
 var _walk_speed: float = 30.0
 var _gravity: float = 800.0
 var _max_fall: float = 600.0
-var _direction: int = -1  # -1 left, 1 right
+var _direction: int = -1
 var _is_flat: bool = false
 var _flat_timer: int = 0
 var _is_dead: bool = false
@@ -21,15 +21,16 @@ var _collision: CollisionShape2D
 
 
 func _ready() -> void:
-	collision_layer = 4   # enemy layer
-	collision_mask = 1    # collide with world
+	collision_layer = 4
+	collision_mask = 1
 	add_to_group("enemy")
 
 	_sprite = ColorRect.new()
-	_sprite.color = Color("#A85820")
+	_sprite.color = Color("#5C8030")  # 苔绿（bolt 配色，区别于 mario goomba 棕）
 	_sprite.size = SIZE
 	_sprite.position = -SIZE / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	_collision = CollisionShape2D.new()
@@ -38,11 +39,11 @@ func _ready() -> void:
 	_collision.shape = shape
 	add_child(_collision)
 
-	# Hitbox (Area2D) 用于检测玩家
+	# Hitbox
 	var hitbox := Area2D.new()
 	hitbox.name = "Hitbox"
-	hitbox.collision_layer = 8  # enemy hitbox
-	hitbox.collision_mask = 2   # detect player
+	hitbox.collision_layer = 8
+	hitbox.collision_mask = 2
 	var hb_col := CollisionShape2D.new()
 	var hb_shape := RectangleShape2D.new()
 	hb_shape.size = SIZE
@@ -57,10 +58,11 @@ func _ready() -> void:
 func _load_config() -> void:
 	var cl := _get_cl()
 	if cl:
-		_walk_speed = float(cl.get_value("enemies.goomba.walkSpeed", 30))
+		# data 字段保留 mossroll 命名（json 已同步重命名）
+		_walk_speed = float(cl.get_value("enemies.mossroll.walkSpeed", 30))
 		_gravity = float(cl.get_value("physics.gravity.default", 800))
 		_max_fall = float(cl.get_value("physics.maxFallSpeed", 600))
-		_score = int(cl.get_value("enemies.goomba.score", 100))
+		_score = int(cl.get_value("enemies.mossroll.score", 100))
 
 
 func _get_cl() -> Node:
@@ -104,13 +106,14 @@ func _on_hit_player(body: Node) -> void:
 		return
 	if not body.has_method("take_damage"):
 		return
-	# 判断玩家位置：从上方接触 -> 玩家踩扁 goomba
-	var player_y: float = body.global_position.y
-	if player_y < global_position.y - 4:
-		# 玩家在上方 -> 被踩
+	# 修复 BL-001: stomp 阈值从 4 -> 8（玩家正常走路不再被误判侧面）
+	# 改用底部 Y 比较，更精确
+	var player_bottom: float = body.global_position.y
+	var enemy_top: float = global_position.y - SIZE.y / 2.0
+	if player_bottom < enemy_top + 8:
+		# 玩家底部明显在敌人顶部之上 → 踩
 		stomp(body)
 	else:
-		# 侧面 -> 玩家受击
 		body.take_damage()
 
 
@@ -119,7 +122,6 @@ func stomp(player: Node) -> void:
 	_flat_timer = 0
 	_sprite.size = Vector2(SIZE.x, SIZE.y / 2.0)
 	_sprite.position = Vector2(-SIZE.x / 2.0, 0)
-	# 玩家弹起
 	if player.has_method("on_stomp_enemy"):
 		player.on_stomp_enemy()
 	GameManager.add_score(_score)

@@ -1,8 +1,9 @@
 extends Node2D
-class_name Flagpole
+class_name SignalTower
 
-## 旗杆 · 玩家触杆即触发通关流程
-## 自主模式简化：用 _process 距离检测代替 Area2D 触发
+## SignalTower · 原 Flagpole
+## 玩家触杆即触发通关流程，按高度 5 段计分
+## 修复 BL-003: 改用 _physics_process 距离检测（Area2D 在自动化场景偶发不触发）
 
 const POLE_HEIGHT: float = 176.0
 const POLE_WIDTH: float = 16.0
@@ -14,41 +15,40 @@ var _triggered: bool = false
 func _ready() -> void:
 	# 杆视觉
 	var pole := ColorRect.new()
-	pole.color = Color("#BCBCBC")
+	pole.color = Color("#A0A0A8")  # bolt 信号塔灰金属
 	pole.size = Vector2(POLE_WIDTH, POLE_HEIGHT)
 	pole.position = Vector2(-POLE_WIDTH / 2.0, -POLE_HEIGHT)
 	pole.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pole.name = "_PLACEHOLDER_Pole"
 	add_child(pole)
 
-	# 顶球
+	# 顶部信号球
 	var ball := ColorRect.new()
-	ball.color = Color("#FCFCFC")
+	ball.color = Color("#D04030")  # 信号红
 	ball.size = Vector2(16, 16)
 	ball.position = Vector2(-8, -POLE_HEIGHT - 16)
 	ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ball.name = "_PLACEHOLDER_Ball"
 	add_child(ball)
 
-	# 旗
+	# 信号旗
 	var flag := ColorRect.new()
-	flag.color = Color("#80D010")
+	flag.color = Color("#D04030")
 	flag.size = Vector2(16, 12)
 	flag.position = Vector2(POLE_WIDTH / 2.0, -POLE_HEIGHT + 8)
 	flag.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	flag.name = "Flag"
+	flag.name = "_PLACEHOLDER_Flag"
 	add_child(flag)
 
 
 func _physics_process(_delta: float) -> void:
 	if _triggered:
 		return
-	# 找玩家
 	var players := get_tree().get_nodes_in_group("player")
 	if players.size() == 0:
 		return
 	var player := players[0] as Node2D
-	# 距离检测（旗杆中心列 ± 12）
 	if absf(player.global_position.x - global_position.x) < TRIGGER_RADIUS:
-		# 玩家 Y 必须在杆覆盖范围内
 		var pole_top: float = global_position.y - POLE_HEIGHT
 		var pole_bottom: float = global_position.y
 		if player.global_position.y > pole_top - 16 and player.global_position.y < pole_bottom + 16:
@@ -59,7 +59,6 @@ func _trigger(player: Node2D) -> void:
 	if _triggered:
 		return
 	_triggered = true
-	# 计算触杆高度
 	var pole_top: float = global_position.y - POLE_HEIGHT
 	var pole_bottom: float = global_position.y
 	var p_y: float = player.global_position.y
@@ -77,7 +76,7 @@ func _trigger(player: Node2D) -> void:
 		score = 100
 	GameManager.add_score(score)
 	GameManager.current_state = "clear"
-	print("[Flagpole] touched at height %f, score=%d" % [t, score])
+	print("[SignalTower] activated at height %f, score=%d" % [t, score])
 	var main := get_tree().get_root().get_node_or_null("Main")
-	if main and main.has_method("on_flagpole_touched"):
-		main.on_flagpole_touched(player, self, t)
+	if main and main.has_method("on_signal_tower_touched"):
+		main.on_signal_tower_touched(player, self, t)

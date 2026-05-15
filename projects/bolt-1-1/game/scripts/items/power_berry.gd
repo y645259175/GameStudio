@@ -1,7 +1,8 @@
 extends CharacterBody2D
-class_name SuperMushroom
+class_name PowerBerry
 
-## 超级蘑菇：水平移动，碰墙反向，被玩家拾取 → 变大
+## PowerBerry · 红色发光浆果（原 SuperMushroom）
+## 水平移动，碰墙反向，被玩家拾取 → small → big
 
 const SIZE := Vector2(28, 28)
 
@@ -16,15 +17,16 @@ var _sprite: ColorRect
 
 
 func _ready() -> void:
-	collision_layer = 16  # item
+	collision_layer = 16
 	collision_mask = 1
 	add_to_group("item")
 
 	_sprite = ColorRect.new()
-	_sprite.color = Color("#E40058")
+	_sprite.color = Color("#C42040")  # 浆果红
 	_sprite.size = SIZE
 	_sprite.position = -SIZE / 2.0
 	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprite.name = "_PLACEHOLDER_Sprite"
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -46,7 +48,7 @@ func _ready() -> void:
 
 	var cl := _get_cl()
 	if cl:
-		_walk_speed = float(cl.get_value("items.mushroom.walkSpeed", 60))
+		_walk_speed = float(cl.get_value("items.powerBerry.walkSpeed", 60))
 		_gravity = float(cl.get_value("physics.gravity.default", 800))
 
 
@@ -81,7 +83,6 @@ func _on_picked_up(body: Node) -> void:
 	if _emerging:
 		return
 	if body.has_method("transform_to") and "current_state" in body:
-		# small → big
 		if body.current_state == 0:  # State.SMALL
 			body.transform_to(1)  # State.BIG
 	GameManager.add_score(1000)

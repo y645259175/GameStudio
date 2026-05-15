@@ -2,29 +2,29 @@ extends Node2D
 class_name LevelLoader
 
 ## LevelLoader · 读取 data/levels/<id>.json 程序化生成关卡
-## 包含：地面 / 砖块 / 问号块 / 管道 / 敌人 / 道具 / 旗杆 / 城堡
+## 包含：地面 / 砖块 / Cache Box / Conduit / Mossroll / Shellpod / 道具 / Signal Tower / Outpost
 
 const TILE_SIZE: int = 32
 
-# 颜色占位（M6 替换为真实贴图）
-const COLOR_GROUND_TOP := Color("#00A800")
-const COLOR_GROUND_BODY := Color("#A04000")
+# 占位颜色（M6 替换为真实贴图，bolt 工业风配色）
+const COLOR_GROUND_TOP := Color("#9C8830")    # 干苔黄
+const COLOR_GROUND_BODY := Color("#783820")   # 锈红土
 const COLOR_BRICK := Color("#D87050")
 const COLOR_QBLOCK_ACTIVE := Color("#FAC000")
 const COLOR_QBLOCK_USED := Color("#9C5C20")
 const COLOR_HARDBLOCK := Color("#BCBCBC")
-const COLOR_PIPE := Color("#00A800")
-const COLOR_PIPE_HIGHLIGHT := Color("#80D010")
-const COLOR_GOOMBA := Color("#A85820")
-const COLOR_KOOPA_BODY := Color("#FAC000")
-const COLOR_KOOPA_SHELL := Color("#00A800")
-const COLOR_MUSHROOM := Color("#E40058")
-const COLOR_ONEUP := Color("#00C800")
-const COLOR_FIREFLOWER := Color("#FCFCFC")
-const COLOR_COIN := Color("#FAC000")
-const COLOR_FLAGPOLE := Color("#BCBCBC")
-const COLOR_FLAG := Color("#FCFCFC")
-const COLOR_CASTLE := Color("#A0A0A0")
+const COLOR_CONDUIT := Color("#384830")        # 暗绿金属
+const COLOR_CONDUIT_HIGHLIGHT := Color("#6C9050")
+const COLOR_MOSSROLL := Color("#5C8030")
+const COLOR_SHELLPOD_BODY := Color("#8B9090")
+const COLOR_SHELLPOD_SHELL := Color("#3C9050")
+const COLOR_POWERBERRY := Color("#C42040")
+const COLOR_BLUECRYSTAL := Color("#3878F0")
+const COLOR_SPARKBLOOM := Color("#FFFFFF")
+const COLOR_COG := Color("#E8A018")
+const COLOR_SIGNAL_TOWER := Color("#A0A0A8")
+const COLOR_FLAG := Color("#D04030")
+const COLOR_OUTPOST := Color("#A0A0A8")
 
 @export var level_id: String = "1-1"
 
@@ -65,7 +65,6 @@ func _ready() -> void:
 	_load_level_data()
 	_build_ground()
 	_build_entities()
-	_build_pit_triggers()
 
 
 func _load_level_data() -> void:
@@ -109,54 +108,57 @@ func _build_ground() -> void:
 		_make_static_box(ground_root, Vector2(x + w / 2.0, y + h / 2.0), Vector2(w, h), COLOR_GROUND_BODY, "GroundSeg")
 
 
-func _build_pit_triggers() -> void:
-	# 死亡线：玩家 Y 超过 death_y 即死
-	# 在 main.gd 的 _physics_process 中检测，无需单独 trigger
-	pass
-
-
 func _build_entities() -> void:
 	var entities: Array = level_data.get("entities", [])
 	for e in entities:
+		# 兼容旧 type 名（mario 命名）和新 type 名（bolt 命名）
 		var t: String = String(e.get("type", ""))
 		match t:
-			"goomba":
-				_spawn_goomba(e)
-			"koopaGreen":
-				_spawn_koopa(e)
-			"questionBlock":
-				_spawn_qblock(e)
+			"mossroll", "goomba":
+				_spawn_mossroll(e)
+			"shellpod", "koopaGreen":
+				_spawn_shellpod(e)
+			"cacheBox", "questionBlock":
+				_spawn_cache_box(e)
 			"brick":
 				_spawn_brick(e)
-			"pipe":
-				_spawn_pipe(e)
-			"flagpole":
-				_spawn_flagpole(e)
-			"castle":
-				_spawn_castle(e)
+			"conduit", "pipe":
+				_spawn_conduit(e)
+			"signalTower", "flagpole":
+				_spawn_signal_tower(e)
+			"outpost", "castle":
+				_spawn_outpost(e)
 			"movingPlatform":
-				# 自主模式简化：跳过
+				# Phase 2 TODO
 				pass
 			_:
 				push_warning("Unknown entity type: %s" % t)
 
 
-func _spawn_goomba(e: Dictionary) -> void:
-	var node := preload("res://scripts/enemies/goomba.gd").new()
+func _spawn_mossroll(e: Dictionary) -> void:
+	var node := preload("res://scripts/enemies/mossroll.gd").new()
 	node.position = Vector2(float(e.x), float(e.y))
 	enemies_root.add_child(node)
 
 
-func _spawn_koopa(e: Dictionary) -> void:
-	var node := preload("res://scripts/enemies/koopa.gd").new()
+func _spawn_shellpod(e: Dictionary) -> void:
+	var node := preload("res://scripts/enemies/shellpod.gd").new()
 	node.position = Vector2(float(e.x), float(e.y))
 	enemies_root.add_child(node)
 
 
-func _spawn_qblock(e: Dictionary) -> void:
-	var node := preload("res://scripts/blocks/question_block.gd").new()
+func _spawn_cache_box(e: Dictionary) -> void:
+	var node := preload("res://scripts/blocks/cache_box.gd").new()
 	node.position = Vector2(float(e.x), float(e.y))
-	node.contains_type = String(e.get("contains", "coin"))
+	# 兼容旧字段 contains: coin/mushroom/fireFlower/oneUp -> 新字段 cog/powerBerry/sparkBloom/blueCrystal
+	var raw: String = String(e.get("contains", "cog"))
+	var mapped: String = raw
+	match raw:
+		"coin": mapped = "cog"
+		"mushroom": mapped = "powerBerry"
+		"fireFlower": mapped = "sparkBloom"
+		"oneUp": mapped = "blueCrystal"
+	node.contains_type = mapped
 	blocks_root.add_child(node)
 
 
@@ -167,43 +169,39 @@ func _spawn_brick(e: Dictionary) -> void:
 	blocks_root.add_child(node)
 
 
-func _spawn_pipe(e: Dictionary) -> void:
+func _spawn_conduit(e: Dictionary) -> void:
 	var length_str: String = String(e.get("length", "short"))
-	var pipe_h: float = 64.0
+	var conduit_h: float = 64.0
 	match length_str:
-		"short": pipe_h = 48.0
-		"medium": pipe_h = 64.0
-		"long": pipe_h = 96.0
-		_: pipe_h = 64.0
-	var pipe_w: float = 64.0
+		"short": conduit_h = 48.0
+		"medium": conduit_h = 64.0
+		"long": conduit_h = 96.0
+		_: conduit_h = 64.0
+	var conduit_w: float = 64.0
 	var x: float = float(e.x)
 	var y: float = float(e.y)
-	# 管道顶在 y - pipe_h/2，底在 y + pipe_h/2 ... 但 1-1.json 的 y 是 top
-	# 修正：管道 y 是顶部 Y，底部到 ground=672
-	var center := Vector2(x + pipe_w / 2.0, y + pipe_h / 2.0)
-	# 实际把管道画到地面之上（top 在 y）
+	var center := Vector2(x + conduit_w / 2.0, y + conduit_h / 2.0)
+	# json y 是顶部 Y，底部对齐地面 y=672（修复 BL-004 的局部应用）
 	var actual_h: float = 672.0 - y
 	if actual_h < 32.0:
 		actual_h = 32.0
 	center.y = y + actual_h / 2.0
-	_make_static_box(ground_root, center, Vector2(pipe_w, actual_h), COLOR_PIPE, "Pipe")
+	_make_static_box(ground_root, center, Vector2(conduit_w, actual_h), COLOR_CONDUIT, "Conduit")
 
 
-func _spawn_flagpole(e: Dictionary) -> void:
-	var node := preload("res://scripts/level/flagpole.gd").new()
-	# 旗杆 y 强制对齐到地面（json y 是 NES 比例参考值）
+func _spawn_signal_tower(e: Dictionary) -> void:
+	var node := preload("res://scripts/level/signal_tower.gd").new()
+	# y 强制对齐到地面（修复 BL-004 局部）
 	node.position = Vector2(float(e.x), 672.0)
 	triggers_root.add_child(node)
 
 
-func _spawn_castle(e: Dictionary) -> void:
-	# 城堡视觉占位 + 进入触发
-	var node := preload("res://scripts/level/castle.gd").new()
+func _spawn_outpost(e: Dictionary) -> void:
+	var node := preload("res://scripts/level/outpost.gd").new()
 	node.position = Vector2(float(e.x), 672.0)
 	triggers_root.add_child(node)
 
 
-# 通用：生成一个 StaticBody2D + ColorRect + CollisionShape2D
 func _make_static_box(parent: Node2D, center: Vector2, size: Vector2, color: Color, label: String) -> StaticBody2D:
 	var body := StaticBody2D.new()
 	body.name = label
@@ -217,6 +215,7 @@ func _make_static_box(parent: Node2D, center: Vector2, size: Vector2, color: Col
 	rect.size = size
 	rect.position = -size / 2.0
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.name = "_PLACEHOLDER_Sprite"
 	body.add_child(rect)
 
 	var col := CollisionShape2D.new()
