@@ -113,11 +113,13 @@ func _respawn() -> void:
 
 func _show_game_over() -> void:
 	GameManager.current_state = "gameover"
-	# Sprint 3 接入完整 GameOver 界面，自主模式简化为打印
 	print("[Main] GAME OVER")
-	# 自动重启（演示用）
-	await get_tree().create_timer(2.0).timeout
-	get_tree().reload_current_scene()
+	# 显示 GameOver overlay
+	var overlay_script := preload("res://scripts/clear_overlay.gd")
+	var overlay = overlay_script.new()
+	overlay.overlay_type = "gameover"
+	overlay.final_score = GameManager.score
+	add_child(overlay)
 
 
 func on_flagpole_touched(p: Node, _flagpole: Node, _height_t: float) -> void:
@@ -125,16 +127,21 @@ func on_flagpole_touched(p: Node, _flagpole: Node, _height_t: float) -> void:
 		return
 	_is_clear = true
 	# 玩家滑下杆 → 走入城堡 → WORLD CLEAR
-	# 自主模式简化版：直接累加 timeBonus + 显示 clear
-	var bonus: int = GameManager.time_left * 50
+	var t_left: int = GameManager.time_left
+	var bonus: int = t_left * 50
 	GameManager.add_score(bonus)
 	print("[Main] WORLD CLEAR! Final score: %d" % GameManager.score)
 	# 让玩家停下
 	if "velocity" in p:
 		p.velocity = Vector2.ZERO
-	# 等 3 秒后回标题（自主模式简化为 quit）
-	await get_tree().create_timer(3.0).timeout
-	get_tree().quit()
+	# 等 1.5 秒后显示通关界面
+	await get_tree().create_timer(1.5).timeout
+	var overlay_script := preload("res://scripts/clear_overlay.gd")
+	var overlay = overlay_script.new()
+	overlay.overlay_type = "clear"
+	overlay.final_score = GameManager.score
+	overlay.time_left = t_left
+	add_child(overlay)
 
 
 func _unhandled_input(event: InputEvent) -> void:

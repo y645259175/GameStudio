@@ -163,28 +163,28 @@ func _apply_state_size() -> void:
 		return
 	match current_state:
 		State.SMALL:
-			sprite.color = Color("#FC0000")
+			sprite.color = Color("#E40058")
 			sprite.size = Vector2(16, 16)
 			sprite.position = Vector2(-8, -16)
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 16)
 				collision.position = Vector2(0, -8)
 		State.BIG:
-			sprite.color = Color("#FC0000")
+			sprite.color = Color("#0058F8")  # 蓝裤子（突出大态）
 			sprite.size = Vector2(16, 32)
 			sprite.position = Vector2(-8, -32)
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
 		State.FIRE:
-			sprite.color = Color("#FCBC3C")
+			sprite.color = Color("#FCFCFC")  # 火力态白色
 			sprite.size = Vector2(16, 32)
 			sprite.position = Vector2(-8, -32)
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
 		State.DEAD:
-			sprite.color = Color("#888888")
+			sprite.color = Color("#404040")
 
 
 func transform_to(new_state: State) -> void:
