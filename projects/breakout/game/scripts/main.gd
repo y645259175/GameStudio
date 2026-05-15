@@ -174,12 +174,13 @@ func _check_powerup_collisions() -> void:
 	for p in powerup_container.get_children():
 		if not is_instance_valid(p):
 			continue
-		if p.has_method("get_rect"):
-			var pr: Rect2 = p.get_rect()
-			if pr.intersects(paddle_rect):
-				var p_type: String = p.powerup_type if "powerup_type" in p else "wide_paddle"
-				powerup_manager.apply(p_type, paddle, ball, self)
-				p.queue_free()
+		if not p.has_method("get_rect"):
+			continue
+		var pr: Rect2 = p.get_rect()
+		if pr.intersects(paddle_rect):
+			powerup_manager.apply(p.powerup_type, paddle, ball, self)
+			_show_powerup_feedback(p.powerup_type)
+			p.queue_free()
 
 
 func _get_ball_rect() -> Rect2:
@@ -242,3 +243,38 @@ func _unhandled_input(event: InputEvent) -> void:
 func _toggle_pause() -> void:
 	get_tree().paused = not get_tree().paused
 	pause_overlay.visible = get_tree().paused
+
+
+# === 道具拾取反馈 ===
+const POWERUP_NAMES := {
+	"wide_paddle": "挡板加宽！",
+	"narrow_paddle": "挡板缩窄...",
+	"speed_ball": "球速提升！",
+	"multi_ball": "消除一行！",
+	"extra_life": "生命 +1！",
+}
+const POWERUP_FEEDBACK_COLORS := {
+	"wide_paddle": Color("#16c79a"),
+	"narrow_paddle": Color("#e74c3c"),
+	"speed_ball": Color("#f5a623"),
+	"multi_ball": Color("#3498db"),
+	"extra_life": Color("#e91e63"),
+}
+
+func _show_powerup_feedback(p_type: String) -> void:
+	var msg: String = POWERUP_NAMES.get(p_type, p_type)
+	var col: Color = POWERUP_FEEDBACK_COLORS.get(p_type, Color.WHITE)
+	# 在挡板上方弹出文字提示
+	var lbl := Label.new()
+	lbl.text = msg
+	lbl.add_theme_font_size_override("font_size", 24)
+	lbl.add_theme_color_override("font_color", col)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.position = paddle.position + Vector2(-80, -50)
+	add_child(lbl)
+	# 动画：向上飘 + 淡出
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "position:y", lbl.position.y - 60.0, 1.5)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
+	tw.chain().tween_callback(lbl.queue_free)

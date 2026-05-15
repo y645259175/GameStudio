@@ -14,14 +14,16 @@ const COLORS := {
 	"extra_life": Color("#e91e63"),
 }
 const ICONS := {
-	"wide_paddle": "W",
-	"narrow_paddle": "N",
-	"speed_ball": "S",
-	"multi_ball": "M",
-	"extra_life": "+",
+	"wide_paddle": "宽",
+	"narrow_paddle": "窄",
+	"speed_ball": "快",
+	"multi_ball": "轰",
+	"extra_life": "♥",
 }
 
 var powerup_type: String = "wide_paddle"
+var _time: float = 0.0
+var _origin_x: float = 0.0
 
 @onready var color_rect: ColorRect = $ColorRect
 @onready var label: Label = $Label
@@ -29,6 +31,7 @@ var powerup_type: String = "wide_paddle"
 
 func setup(p_type: String) -> void:
 	powerup_type = p_type
+	_origin_x = position.x
 	if color_rect:
 		color_rect.color = COLORS.get(p_type, Color.WHITE)
 	if label:
@@ -36,7 +39,12 @@ func setup(p_type: String) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_time += delta
 	position.y += FALL_SPEED * delta
+	# VFX-10: X 轴微抖（正弦 3Hz ±2px）
+	position.x = _origin_x + sin(_time * TAU * 3.0) * 2.0
+	# VFX-05: 透明度脉冲 0.6↔1.0（2Hz）
+	modulate.a = 0.8 + 0.2 * sin(_time * TAU * 2.0)
 	# 落出底部自销毁
 	if position.y > 740:
 		queue_free()
