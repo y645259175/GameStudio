@@ -268,3 +268,37 @@ func _show_powerup_feedback(p_type: String) -> void:
 	tw.tween_property(lbl, "position:y", lbl.position.y - 60.0, 1.5)
 	tw.tween_property(lbl, "modulate:a", 0.0, 1.5)
 	tw.chain().tween_callback(lbl.queue_free)
+
+	# VFX-07: 持续效果计时条（仅 buff/debuff 类道具）
+	if p_type in ["wide_paddle", "narrow_paddle", "speed_ball"]:
+		var dur: float = {"wide_paddle": 10.0, "narrow_paddle": 10.0, "speed_ball": 8.0}.get(p_type, 10.0)
+		_show_buff_bar(col, dur)
+
+
+# === VFX-07 buff 计时条 ===
+var _active_buff_bar: ColorRect = null
+
+func _show_buff_bar(col: Color, duration: float) -> void:
+	# 移除旧的
+	if _active_buff_bar and is_instance_valid(_active_buff_bar):
+		_active_buff_bar.queue_free()
+	# 创建新色条（挡板正下方）
+	var bar := ColorRect.new()
+	bar.color = col
+	bar.size = Vector2(80, 4)
+	bar.position = paddle.position + Vector2(-40, 12)
+	add_child(bar)
+	_active_buff_bar = bar
+	# tween 宽度从 80 → 0
+	var tw := create_tween()
+	tw.tween_property(bar, "size:x", 0.0, duration)
+	tw.parallel().tween_method(func(w: float) -> void:
+		if is_instance_valid(bar):
+			bar.position.x = paddle.position.x - w / 2.0
+			bar.position.y = paddle.position.y + 12
+	, 80.0, 0.0, duration)
+	tw.chain().tween_callback(func() -> void:
+		if is_instance_valid(bar):
+			bar.queue_free()
+		_active_buff_bar = null
+	)
