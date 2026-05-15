@@ -97,7 +97,8 @@ func _to_used_visual() -> void:
 
 
 func _spawn_oneup() -> void:
-	var item = preload("res://scripts/items/oneup_mushroom.gd").new()
+	# bolt-1-1: oneup_mushroom -> blue_crystal
+	var item = preload("res://scripts/items/blue_crystal.gd").new()
 	item.position = position + Vector2(0, -SIZE.y)
 	get_parent().add_child(item)
 
