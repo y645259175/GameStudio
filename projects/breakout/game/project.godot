@@ -20,6 +20,7 @@ config/features=PackedStringArray("4.6")
 
 [autoload]
 
+ConfigLoader="*res://scripts/config_loader.gd"
 GameManager="*res://scripts/game_manager.gd"
 
 [display]

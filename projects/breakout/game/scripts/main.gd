@@ -18,13 +18,6 @@ extends Node2D
 @onready var ball_trail: Line2D = $BallTrail
 @onready var brick_particles: Node2D = $BrickParticles
 
-# 砖块掉率（不依赖关卡数据，简化）
-const DROP_RATE_BY_TYPE := {
-	1: 0.10,
-	2: 0.18,
-	3: 0.25,
-}
-
 
 func _ready() -> void:
 	GameManager.reset_game()
@@ -80,7 +73,7 @@ func _on_game_over() -> void:
 
 func _on_level_cleared() -> void:
 	if GameManager.is_last_level():
-		var life_bonus := GameManager.lives * 50
+		var life_bonus := GameManager.get_life_bonus()
 		GameManager.add_score(life_bonus)
 		win_label.text = "YOU WIN!\nScore: %d\nLife Bonus: %d\n\nSPACE: Replay   ESC: Menu" % [GameManager.score, life_bonus]
 		win_label.visible = true
@@ -189,9 +182,8 @@ func _get_ball_rect() -> Rect2:
 # 砖块销毁视觉回调（粒子 + 道具掉落判定）
 func _on_brick_destroyed_visual(pos: Vector2, brick_color: Color, _score: int, brick_type: int) -> void:
 	brick_particles.spawn(pos, brick_color)
-	# 道具掉落判定
-	var rate: float = float(DROP_RATE_BY_TYPE.get(brick_type, 0.10))
-	if powerup_manager.should_drop(rate):
+	var type_key := str(brick_type)
+	if powerup_manager.should_drop(type_key):
 		powerup_manager.spawn_at(pos, powerup_container)
 
 

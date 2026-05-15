@@ -1,18 +1,21 @@
 extends Node
 
-## 关卡生成器
-## 读取 levels.json 配置砖块矩阵
-
-const BRICK_WIDTH: float = 80.0
-const BRICK_HEIGHT: float = 24.0
-const BRICK_GAP: float = 4.0
-const START_Y: float = 80.0
+## 关卡生成器 · 布局数值从 ConfigLoader 读取
 
 var brick_scene: PackedScene = preload("res://scenes/brick.tscn")
 var level_data: Dictionary = {}
 
+var _brick_width: float = 80.0
+var _brick_height: float = 24.0
+var _brick_gap: float = 4.0
+var _start_y: float = 80.0
+
 
 func _ready() -> void:
+	_brick_width = float(ConfigLoader.get_value("brick.width", 80))
+	_brick_height = float(ConfigLoader.get_value("brick.height", 24))
+	_brick_gap = float(ConfigLoader.get_value("brick.gap", 4))
+	_start_y = float(ConfigLoader.get_value("brick.start_y", 80))
 	_load_level_data()
 
 
@@ -27,7 +30,6 @@ func _load_level_data() -> void:
 
 
 func generate_level(level_num: int, parent: Node) -> void:
-	# 清除旧砖块
 	for child in parent.get_children():
 		if child.is_in_group("bricks"):
 			child.queue_free()
@@ -41,12 +43,11 @@ func generate_level(level_num: int, parent: Node) -> void:
 	var layout: Array = level.get("layout", [])
 	var brick_types: Dictionary = level_data.get("brick_types", {})
 
-	# 计算起始 X 使砖块阵列居中
 	var cols: int = 12
 	if layout.size() > 0:
 		cols = layout[0].size()
-	var total_width := cols * BRICK_WIDTH + (cols - 1) * BRICK_GAP
-	var start_x := (1280.0 - total_width) / 2.0 + BRICK_WIDTH / 2.0
+	var total_width := cols * _brick_width + (cols - 1) * _brick_gap
+	var start_x := (1280.0 - total_width) / 2.0 + _brick_width / 2.0
 
 	for row_idx in layout.size():
 		var row: Array = layout[row_idx]
@@ -60,8 +61,8 @@ func generate_level(level_num: int, parent: Node) -> void:
 				continue
 
 			var brick := brick_scene.instantiate()
-			var x := start_x + col_idx * (BRICK_WIDTH + BRICK_GAP)
-			var y := START_Y + row_idx * (BRICK_HEIGHT + BRICK_GAP)
+			var x := start_x + col_idx * (_brick_width + _brick_gap)
+			var y := _start_y + row_idx * (_brick_height + _brick_gap)
 			brick.position = Vector2(x, y)
 
 			var is_indestructible: bool = brick_info.get("indestructible", false)
@@ -75,7 +76,6 @@ func generate_level(level_num: int, parent: Node) -> void:
 				GameManager.register_brick()
 
 			brick.brick_destroyed.connect(_on_brick_destroyed)
-			# 连接视觉回调到 main
 			var main_node := get_tree().current_scene
 			if main_node and main_node.has_method("_on_brick_destroyed_visual"):
 				brick.brick_destroyed.connect(main_node._on_brick_destroyed_visual)

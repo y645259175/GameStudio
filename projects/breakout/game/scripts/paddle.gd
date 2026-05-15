@@ -1,26 +1,26 @@
 extends CharacterBody2D
 
-## 挡板控制脚本
-## GDD §4 S1 · §5 挡板参数 · §7 操控
-
-const SPEED: float = 500.0
-const DEFAULT_WIDTH: float = 120.0
+## 挡板控制脚本 · 数值从 ConfigLoader 读取
 
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var sprite: ColorRect = $ColorRect
 
-var current_width: float = DEFAULT_WIDTH
+var current_width: float = 120.0
+var _default_width: float = 120.0
+var _speed: float = 500.0
 
 
 func _ready() -> void:
-	_update_size(DEFAULT_WIDTH)
+	_default_width = float(ConfigLoader.get_value("paddle.default_width", 120))
+	_speed = float(ConfigLoader.get_value("paddle.speed", 500))
+	current_width = _default_width
+	_update_size(_default_width)
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var direction := Input.get_axis("move_left", "move_right")
-	velocity.x = direction * SPEED
+	velocity.x = direction * _speed
 	move_and_slide()
-	# 边界限制
 	position.x = clampf(position.x, current_width / 2.0, 1280.0 - current_width / 2.0)
 
 
@@ -30,7 +30,11 @@ func set_width(new_width: float) -> void:
 
 
 func reset_width() -> void:
-	set_width(DEFAULT_WIDTH)
+	set_width(_default_width)
+
+
+func get_default_width() -> float:
+	return _default_width
 
 
 func _update_size(w: float) -> void:

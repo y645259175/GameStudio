@@ -1,11 +1,7 @@
 extends Area2D
 
-## 道具掉落物
-## GDD §4 S3 道具系统
-##
-## 收集逻辑由 main.gd 通过矩形相交检测，避免 collision layer 配置复杂度
+## 道具掉落物 · 数值从 ConfigLoader 读取
 
-const FALL_SPEED: float = 150.0
 const COLORS := {
 	"wide_paddle": Color("#16c79a"),
 	"narrow_paddle": Color("#e74c3c"),
@@ -24,6 +20,10 @@ const ICONS := {
 var powerup_type: String = "wide_paddle"
 var _time: float = 0.0
 var _origin_x: float = 0.0
+var _fall_speed: float = 150.0
+var _pulse_freq: float = 2.0
+var _wobble_freq: float = 3.0
+var _wobble_amp: float = 2.0
 
 @onready var color_rect: ColorRect = $ColorRect
 @onready var label: Label = $Label
@@ -32,6 +32,10 @@ var _origin_x: float = 0.0
 func setup(p_type: String) -> void:
 	powerup_type = p_type
 	_origin_x = position.x
+	_fall_speed = float(ConfigLoader.get_value("powerup.fall_speed", 150))
+	_pulse_freq = float(ConfigLoader.get_value("vfx.powerup_pulse_frequency", 2.0))
+	_wobble_freq = float(ConfigLoader.get_value("vfx.powerup_wobble_frequency", 3.0))
+	_wobble_amp = float(ConfigLoader.get_value("vfx.powerup_wobble_amplitude", 2.0))
 	if color_rect:
 		color_rect.color = COLORS.get(p_type, Color.WHITE)
 	if label:
@@ -40,12 +44,9 @@ func setup(p_type: String) -> void:
 
 func _physics_process(delta: float) -> void:
 	_time += delta
-	position.y += FALL_SPEED * delta
-	# VFX-10: X 轴微抖（正弦 3Hz ±2px）
-	position.x = _origin_x + sin(_time * TAU * 3.0) * 2.0
-	# VFX-05: 透明度脉冲 0.6↔1.0（2Hz）
-	modulate.a = 0.8 + 0.2 * sin(_time * TAU * 2.0)
-	# 落出底部自销毁
+	position.y += _fall_speed * delta
+	position.x = _origin_x + sin(_time * TAU * _wobble_freq) * _wobble_amp
+	modulate.a = 0.8 + 0.2 * sin(_time * TAU * _pulse_freq)
 	if position.y > 740:
 		queue_free()
 

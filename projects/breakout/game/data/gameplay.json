@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Breakout 全局 gameplay 数值表。程序读此表获取数值，修改此文件即可调参，无需改代码。",
+    "last_modified": "2026-05-15"
+  },
+  "paddle": {
+    "default_width": 120,
+    "wide_multiplier": 1.5,
+    "narrow_multiplier": 0.7,
+    "speed": 500,
+    "y_position": 680
+  },
+  "ball": {
+    "radius": 8,
+    "min_angle_deg": 15,
+    "launch_angle_min": 60,
+    "launch_angle_max": 120
+  },
+  "brick": {
+    "width": 80,
+    "height": 24,
+    "gap": 4,
+    "start_y": 80,
+    "cols": 12
+  },
+  "scoring": {
+    "brick_1hp": 10,
+    "brick_2hp": 20,
+    "brick_3hp": 30,
+    "clear_bonus_per_level": 100,
+    "life_bonus_per_life": 50
+  },
+  "lives": {
+    "initial": 3,
+    "max": 5
+  },
+  "powerup": {
+    "fall_speed": 150,
+    "max_per_run": 6,
+    "weights": {
+      "wide_paddle": 25,
+      "narrow_paddle": 15,
+      "speed_ball": 20,
+      "multi_ball": 20,
+      "extra_life": 20
+    },
+    "durations": {
+      "wide_paddle": 10,
+      "narrow_paddle": 10,
+      "speed_ball": 8
+    },
+    "speed_multiplier": 1.3,
+    "drop_rates": {
+      "1": 0.10,
+      "2": 0.18,
+      "3": 0.25,
+      "-1": 0.0
+    }
+  },
+  "vfx": {
+    "brick_particles_count": 6,
+    "brick_particles_duration": 0.6,
+    "brick_flash_duration": 0.15,
+    "screen_shake_paddle": 2.0,
+    "screen_shake_brick": 3.0,
+    "screen_shake_powerup_clear": 8.0,
+    "screen_shake_duration": 0.3,
+    "ball_trail_points": 5,
+    "powerup_pulse_frequency": 2.0,
+    "powerup_wobble_frequency": 3.0,
+    "powerup_wobble_amplitude": 2.0,
+    "feedback_text_rise": 60.0,
+    "feedback_text_duration": 1.5
+  }
+}
