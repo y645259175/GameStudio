@@ -1,86 +1,50 @@
 # Hooks · 工作室 hook 集合
 
-> **用途**：5 个 hook 的导航与启用指南。Phase 1 期间仅起草不启用，Phase 2 git init 后按需挂载。
+> **用途**：5 个 hook，覆盖 git 提交校验 + CodeBuddy AI 生命周期事件。
 >
-> **关联文档**：v4 规划 §6.1.1（hooks 5 件清单）
+> **注册位置**：`.codebuddy/settings.json`（CodeBuddy hook）+ `git config core.hooksPath`（git hook）
 
 ---
 
 ## hook 总览
 
-| # | 文件 | 类型 | 触发 | 启用时机 | Phase 1 状态 |
+| # | 文件 | 事件类型 | 触发时机 | 功能 | 状态 |
 |---|---|---|---|---|---|
-| 1 | `validate-commit.sh` | git pre-commit | 每次 commit 前 | Phase 2+ 启用 | 完整实现 |
-| 2 | `pre-commit-lite.sh` | git pre-commit（替代）| 每次 commit 前 | Phase 2+ 启用 | 完整实现 |
-| 3 | `log-agent.sh` | AI 框架钩子 | skill / agent 事件 | Phase 1.5+ 启用 | 骨架 |
-| 4 | `session-start.sh` | AI 框架钩子 | 新会话启动 | Phase 1.5+ 启用 | 骨架 |
-| 5 | `detect-gaps.sh` | cli 工具 | 手动 / 定时 | Phase 2+ 启用 | 骨架（指向 skill）|
+| 1 | `validate-commit.sh` | git commit-msg | 每次 git commit | 校验 commit message 格式（[story]/[fix]/[refactor]/[chore]） | ✅ 完整 |
+| 2 | `pre-commit-lite.sh` | git pre-commit | 每次 git commit 前 | 大文件 / trailing whitespace / CRLF 警告（不阻塞） | ✅ 完整 |
+| 3 | `log-agent.sh` | CodeBuddy PostToolUse | AI 每次调完工具后 | 记录工具调用日志到 session-logs/ | ✅ 完整 |
+| 4 | `session-start.sh` | CodeBuddy SessionStart | 新会话开始 | 记录会话元信息 + 检测项目 phase | ✅ 完整 |
+| 5 | `detect-gaps.sh` | CodeBuddy Stop | AI 完成一轮响应后 | 轻量检测 GDScript 改动是否需要同步 GDD/数值表 | ✅ 完整 |
 
-> 1 / 2 二选一：`validate-commit.sh` 强校验阻塞 / `pre-commit-lite.sh` 轻量警告不阻塞。建议项目早期用 lite，进入 production stage 后切换强校验。
+## 启用方式
 
----
-
-## Phase 2+ 启用步骤（Windows / Git Bash）
+### Git Hook（1-2）
 
 ```powershell
-# 方式 A：用 git 配置 hooksPath 指向工作室目录
-cd D:\AI\GameStudio
 git config core.hooksPath .codebuddy/hooks
-
-# 注意：此方式要求 hook 文件名与 git 钩子名一致（如 pre-commit）
-# 实际操作：建立软链接或重命名
-# 推荐做法见方式 B
 ```
 
-```powershell
-# 方式 B：复制法（更直观）
-Copy-Item .codebuddy\hooks\pre-commit-lite.sh .git\hooks\pre-commit
-# Git for Windows 会自动通过 shebang #!/usr/bin/env bash 调用 bash 解析
+### CodeBuddy Hook（3-5）
+
+已在 `.codebuddy/settings.json` 中注册，下次新会话自动生效。
+
+## 日志位置
+
+CodeBuddy hook 产生的日志写入 `.codebuddy/session-logs/session-<id>.log`，格式：
+
+```
+[2026-05-15T13:14:00Z] SESSION_START id=abc123 cwd=/path/to/GameStudio
+[2026-05-15T13:14:05Z] TOOL=write_to_file TARGET=projects/breakout/game/scripts/main.gd
+[2026-05-15T13:14:06Z] TOOL=execute_command TARGET=cd d:\AI\GameStudio; git add -A...
 ```
 
-```powershell
-# 切换到强校验
-Copy-Item .codebuddy\hooks\validate-commit.sh .git\hooks\pre-commit -Force
+日志文件已 gitignore（不进版本控制）。
+
+## Windows 兼容
+
+这些 .sh 脚本需要 bash。你的系统 bash 位于：
+```
+C:\Users\boyiyang.BOYIYANG-PC4\scoop\apps\git\current\bin\bash.exe
 ```
 
----
-
-## 行尾符 / 编码注意事项
-
-bash 脚本必须用 **LF 行尾**，否则 git bash 报错 `$'\r': command not found`。
-
-仓库根建议加 `.gitattributes`：
-```
-*.sh text eol=lf
-```
-
-VSCode / CodeBuddy 默认就是 LF，无需特殊配置。
-
----
-
-## 故障排查
-
-| 现象 | 原因 | 解决 |
-|---|---|---|
-| `$'\r': command not found` | 文件是 CRLF | 转 LF：`dos2unix file.sh` 或 VSCode 右下角切 LF |
-| `Permission denied` | Linux/macOS 缺执行权限 | `chmod +x .git/hooks/pre-commit` |
-| `bash: command not found` | Windows 无 git bash | 装 Git for Windows |
-| `jq: command not found` | validate-commit 缺 jq | `choco install jq` 或 `scoop install jq` |
-
----
-
-## 测试 hook
-
-每个 hook 都支持 `--dry-run`（如适用）：
-```bash
-bash .codebuddy/hooks/validate-commit.sh --dry-run
-bash .codebuddy/hooks/pre-commit-lite.sh --dry-run
-```
-
----
-
-## Phase 2+ Review Points
-
-- [Phase 1.5+ TODO] log-agent / session-start / detect-gaps 三个骨架从 `studio/reference/my-game/` 抄完整版
-- [Phase 2+ TODO] 评估是否补 PowerShell (.ps1) 版（视 Windows 实战体验）
-- [Phase 2+ TODO] 集成到 IDE / CI 的事件触发链路
+CodeBuddy 的 hook 系统会自动通过 `bash` 调用。如果遇到找不到 bash 的问题，确保 Git for Windows 的 bin/ 在 PATH 中。

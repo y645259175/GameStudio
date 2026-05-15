@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CODEBUDDY_PROJECT_DIR/.codebuddy/hooks/session-start.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CODEBUDDY_PROJECT_DIR/.codebuddy/hooks/log-agent.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CODEBUDDY_PROJECT_DIR/.codebuddy/hooks/detect-gaps.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

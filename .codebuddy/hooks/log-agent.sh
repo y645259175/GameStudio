@@ -1,41 +1,36 @@
-﻿# [NOT APPLICABLE] This hook was designed for Claude Code (upstream CCGS).
-# CodeBuddy does not support session/tool lifecycle hooks.
-# Retained for reference only; will not be triggered by git or CodeBuddy.
+﻿#!/usr/bin/env bash
+set -euo pipefail
 
-#!/usr/bin/env bash
-# log-agent.sh · AI 会话事件审计（骨架）
-# 用途：记录 skill / agent 调用事件到 jsonl 日志
-# 触发：由 AI 框架在 skill / agent 启动时调用（非 git hook）
-# 退出码：0 通过 / 2 配置错误
-# 上游来源：抄上游 my-game/（[Phase 1.5+ 从 reference/my-game/ 抄完整版]）
-#
-# Phase 1 状态：仅骨架，实质日志写入逻辑待 Phase 1.5+ 从上游抄完整版
+# PostToolUse hook · 记录 AI 工具调用日志
+# 触发：每次 AI 调用工具完成后（CodeBuddy PostToolUse 事件）
+# 输入：stdin JSON（含 session_id / tool_name / tool_input）
+# 输出：stdout JSON + 日志追加到 .codebuddy/session-logs/
 
-set -uo pipefail
+INPUT=$(cat)
 
-trap 'echo "[log-agent] 异常退出" >&2; exit 2' ERR
+SESSION_ID=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('session_id','unknown'))" 2>/dev/null || echo "unknown")
+CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null || echo "")
+TOOL_NAME=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_name',''))" 2>/dev/null || echo "")
+# 提取工具输入的第一个关键字段（如文件路径）
+TOOL_TARGET=$(echo "$INPUT" | python3 -c "
+import sys,json
+data = json.load(sys.stdin)
+ti = data.get('tool_input', {})
+# 尝试提取 filePath / path / command 等常见字段
+target = ti.get('filePath', ti.get('path', ti.get('command', ti.get('target_directory', ''))))
+if isinstance(target, str) and len(target) > 80:
+    target = target[:80] + '...'
+print(target)
+" 2>/dev/null || echo "")
 
-# ===== 输入参数 =====
-EVENT_TYPE="${1:-unknown}"      # skill_start / skill_end / agent_call / error / ...
-EVENT_NAME="${2:-unknown}"      # 具体 skill / agent 名
-EVENT_PARAMS="${3:-{}}"         # JSON 字符串，参数摘要
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# ===== 输出位置 =====
-LOG_DIR=".codebuddy/logs"
-LOG_FILE="$LOG_DIR/agent-$(date +%Y-%m-%d).jsonl"
-
+# 写入日志
+LOG_DIR="$CWD/.codebuddy/session-logs"
 mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/session-$SESSION_ID.log"
+echo "[$TIMESTAMP] TOOL=$TOOL_NAME TARGET=$TOOL_TARGET" >> "$LOG_FILE"
 
-# ===== 写一条 jsonl =====
-timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-printf '{"ts":"%s","type":"%s","name":"%s","params":%s}\n' \
-  "$timestamp" "$EVENT_TYPE" "$EVENT_NAME" "$EVENT_PARAMS" \
-  >> "$LOG_FILE"
-
+# 不阻塞
+echo '{"continue": true}'
 exit 0
-
-# [Phase 1.5+ TODO] 从 reference/my-game/ 抄完整版，含：
-# - 多种事件类型支持（pre / post / error / metric）
-# - 日志轮转（按大小 / 按日期）
-# - 与 .codebuddy/plans/ 的关联（log → plan 反查）
-
