@@ -1,0 +1,19 @@
+{
+  "_meta": { "version": "1.0", "description": "全局物理参数" },
+  "gravity": { "default": 800, "airResistance": 0.0 },
+  "friction": { "ground": 0.15, "ice": 0.02 },
+  "maxFallSpeed": 600,
+  "collisionLayers": ["ground", "enemy", "item", "pitBottom", "player"],
+  "collisionMatrix": {
+    "ground": ["player", "enemy", "item"],
+    "enemy": ["player", "ground", "enemy"],
+    "item": ["player", "ground"],
+    "pitBottom": ["player", "enemy", "item"],
+    "player": ["ground", "enemy", "item", "pitBottom"]
+  },
+  "hitboxes": {
+    "player.small": { "w": 14, "h": 16 },
+    "player.big": { "w": 14, "h": 30 },
+    "player.crouch": { "w": 14, "h": 16 }
+  }
+}

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "shutdown-1778835499376",
+    "from": "team-lead",
+    "to": "designer-1",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1778835499376\",\"reason\":\"switching to sync mode\",\"from\":\"team-lead\",\"timestamp\":\"2026-05-15T08:58:19.376Z\"}",
+    "timestamp": "2026-05-15T08:58:19.376Z",
+    "read": true
+  }
+]

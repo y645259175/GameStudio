@@ -1,0 +1,23 @@
+{
+  "name": "mario-gdd-detail",
+  "leadAgentId": "d9d53024d1364e9c89c7b0e7f096f5b2",
+  "workspacePath": "d:/AI/GameStudio",
+  "createdAt": "2026-05-15T08:57:21.573Z",
+  "options": {
+    "workspacePath": "d:/AI/GameStudio",
+    "isAutoTeam": false
+  },
+  "members": [
+    {
+      "memberId": "team-lead@mario-gdd-detail",
+      "name": "team-lead",
+      "role": "Team Lead - coordinates the team and interacts with the user"
+    },
+    {
+      "memberId": "designer-1@mario-gdd-detail",
+      "name": "designer-1",
+      "role": "designer fills §1/2/4/6/8"
+    }
+  ],
+  "isAutoTeam": false
+}

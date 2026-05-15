@@ -1,0 +1,11 @@
+[
+  {
+    "id": "shutdown-1778835499725",
+    "from": "team-lead",
+    "to": "art-director-1",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1778835499725\",\"reason\":\"switching to sync mode\",\"from\":\"team-lead\",\"timestamp\":\"2026-05-15T08:58:19.725Z\"}",
+    "timestamp": "2026-05-15T08:58:19.725Z",
+    "read": true
+  }
+]

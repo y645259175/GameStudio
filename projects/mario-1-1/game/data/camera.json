@@ -1,0 +1,7 @@
+{
+  "_meta": { "version": "1.0", "description": "摄像机参数" },
+  "followDeadzone": { "x": 80, "y": 60 },
+  "lookahead": { "walk": 0, "run": 32 },
+  "bounds": { "left": 0, "right": 3200, "top": 0, "bottom": 720 },
+  "noScrollBack": true
+}

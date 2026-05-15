@@ -1,0 +1,11 @@
+{
+  "_meta": { "version": "1.0", "description": "关卡元素行为参数" },
+  "brick": { "breakable": true, "bumpFrames": 12 },
+  "questionBlock": { "activeFlashFrames": 30 },
+  "pipe": {
+    "lengths": { "short": 32, "medium": 48, "long": 64, "extraLong": 80 }
+  },
+  "coin": { "spawnHeight": 48, "value": 200 },
+  "flagpole": { "totalHeight": 144, "slideSpeed": 144 },
+  "castle": { "enterDuration": 1.5, "flagRiseDuration": 1.5 }
+}

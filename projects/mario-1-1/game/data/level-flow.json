@@ -1,0 +1,10 @@
+{
+  "_meta": { "version": "1.0", "description": "关卡流程时序" },
+  "transitions": {
+    "readyDuration": 1.5,
+    "deathDelay": 3.0,
+    "respawnDelay": 0.5,
+    "clearDelay": 5.0,
+    "gameOverDelay": 3.0
+  }
+}

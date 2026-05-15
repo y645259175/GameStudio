@@ -1,0 +1,23 @@
+{
+  "_meta": { "version": "1.0", "description": "敌人 AI 数值" },
+  "spawnDistance": 300,
+  "goomba": {
+    "walkSpeed": 30,
+    "score": 100,
+    "flatDuration": 30,
+    "fallsOffCliff": true
+  },
+  "koopaGreen": {
+    "walkSpeed": 30,
+    "shellSpeed": 200,
+    "shellWaitFrames": 300,
+    "score": 100,
+    "fallsOffCliff": false
+  },
+  "piranha": {
+    "riseHeight": 24,
+    "cycleFrames": 240,
+    "hideOnPlayerNearDistance": 32
+  },
+  "shellChainScores": [100, 200, 400, 800, 1000, 2000, 4000, 8000, "1UP"]
+}

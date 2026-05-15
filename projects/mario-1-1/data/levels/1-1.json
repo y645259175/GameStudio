@@ -1,0 +1,54 @@
+{
+  "_meta": { "version": "1.0", "description": "World 1-1 关卡数据。Beat Map + 实体放置。" },
+  "level_id": "1-1",
+  "world": "1-1",
+  "width": 3200,
+  "height": 720,
+  "death_y": 740,
+  "spawn": { "x": 64, "y": 528 },
+  "time_limit": 300,
+  "first_enemy_x": 192,
+  "music_bgm": "assets/audio/bgm/world.ogg",
+  "beats": [
+    { "id": "B1", "name": "教学开场", "x_range": [0, 200], "purpose": "熟悉控制" },
+    { "id": "B2", "name": "第一 Goomba + 第一组管道", "x_range": [200, 700], "purpose": "教踩敌+跳" },
+    { "id": "B3", "name": "砖块山", "x_range": [700, 1500], "purpose": "教连续跳+探索" },
+    { "id": "B4", "name": "大坑+Koopa", "x_range": [1500, 2300], "purpose": "教远跳+龟壳" },
+    { "id": "B5", "name": "升降台", "x_range": [2300, 2900], "purpose": "教动态平台" },
+    { "id": "B6", "name": "旗杆收尾", "x_range": [2900, 3200], "purpose": "高潮收束" }
+  ],
+  "tilemap": {
+    "_note": "M5 阶段填具体 tile grid。当前用占位实体清单代替。",
+    "ground": [{"x":0,"y":672,"w":640},{"x":704,"y":672,"w":480},{"x":1248,"y":672,"w":960},{"x":2240,"y":672,"w":960}],
+    "pits": [
+      { "x_range": [640, 704], "label": "small_pit_1" },
+      { "x_range": [1184, 1248], "label": "small_pit_2" },
+      { "x_range": [2208, 2240], "label": "big_pit" }
+    ]
+  },
+  "entities": [
+    { "type": "goomba", "x": 384, "y": 656 },
+    { "type": "goomba", "x": 832, "y": 656 },
+    { "type": "goomba", "x": 880, "y": 656 },
+    { "type": "goomba", "x": 1296, "y": 656 },
+    { "type": "goomba", "x": 1344, "y": 656 },
+    { "type": "koopaGreen", "x": 1664, "y": 656 },
+    { "type": "questionBlock", "x": 256, "y": 528, "contains": "coin" },
+    { "type": "questionBlock", "x": 336, "y": 528, "contains": "mushroom" },
+    { "type": "questionBlock", "x": 416, "y": 528, "contains": "coin" },
+    { "type": "brick", "x": 320, "y": 528 },
+    { "type": "brick", "x": 384, "y": 528 },
+    { "type": "questionBlock", "x": 352, "y": 432, "contains": "coin" },
+    { "type": "pipe", "x": 480, "y": 624, "length": "short" },
+    { "type": "pipe", "x": 608, "y": 608, "length": "medium" },
+    { "type": "pipe", "x": 736, "y": 592, "length": "long", "enterable": true, "destination": "1-1-bonus" },
+    { "type": "pipe", "x": 912, "y": 592, "length": "long" },
+    { "type": "questionBlock", "x": 1488, "y": 528, "contains": "coin" },
+    { "type": "brick", "x": 1568, "y": 528, "hidden_oneup": true },
+    { "type": "questionBlock", "x": 1712, "y": 528, "contains": "fireFlower" },
+    { "type": "movingPlatform", "x": 2400, "y": 528, "axis": "y", "range": 96, "speed": 30 },
+    { "type": "movingPlatform", "x": 2592, "y": 432, "axis": "y", "range": 96, "speed": 30 },
+    { "type": "flagpole", "x": 3056, "y": 528 },
+    { "type": "castle", "x": 3120, "y": 600 }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "_meta": { "version": "1.0", "description": "Mario 角色控制 + 状态机数值。所有数值可调，复刻 NES 原作手感。" },
+  "walk": { "maxSpeed": 90, "accel": 200 },
+  "run": { "maxSpeed": 150, "accel": 300 },
+  "turnAround": { "decel": 400 },
+  "jump": {
+    "initialV": -340,
+    "holdGravity": 600,
+    "releaseGravity": 1500,
+    "minHoldFrames": 4,
+    "maxHoldFrames": 18
+  },
+  "air": { "accelMultiplier": 0.6 },
+  "crouch": { "enabled": true },
+  "states": [
+    { "id": "small", "canShoot": false, "canCrouch": false, "hitboxKey": "player.small" },
+    { "id": "big", "canShoot": false, "canCrouch": true, "hitboxKey": "player.big" },
+    { "id": "fire", "canShoot": true, "canCrouch": true, "hitboxKey": "player.big" },
+    { "id": "invincible", "canShoot": false, "canCrouch": false, "hitboxKey": "player.big", "overlay": true },
+    { "id": "dead", "canShoot": false, "canCrouch": false, "hitboxKey": "none" }
+  ],
+  "transitions": [
+    { "from": "small", "to": "big", "trigger": "mushroom", "freezeFrames": 30 },
+    { "from": "big", "to": "fire", "trigger": "flower", "freezeFrames": 30 },
+    { "from": "small", "to": "fire", "trigger": "flower", "freezeFrames": 30 },
+    { "from": "fire", "to": "big", "trigger": "hit", "freezeFrames": 18, "iframes": 180 },
+    { "from": "big", "to": "small", "trigger": "hit", "freezeFrames": 18, "iframes": 180 },
+    { "from": "small", "to": "dead", "trigger": "hit" },
+    { "from": "any", "to": "dead", "trigger": "pit" },
+    { "from": "any", "to": "dead", "trigger": "timeout" }
+  ],
+  "invincible": { "duration": 600, "warningFrames": 120 },
+  "damage": { "iframesAfterHit": 180 }
+}

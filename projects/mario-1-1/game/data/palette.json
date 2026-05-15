@@ -1,0 +1,19 @@
+{
+  "_meta": { "version": "1.0", "description": "全局色板" },
+  "sky": { "day": "#5C94FC" },
+  "mountain": { "far": "#FFC0FC" },
+  "bush": { "green": "#00A800" },
+  "cloud": { "white": "#FFFFFF" },
+  "ground": { "brown": "#E45C10" },
+  "brick": { "brown": "#FC8800" },
+  "question": { "gold": "#FCBC3C", "brown": "#A04500" },
+  "hardblock": { "gray": "#A4A4A4" },
+  "pipe": { "green": "#00A800" },
+  "flag": { "silver": "#BCBCBC" },
+  "castle": { "gray": "#787878" },
+  "mario": { "red": "#FC0000", "blue": "#0058FC", "skin": "#FCBC8C" },
+  "goomba": { "brown": "#8B4513" },
+  "koopa": { "green": "#00C800", "yellow": "#FCFC00" },
+  "coin": { "gold": "#FCBC3C" },
+  "hud": { "white": "#FFFFFF", "warning": "#FC0000", "celebrate": "#FCBC3C" }
+}

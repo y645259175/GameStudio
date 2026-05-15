@@ -1,0 +1,21 @@
+{
+  "_meta": { "version": "1.0", "description": "计分系统" },
+  "score": {
+    "coin": 200,
+    "goomba": 100,
+    "koopa": 100,
+    "shellChain": [100, 200, 400, 800, 1000, 2000, 4000, 8000, "1UP"]
+  },
+  "flagpole": {
+    "byHeight": [
+      { "minRatio": 0.95, "score": 5000, "label": "TOP" },
+      { "minRatio": 0.7,  "score": 4000 },
+      { "minRatio": 0.4,  "score": 2000 },
+      { "minRatio": 0.1,  "score": 800 },
+      { "minRatio": 0.0,  "score": 100 }
+    ]
+  },
+  "timeBonus": 50,
+  "lives": { "initial": 3, "gainPer100Coins": 1 },
+  "time": { "initial": 300, "warningAt": 100 }
+}

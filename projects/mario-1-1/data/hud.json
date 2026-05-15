@@ -1,0 +1,36 @@
+{
+  "_meta": { "version": "1.0", "description": "HUD 与主菜单" },
+  "title": {
+    "title": { "text": "SUPER MARIO BROS.", "fontSizeRatio": 0.08 },
+    "subtitle": { "text": "World 1-1", "fontSizeRatio": 0.04 },
+    "cta": { "text": "Press SPACE to Start", "blinkPeriod": 1.0, "fontSizeRatio": 0.035 },
+    "controls": [
+      { "label": "MOVE",  "keys": "← →   or   A D" },
+      { "label": "JUMP",  "keys": "SPACE  or   Z" },
+      { "label": "RUN",   "keys": "SHIFT  or   X" },
+      { "label": "PAUSE", "keys": "ESC" }
+    ],
+    "background": {
+      "skyGradient": ["#0a0a3a", "#2a2a6a"],
+      "mountainColor": "#1a1a4a",
+      "moon": { "x": 1100, "y": 120, "radius": 32 }
+    }
+  },
+  "ingame": {
+    "score": { "digits": 6, "padZero": true, "fontSizeRatio": 0.04 },
+    "coin":  { "digits": 2, "padZero": true, "highlightAt": 90, "celebrateAt": 100 },
+    "world": { "text": "1-1", "fontSizeRatio": 0.04 },
+    "time":  { "digits": 3, "warningThreshold": 100, "blinkPeriod": 0.5 },
+    "colors": {
+      "normal": "#FFFFFF",
+      "warning": "#FC0000",
+      "celebrate": "#FCBC3C"
+    }
+  },
+  "pause": {
+    "overlay": { "color": "#000000", "opacity": 0.6 },
+    "title": { "text": "PAUSE", "fontSizeRatio": 0.08 },
+    "hint": { "text": "Press ESC to Resume", "fontSizeRatio": 0.025 },
+    "fadeOutDuration": 0.2
+  }
+}

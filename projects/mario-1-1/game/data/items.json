@@ -1,0 +1,7 @@
+{
+  "_meta": { "version": "1.0", "description": "道具数值" },
+  "mushroom": { "spawnAnimFrames": 30, "walkSpeed": 60, "score": 1000 },
+  "fireFlower": { "spawnAnimFrames": 30, "walkSpeed": 0, "score": 1000 },
+  "star": { "bounceVelocity": -200, "walkSpeed": 60, "duration": 600, "score": 1000 },
+  "oneUp": { "spawnAnimFrames": 30, "walkSpeed": 60, "scoreText": "1UP" }
+}
