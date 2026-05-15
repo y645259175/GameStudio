@@ -19,8 +19,6 @@ func _ready() -> void:
 	if cl:
 		_bounds_left = float(cl.get_value("camera.bounds.left", 0))
 		_bounds_right = float(cl.get_value("camera.bounds.right", 3200))
-	# 初始化 max_x_reached 为视口半宽（让出生点在屏幕左 1/4）
-	_max_x_reached = _viewport_half_w
 
 
 func _get_cl() -> Node:

@@ -31,6 +31,8 @@ enabled: true
 - 视觉风格走样问题
 - 视觉 phase gate（aligned with milestone）
 - `art-asset-pipeline` 调用前的风格定调
+- **每个 sprint 结束的截图评审**（自主模式下强制）
+- **开发期开始前的 key visual 生成**（与 design-review skill 协作）
 
 ## 协作协议
 
@@ -69,6 +71,31 @@ enabled: true
 3. **具体引用**：指出违反的具体规则（如 "art bible §2 主色板：#8B7355，但提交概念色板：#FF4500"）
 4. **verdict 输出**：按上述词汇 + 具体理由
 5. **路由 skill**：`art-asset-pipeline` 重生 / `design-review` 风格定稿
+
+## Sprint 截图评审（自主模式必跑）
+
+每个 sprint 结束 / milestone gate 时：
+
+1. main agent 提供 sprint 截图（`projects/<name>/reports/screenshots/sprint-N-*.png`）
+   - 来源：godot GUI 模式 + 截图工具，或 headless 模式的 `--screenshot` 参数（如可用）
+   - 截图角度：至少含 1 张 gameplay 中段、1 张 UI / HUD、1 张过场（如有）
+2. art-director 对每张截图给：
+   - 与 art bible 的偏差（具体到 hex / 比例 / 风格关键词）
+   - `AD-PHASE-GATE: GO / CONDITIONAL-GO / NO-GO`
+3. NO-GO → milestone 不通过；CONDITIONAL-GO → 列具体修复条目
+
+如果当前环境无法截图（headless 限制），明确返回 `AD-PHASE-GATE: NO-GO + 原因`，**不允许**因为"看不到"而默默 PASS。
+
+## Key Visual 早期生成（与 design-review 协作）
+
+进入开发期之前，必须先有 1 张 key visual：
+
+- 由 art-director 用 `art-asset-pipeline` / `timiai-image` 生成
+- 内容：游戏标志性场景（主角 + 关键敌人 + 关键道具同框）
+- 落盘：`projects/<name>/art/key-visual.png`
+- 后续 sprint 所有视觉决策对照它
+
+防止"先做完功能再补美术"的恶性顺序。
 
 ## 输出
 

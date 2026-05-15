@@ -1,87 +1,54 @@
 ---
 name: quick-design
-description: Lightweight design facilitator for small decisions outside the 8-section GDD. Use when user says "快速设计 / 小设计点 / quick design / 不想走全流程". Examples - tweaking a single number, adding a small UI element, deciding a minor mechanic. Outputs a 1-page note, not a full chapter.
-allowed-tools: read_file, write_to_file, search_content
-disable: false
+type: skill
+status: active
+description: Lightweight design facilitator for small decisions outside the formal 8-section GDD process.
 ---
 
-# quick-design · 轻量设计节点
+# Quick-Design · 轻量级设计
 
-## 何时加载
+## 何时使用
 
-- 设计点小（< 1 小时讨论可决）
-- 不影响 GDD 整体结构
-- 用户明确说"快速搞一下" / "不需要全流程"
+不需要走完整 GDD 8 节流程的小决策（UI 微调 / 数值微调 / 临时实验功能）。区别于 `design-review`：
+- `design-review` = 重量级 GDD 8 节，影响系统级
+- `quick-design` = 轻量级局部决策，单点调整
 
-**不加载场景**：影响核心循环 / 跨系统 → 走 `design-review`；纯架构 → 走 `architecture-decision`。
+典型触发：
+- "/quick-design 调一下伤害公式"
+- "我想加个临时排行榜"
+- "改改主菜单按钮位置"
 
-## 输入契约
+## 输入 / 触发条件
 
-| 输入 | 来源 |
-|---|---|
-| 设计点描述 | 用户 |
-| 受影响系统 | 用户 / GDD 检索 |
+- 当前在项目根
+- 决策范围（小，不跨系统）
+- 可选：相关 GDD 章节引用
 
-## 流程
+## 流程步骤
 
-### Step 1 · 边界判断
+1. **范围判断**：AI 评估是否真的"轻量"——如发现影响 ≥ 2 个系统则路由到 `design-review`
+2. **三段式起草**：
+   - 现状（中文 1-2 句）
+   - 提议变更（中文 + 必要数值）
+   - 影响范围（哪些 stories / 代码 / 配置受影响）
+3. **快速验证**：交互问"接受 / 修改 / 升级到 design-review"
+4. **落盘**：`projects/<name>/quick-designs/YYYY-MM-DD-<topic>.md`
+5. **追溯**：在受影响的 GDD 章节末尾加链接（"见 quick-designs/..."）
+6. **commit 建议**：`[quick] design <topic>`（轻通道 tag）
 
-3 个问题：
-1. 是否改动核心循环？
-2. 是否需修改 ≥ 2 个 GDD 章节？
-3. 是否引入新系统？
+## 输出
 
-任一为 YES → 升级到 `design-review`。
+- `projects/<name>/quick-designs/YYYY-MM-DD-<topic>.md`
+- 受影响 GDD 章节的反向链接
 
-### Step 2 · 调用 designer 简版
+## 引用
 
-让 `designer` agent 给出：
-- 1-2 个备选方案
-- 推荐方案 + 理由（1 段）
-- 影响面（哪些已有内容会变）
+- 上游规划：v4 §6.1.1（项目级纯流程 9 之一）
+- 相关 skill：`design-review` `quick-fix`
+- 相关 rule：`commit-discipline`（双通道）
 
-### Step 3 · 落盘 1-page note
+## Known Limitations / Phase 2 Review Points
 
-`projects/<name>/gdd/notes/<topic>-<date>.md`，包含：
-- 决策 1 句话
-- 备选 2-3 个 + 取舍
-- 受影响 GDD 章节 / 数值
-- 关联 story（如已立项）
-
-### Step 4 · 同步引用
-
-如果决策影响 GDD 某章 → 在该章末尾加一行 `> 注：<topic>，详见 notes/<topic>-<date>.md`
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `DECIDED` / `ESCALATE_TO_DESIGN_REVIEW` |
-| `note_path` | `projects/<name>/gdd/notes/<topic>-<date>.md` |
-| `affected_sections` | GDD 受影响章节列表 |
-
-## 调用的 agent
-
-- `designer`（sonnet 即可，量小）
-
-## 加载的 rule
-
-- `design-authoring`（轻量遵循）
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| Step 1 判断为大问题 | 立即升级到 `design-review` |
-| designer 拿不出方案 | 升级 `architect` 或回到用户澄清 |
-
-## 验收标准
-
-- note 在 1 页内（< 200 行）
-- 决策清晰 + 可追溯
-- 不破坏 GDD 整体一致性
-
-## Known Limitations
-
-- 边界判断靠经验，可能漏判应升级的设计
-- 量大时 notes/ 目录会膨胀（Phase 2 评估归档策略）
+- [Phase 2 TODO] "轻量"判据靠 AI 主观，未来可加阈值（影响系统数 / 代码行数）
+- [Phase 2 TODO] 反向链接维护未自动化，依赖人工 / consistency-check 兜底
+- [Phase 2 TODO] quick-design 数量增多时是否合并到 GDD 章节末尾"变更日志"小节

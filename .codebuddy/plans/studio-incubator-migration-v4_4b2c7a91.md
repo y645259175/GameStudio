@@ -3,10 +3,9 @@
 > **文档元信息**
 > - 版本：v4（工作室孵化器架构）
 > - 创建时间：2026-05-13
-> - 状态：**支柱 1/2/3 已锁 / §8.1 LFS 已锁 / §8.3 仓库结构已锁 / §6 Phase 1 范围已锁（含 art 生产管线）/ §9 迁移工程规约已锁 / Phase 1.5 归位 + git init 推迟到 Phase 2 已锁**
+> - 状态：**支柱 1 / 2 / 3 已锁 / §8.1 LFS 已锁 / §8.3 仓库结构已锁 / §6 Phase 1 范围已锁 / §9 迁移工程规约新增（9.1 / 9.2 待起草）**
 > - 定位：防遗忘锚点，记录对话中已对齐的结论
 > - ⚠️ **本文档描述的目录结构为规划，非当前仓库实际结构**
-> - ⚠️ **路径约定**：所有 `studio/reference/...` 路径在 **Phase 1.5 归位后生效**。Phase 1 期间 `analysis-report/` 和 `my-game/` 仍在工作区根目录原位，不动。
 
 ---
 
@@ -15,7 +14,7 @@
 ### 1.1 文档血缘
 
 ```text
-CCGS 原始分析（164 资产）          ← studio/reference/analysis-report/ 00-05
+CCGS 原始分析（164 资产）          ← analysis-report/ 00-05
       ↓
 v2 修订报告（MVS = 46 资产极简档）  ← .codebuddy/plans/analysis-report-v2-revision_08399d50.md
       ↓
@@ -53,19 +52,17 @@ MVS+ v4（工作室孵化器架构）          ← 本文档
 > - **总量**：21 必装 skill + 5 hook + 5-6 rule + 9 template + 9-10 agent
 > - **相对 v1 MVS（46）**：+5 skill（含 1 升必装）+1 hook +1 rule
 > - **拍板要点**：双通道通过 skill 显式分流 / commit tag 软建议 / 判据双轨（工作室默认 + 用户 override）
->
-> ⚠️ **以下数字为支柱 1 锁定时的能力清单基线**。Phase 1 实际起草数量见 §6.1.1（22 skill / 30 agent / 6 rule，含 art 管线扩张和 engine-specialist 全备）。本节保留原始锁定数字作为决策痕迹。
 
 ### 2.1 资产清单
 
-| 类别 | 数量（支柱 1 基线） | Phase 1 起草数（§6.1.1）| 备注 |
-|---|---|---|---|
-| Skill 必装 | 21 | **22** | v1 MVS 17 + 新增 4 + quick-fix 1；Phase 1 增 art-asset-pipeline |
-| Skill 可选 | 2 | — | `adopt` / `quick-design`（保留为可选） |
-| Hook | 5 | 5 | v1 MVS 4 + 新增 `validate-commit.sh`（仅校验 GDD 8 节完整性 + JSON 合法性，**不管 tag**） |
-| Rule | 5-6 | **6** | 含新增 `commit-discipline.md`（alwaysApply，软建议） |
-| Template | 9 | 9 | 不变 |
-| Agent | 9-10 | **30** | Phase 1 含 engine-specialist 15 全备 + art-director 1（档 7 工作室能力库视角） |
+| 类别 | 数量 | 备注 |
+|---|---|---|
+| Skill 必装 | 21 | v1 MVS 17 + 新增 4（sprint-plan / architecture-decision / balance-design / consistency-check 升必装）+ 新增 1（quick-fix 轻通道入口）- v1 中 consistency-check 原属可选 |
+| Skill 可选 | 2 | `adopt` / `quick-design`（保留为可选） |
+| Hook | 5 | v1 MVS 4 + 新增 `validate-commit.sh`（仅校验 GDD 8 节完整性 + JSON 合法性，**不管 tag**） |
+| Rule | 5-6 | 含新增 `commit-discipline.md`（alwaysApply，软建议） |
+| Template | 9 | 不变 |
+| Agent | 9-10 | 不变 |
 
 ### 2.2 关键新增资产
 
@@ -123,11 +120,7 @@ GameStudio/                      ← 工作室根
 │
 ├── studio/                      ← 跨项目沉淀层（最小版）
 │   ├── docs/
-│   │   ├── studio-handbook.md   ← 工作室运作手册（workflow-heavy/light 可后补）
-│   │   ├── acceptance-standards.md  ← §4 6 条底线落地（§6.1.1 扩展）
-│   │   ├── language-policy.md   ← §9.1 中英策略（§6.1.1 扩展）
-│   │   └── engine-reference/    ← 45 文件 3 引擎全备（§6.1.1 扩展）
-│   ├── reference/               ← 只读参考区（Phase 1.5 由用户 mv 填充）
+│   │   └── studio-handbook.md   ← 工作室运作手册（workflow-heavy/light 可后补）
 │   ├── postmortems/             ← 跨项目复盘
 │   └── README.md
 │
@@ -419,7 +412,7 @@ projects/<project-name>/
 ### 5.4 开放点（3 项）
 - [ ] 引擎选择（Unity / Godot / Unreal / 其他）
 - [ ] Discovery 剩余 2 skill 是否启用（`adopt` / `quick-design`）
-- [x] `producer` agent 是否装（已确定 Phase 1 装，详见 §6.1.1 职务 5 列表）
+- [ ] `producer` agent 是否装
 
 ### 5.5 结构改造（源自 xsfk-designer，暂不做）
 - [ ] PATCHES 自我迭代机制（skill 迭代 + archive 归档 + P0-P3 分级）
@@ -435,26 +428,20 @@ projects/<project-name>/
 
 ```text
 Phase 0：现状盘点 + 迁移 baseline（已完成）
-  ├─ 产出 studio/reference/analysis-report/current-state-inventory.md（Phase 1.5 归位后路径）
+  ├─ 产出 analysis-report/current-state-inventory.md
   ├─ 用户完成工作区整体压缩快照（存工作区外，物理回滚保险）
-  └─ 锁定现有内容处理原则：Phase 1 期间 analysis-report/ / my-game/ / .codebuddy/plans/ 保持原位不动
+  └─ 锁定现有内容处理原则：my-game/ / analysis-report/ / .codebuddy/plans/ 迁移期不动，迁完用户手动处理
 
-Phase 1：建工作室能力库（本规划主战场，档 7 + art 管线）
+Phase 1：建工作室能力库（本规划主战场，档 7）
   详见 §6.1
-  ⚠️ Phase 1 期间 **无 git 管理**（无 .git / 无 commit / 无 tag）
-  ⚠️ Phase 1 产出**不引用** analysis-report/ 和 my-game/ 原路径；如必须引用，直接写未来位置 studio/reference/...
 
-Phase 1.5：现有资产归位（用户手动 mv）
-  ├─ 建 studio/reference/ 目录 + README.md（定位为只读参考区）
-  ├─ mv analysis-report/ → studio/reference/analysis-report/
-  ├─ mv my-game/ → studio/reference/my-game/（注意 my-game 是独立 git 仓，mv 不影响其自身 git 状态）
-  └─ AI 扫一遍所有文档里的 studio/reference/... 路径，确认全对齐（详见 §6.1.4）
+Phase 1.5：git 化 + 首次 commit
+  ├─ 根目录 git init
+  ├─ 新建 .gitignore（含 my-game/ 忽略）+ .gitattributes（含 LFS 预置 §8.1.2）
+  ├─ 首次 commit（符合 §4 Q7-F 底线）
+  └─ git tag pre-v4-migration（作为 Phase 2+ 每次回滚的原点）
 
-Phase 2：git init + 首个项目落地（共仓策略 §8.3）
-  ├─ 工作室首次 git init（根目录）
-  ├─ 新建 .gitignore（含 studio/reference/my-game/ 嵌套仓隔离）+ .gitattributes（含 LFS 预置 §8.1.2）
-  ├─ 首次大 commit：完整 studio/ + .codebuddy/ + studio/reference/ 一次性成为基线
-  ├─ git tag v4-foundation（Phase 2+ 每次回滚的原点）
+Phase 2：首个项目落地（共仓策略 §8.3）
   ├─ 运行 /new-project，用 PROJECT.md 模板初始化 projects/<first>/
   ├─ 运行 /setup-engine，选定引擎（Godot / Unity / Unreal 之一）
   │   └─ 工作室已备齐 3 引擎 specialist 与 engine-reference，只需声明 Engine: X
@@ -485,21 +472,20 @@ Phase 5：第二个项目 / 仓库拆分决策
 
 **目标**（用户定义）：Phase 1 跑完后，三大支柱（能力 / 产出 / 验证）**理论上都能落实**，首个项目**知道怎么落地**，缺的只是实践。
 
-**档位**（轮 A 拍板 + 本轮补充）：**档 7 · 工作室能力库中心论 + 美术资产管线**
-- skill 全流程自洽（**22 skill**，新增 `art-asset-pipeline`）+ agent 含 engine-specialist 全备（**30 agent**，新增 `art-director`）+ engine-reference 3 引擎全 copy（45 文件）
+**档位**（轮 A 拍板）：**档 7 · 工作室能力库中心论**
+- skill 全流程自洽（21 skill）+ agent 含 engine-specialist 全备（29 agent）+ engine-reference 3 引擎全 copy（45 文件）
 - 工作室 = **能力库**（不管用不用，常备）；项目 = 能力库的**调用实例**
-- 美术资产生产：`art-asset-pipeline` skill 调用**已接入的** `.codebuddy/skills/timiai-image`（工作室级能力，本规划不重建、不改造）
 - 每件产出遵守"流程完全自洽 + 引用闭合 + 引擎/代码知识用占位路由 + 缺失引导"原则
 - 每件产出标 `## Known Limitations / Phase 2 Review Points`，接受实战调整
 
-#### 6.1.1 Phase 1 产出清单（约 125 件）
+#### 6.1.1 Phase 1 产出清单（约 123 件）
 
 ```
 d:/AI/GameStudio/
 ├── .gitignore / .gitattributes / README.md     ← 3 件
 │
 ├── .codebuddy/（扩充，保留 plans/ 不动）
-│   ├── agents/                                  ← 30 件
+│   ├── agents/                                  ← 29 件
 │   │   ├── 职务 5：producer / creative-director / game-designer / qa-lead / release-manager
 │   │   ├── 代码 5：gameplay-programmer / engine-programmer / ai-programmer
 │   │   │        / network-programmer / ui-programmer
@@ -507,17 +493,16 @@ d:/AI/GameStudio/
 │   │   │   ├── Godot 5：godot-specialist / gdscript / csharp / shader / gdextension
 │   │   │   ├── Unity 5：unity-specialist / ui / shader / dots / addressables
 │   │   │   └── Unreal 5：unreal-specialist / blueprint / gas / umg / replication
-│   │   └── 其他 5：ux-designer / prototyper / tools-programmer / qa-tester / art-director（新）
+│   │   └── 其他 4：ux-designer / prototyper / tools-programmer / qa-tester
 │   │
-│   ├── skills/                                  ← 22 件（v4 MVS 必装集，流程全实）
+│   ├── skills/                                  ← 21 件（v4 MVS 必装集，流程全实）
 │   │   ├── 工作室级 8：start / daily-check（新）/ smoke-check / retrospective
 │   │   │        / consistency-check / release-checklist / new-project（新）/ help
 │   │   ├── 项目级纯流程 9：create-stories / create-epics / sprint-plan
 │   │   │        / design-review / review-all-gdds / story-readiness
 │   │   │        / quick-design / milestone-review / story-done
-│   │   ├── 项目级带占位路由 4：dev-story / quick-fix（新）/ architecture-decision
-│   │   │        / setup-engine
-│   │   └── 美术资产 1：art-asset-pipeline（新，调用 .codebuddy/skills/timiai-image）
+│   │   └── 项目级带占位路由 4：dev-story / quick-fix（新）/ architecture-decision
+│   │        / setup-engine
 │   │
 │   ├── hooks/                                   ← 5 件
 │   │   ├── validate-commit.sh（GDD 8 节 + JSON，§4 Q7-A）
@@ -529,7 +514,7 @@ d:/AI/GameStudio/
 │   ├── rules/                                   ← 6 件
 │   │   ├── commit-discipline.md（双通道 tag 软建议，v4 §2）
 │   │   ├── design-authoring.md（GDD 8 节规范，§4 Q7-C）
-│   │   ├── language-policy.md（**薄壳** · 一句话指向 studio/docs/language-policy.md，§9.1）
+│   │   ├── language-policy.md（中英策略，§9.1）
 │   │   ├── project-structure.md（项目目录规范，v4 §3）
 │   │   ├── data-driven.md（数值不硬编码，抄上游）
 │   │   └── test-standards.md（测试规范，抄上游）
@@ -554,10 +539,6 @@ d:/AI/GameStudio/
 │   │       ├── godot/  12 files（copy from upstream）
 │   │       ├── unity/  16 files（copy from upstream）
 │   │       └── unreal/ 17 files（copy from upstream）
-│   ├── reference/                               ← 只读参考区（Phase 1.5 由用户 mv 填充）
-│   │   ├── README.md                            ← 定位说明：只读、不被运行时依赖
-│   │   ├── analysis-report/                     ← Phase 1.5 mv 后落位（Phase 1 期间为空）
-│   │   └── my-game/                             ← Phase 1.5 mv 后落位（Phase 1 期间为空）
 │   └── postmortems/   .gitkeep
 │
 └── projects/                                    ← 项目层
@@ -565,24 +546,22 @@ d:/AI/GameStudio/
     └── .gitkeep
 ```
 
-**合计**：3 根 + 30 agent + 22 skill + 5 hook + 6 rule + 9 template + 3 studio/docs + 45 engine-reference + 2 占位目录 ≈ **125 件**
+**合计**：3 根 + 29 agent + 21 skill + 5 hook + 6 rule + 9 template + 3 studio/docs + 45 engine-reference + 2 占位目录 ≈ **123 件**
 
-> **注**：`art-asset-pipeline` 调用的 `.codebuddy/skills/timiai-image/` 已存在，**不计入 Phase 1 新建产出**。
-
-#### 6.1.2 工作量分布（轮 A 分析 + 本轮微调）
+#### 6.1.2 工作量分布（轮 A 分析）
 
 | 类型 | 数量 | 单件工作量 |
 |---|---|---|
 | 纯 copy 上游（改 frontmatter / 路径）| ~65 | 极低（engine-specialist 15 + engine-reference 45 + template 部分 + agent 抄改）|
 | copy + 轻改（工作室化 / v4 术语对齐）| ~35 | 低（skill 多数 + rule 部分）|
-| 原创（/daily-check / /quick-fix / /new-project / art-asset-pipeline / art-director / acceptance-standards / language-policy / 3 条新 rule / PROJECT.md 模板）| ~12 | 中-高 |
+| 原创（/daily-check / /quick-fix / /new-project / acceptance-standards / language-policy / 3 条新 rule / PROJECT.md 模板）| ~10 | 中-高 |
 | 深度改造（validate-commit.sh 拆极简版 / pre-commit-lite.sh 新版）| 2 | 中 |
 
-→ **真正要动脑的 ~14 件**，其余机械性抄改。
+→ **真正要动脑的 ~12 件**，其余机械性抄改。
 
-#### 6.1.3 Phase 1 分步 step 清单
+#### 6.1.3 Phase 1 分步 step 清单（粗）
 
-> ⚠️ Phase 1 期间**无 git 管理**。每 Step 完成后**不 commit**，改为在 `.codebuddy/plans/v4-migration-log.md` 追加一条完成记录（时间 / 自检结果 / 产出文件数）。
+轮 B 起草完成后，Phase 1 实施按以下 step 推进：
 
 | Step | 内容 | 完成标志 |
 |---|---|---|
@@ -590,44 +569,20 @@ d:/AI/GameStudio/
 | 2 | 起草 3 份工作室级文档（handbook / acceptance-standards / language-policy）| 3 文件存在、内容完整 |
 | 3 | 起草 9 份 template | 全 9 份存在 |
 | 4 | 起草 6 份 rule | 全 6 份存在 |
-| 5 | 起草 22 份 skill（按"工作室级 8 → 项目级纯流程 9 → 带占位路由 4 → 美术资产 1"顺序）| 全 22 份存在，流程自洽 |
-| 6 | 起草 30 份 agent（按"职务 5 → 代码 5 → engine-specialist 15 → 其他 5"顺序）| 全 30 份存在 |
+| 5 | 起草 21 份 skill（按"工作室级 8 → 项目级纯流程 9 → 带占位路由 4"顺序）| 全 21 份存在，流程自洽 |
+| 6 | 起草 29 份 agent（按"职务 5 → 代码 5 → engine-specialist 15 → 其他 4"顺序）| 全 29 份存在 |
 | 7 | 起草 5 个 hook 脚本 | 全 5 份可跑 |
 | 8 | copy 45 份 engine-reference 到 studio/docs/ | 全 45 份存在 |
 | 9 | 起草根 README.md | 文件存在，含项目索引占位 |
-| 10 | Phase 1 自检：跑 §9.2.1 通用 + 类型特异 checklist；扫所有产出确认无 `analysis-report/` `my-game/` 原路径引用；扫 `studio/reference/...` 引用全部就位等待 mv | 无引用悬空、无原路径引用、自检日志写入 v4-migration-log.md |
-
-#### 6.1.4 Phase 1.5 现有资产归位操作手册
-
-Phase 1 全部 10 个 Step 完成后，由**用户手动执行**以下操作（AI 不执行 mv）：
-
-**Step A · 建参考区目录**（AI 在 Phase 1 Step 1 已建好 `studio/reference/` 空目录 + README.md，本步用户 verify）
-
-**Step B · 移动 analysis-report**
-```powershell
-# Windows PowerShell
-Move-Item -Path d:/AI/GameStudio/analysis-report -Destination d:/AI/GameStudio/studio/reference/analysis-report
-```
-
-**Step C · 移动 my-game**（注意它是独立 git 仓，mv 后 .git/ 一同移动，仓本身不受影响）
-```powershell
-Move-Item -Path d:/AI/GameStudio/my-game -Destination d:/AI/GameStudio/studio/reference/my-game
-```
-
-**Step D · 用户告诉 AI "已 mv"，AI 执行 verify**：
-- AI 跑 `list_dir d:/AI/GameStudio/studio/reference/` 确认两个子目录就位
-- AI 跑 `list_dir d:/AI/GameStudio/` 确认根目录无 `analysis-report/` 和 `my-game/` 残留
-- AI 用 `search_content` 扫所有 Phase 1 产出，确认所有 `studio/reference/...` 引用现在都能命中实际文件
-- AI 在 `.codebuddy/plans/v4-migration-log.md` 追加 Phase 1.5 完成记录
-
-**Step E · Phase 1.5 完成 → 进入 Phase 2 第一个动作 git init**（详见 §8.3.2）
+| 10 | Phase 1 自检：对 studio/ 跑 validate-commit.sh；对 PROJECT.md 模板跑 dry-run /new-project | 无引用悬空、无脚本报错 |
+| 11 | Phase 1.5：git init + .gitignore / .gitattributes + 首次 commit + tag pre-v4-migration | git log 显示 1 条 commit + 1 个 tag |
 
 ---
 
 ## 6.x（原 §6 粗描保留于此作为历史）
 
 ```text
-（v2/v3 历史粗描，路径 / 数量 / Phase 划分均已被 §6 / §6.1 覆盖，仅供追溯）
+（历史版本，v2/v3 遗留，仅供追溯）
 
 Phase 1：工作室骨架
   ├─ 建 .codebuddy/（skills/hooks/rules/templates/agents 占位）
@@ -658,14 +613,12 @@ Phase 4：P0 Release TODO 消化
 
 | 项 | v1 MVS | v2 修订 | v3 单项目档 | **v4 孵化器**（本文档） |
 |---|---|---|---|---|
-| 资产总量 | 46 | 52 方案 | 52 | **125**（Phase 1 起草，含 engine-reference 45 + studio 扩展） |
-| 必装 skill | 17 | 21 | 21 | **22**（v3 21 + art-asset-pipeline）|
+| 资产总量 | 46 | 52 方案 | 52 | 52 +（`studio/` 结构） |
+| 必装 skill | 17 | 21 | 21 | 21 |
 | Hook | 4 | 5 | 5 | 5 |
-| Rule | — | — | 5-6 | **6**（含 commit-discipline + language-policy）|
-| Agent | — | — | 9-10 | **30**（含 engine-specialist 15 全备 + art-director）|
 | 顶层模型 | 单项目 | 单项目 | 单项目 | **多项目孵化器** |
 | `.codebuddy/` 位置 | 项目根 | 项目根 | 项目根 | **工作室根**（共享） |
-| `studio/` 层 | 无 | 无 | 无 | **新增**（含 docs / reference / postmortems） |
+| `studio/` 层 | 无 | 无 | 无 | **新增**（最小版） |
 | `projects/` 容器 | 无 | 无 | 无 | **新增** |
 | `game/` 交付物聚合 | 无（src 散在根） | 无 | 无 | **新增** |
 | `design/balance/` | 可选 | 可选 | 标配 | **取消**（并入 GDD + game/data） |
@@ -673,7 +626,6 @@ Phase 4：P0 Release TODO 消化
 | 双通道 | 无 | 无 | 有 | 有（不变） |
 | Commit tag 4 类 | 无 | 无 | 有 | 有（不变） |
 | 跨项目经验沉淀 | 无 | 无 | 无 | **新增**（studio/postmortems/） |
-| 美术资产管线 | 无 | 无 | 无 | **新增**（art-asset-pipeline 调用 timiai-image） |
 
 ---
 
@@ -761,24 +713,20 @@ projects/<p>/game/assets/    ← 软链接到 D:\GameAssets\<p>\
 | LFS 计费 | Phase 2 选 Unity 才开 LFS | 单仓 LFS 计费集中管理更简单 |
 | 现有 `my-game/` 嵌套 git 仓 | origin = CCGS 上游 | 通过 `.gitignore my-game/` 隔离，保留 upstream 拉取能力 |
 
-#### 8.3.2 实施要点（Phase 2 第一个动作执行）
-
-> ⚠️ **Phase 1 + Phase 1.5 期间无 git 管理**。git init 推迟到 Phase 1.5 归位完成后、Phase 2 启动时统一执行。理由：让 Phase 1 不被 commit 节奏打扰，让首次 commit 落到一个**已经包含 reference/ 归位结果**的最终结构上，避免基线不完整。
+#### 8.3.2 实施要点（Phase 1.5 执行）
 
 ```bash
 cd d:/AI/GameStudio/
 git init
 # .gitignore 至少包含：
-#   studio/reference/my-game/      ← 嵌套 git 仓隔离（my-game 是独立仓，origin = CCGS 上游）
+#   my-game/          ← 嵌套 git 仓隔离（F2 事实）
 #   node_modules/
 #   *.log
-#   # studio/reference/analysis-report/ 是否纳入：默认纳入（参考资料随仓走）
+#   # 用户决定：analysis-report/ 和 .codebuddy/plans/ 是否纳入（Phase 1.5 拍板）
 git add .
-git commit -m "[story] v4 工作室基线建立（含 reference 归位）"
-git tag v4-foundation   # Phase 2+ 每次回滚的原点
+git commit -m "[story] v4 工作室骨架初始化"
+git tag pre-v4-migration   # Phase 2+ 每次回滚的原点
 ```
-
-> **回滚原点变更**：原 `pre-v4-migration` tag 概念废弃，新原点为 `v4-foundation`。Phase 1 和 Phase 1.5 期间的回滚靠用户压缩快照（详见 §9.2.5）。
 
 #### 8.3.3 未来拆仓触发条件
 
@@ -805,252 +753,54 @@ git tag v4-foundation   # Phase 2+ 每次回滚的原点
 > **章节定位**
 > - 本章不是"架构决策"也不是"能力清单"，而是**迁移过程本身的纪律**
 > - 目的：让迁移过程**稳定、可验证、风格统一**，避免跑到一半才发现文档风格乱、流程不自洽
-> - 当前状态：9.1 / 9.2 / 9.3 全部已锁定
+> - 当前状态：9.3 现状盘点已完成；9.1 / 9.2 待起草（各单独一轮）
 
-### 9.1 语言策略（已锁定 · v2）
+### 9.1 语言策略（占位，待起草）
 
-> **来源**：用户迁移期要求 1
-> **状态**：已锁定，Phase 1 轮 B 落盘到 `studio/docs/language-policy.md`（只落一份，同时服务人和 AI）
-> **适用范围**：工作室全部产出物（skill / hook / rule / agent / template / plan / doc / GDD / ADR / retro / PROJECT.md / README）
+> **来源**：用户迁移期要求 1 — "所有 skill 和文件中文本，整体用中文表达；文件名 / 专业词汇 / 关键给 AI 看的内容用英文"
+> **状态**：TODO，单独一轮起草后落盘到 `studio/docs/language-policy.md`（人类可读版）+ `.codebuddy/rules/language-policy.md`（给 AI 的约束版）
 
-#### 9.1.1 核心原则
+**起草时要回答的问题**（占位清单，下一轮用）：
+- 哪些**必须用英文**？（候选：文件名 / 目录名 / commit message tag / 配置 key / skill 触发命令如 `/dev-story` / 代码标识符 / Git 概念词）
+- 哪些**给 AI 看的关键内容必须英文**？（候选：skill 的 YAML frontmatter / validate-commit.sh 的规则定义 / JSON schema）
+- 哪些**正文用中文**？（候选：skill 的人类可读说明 / 决策记录文档 / retro 与 GDD 内容 / PROJECT.md 的描述字段）
+- 中英混写的格式约定（英文术语是否加反引号 / 首次出现是否给中文释义）
 
-**按 token 性质划分，不按文件类型划分**。一份文件内部中英自由混写：流程 / 产品 / 项目管理向 token 用中文；代码 token、AI 交接结构化 token、易错 token 用英文。
+### 9.2 迁移稳定性保障（占位，待起草）
 
-#### 9.1.2 七条规则
+> **来源**：用户迁移期要求 2 — "迁移过程中保持整个项目稳定性和可用性，每个文件迁移时准确，反复验证内部矛盾 / 严重问题"
+> **状态**：TODO，单独一轮起草后落盘
 
-**规则 1 · 必须中文（流程 / 产品 / 项目管理向）**
-- 叙述性文本：skill 说明 / 决策引导 / 避坑要点 / 场景描述 / 理由阐述
-- 产品向内容：GDD 正文、玩法描述、用户故事叙述
-- 项目管理向内容：ADR 正文、retro 记录、story 描述段落、automation 业务描述
-- 面向人的标题、小节名、表格列标题
-- 代码 / 命令的**中文注释**（注释服务于理解，中文优先）
+**已落地的部分**（不再讨论）：
+- ✅ Phase 0 现状盘点已产出（`analysis-report/current-state-inventory.md`）
+- ✅ Pre-migration baseline 已由用户建立（工作区整体压缩快照，存工作区外）
+- ✅ 现有内容"迁移期不动、迁完用户手动处理"原则已锁定（轮 A R2）
+- ✅ Phase 1.5 首次 commit + `git tag pre-v4-migration` 作为每批回滚原点
 
-**规则 2 · 必须英文（代码 / 结构化 / 易错 token）**
-- 文件名、目录名：`dev-story/SKILL.md`、`engine-reference/godot/`
-- 代码标识符：函数名、变量名、类名、参数名、hook 名、event 名
-- 命令与路径：`git commit`、`npm run build`、`d:/AI/GameStudio/`
-- 配置 key 与字段：frontmatter 的 `name` / `description` / `location`；JSON / YAML / TOML 的 key
-- commit tag：`[story]` `[quick]` `[fix]` `[refactor]`
-- HTTP / API / 错误码：`HTTP 429`、`ECONNRESET`、`/api/v3/images`
-- Git 概念术语：`commit` `rebase` `tag` `HEAD` `merge`（有中文译法但易歧义，强制英文）
-- AI 交接的结构化字段值：frontmatter enum 必须英文（`location: project` 而非 `location: 项目`）
-- 模型名 / 产品代号 / 版本号：`gpt-image-2`、`Godot 5`、`Unreal 5.6`
-- 代码向技术术语：`regex` `diff` `stdout` `stderr` `pipeline` `callback` `async` `await`（精度不够，强制英文、不翻译、不加释义）
-- 易错字符串：ID、key、hash、UUID、版本号、时间戳格式
-
-**规则 3 · 产品 / PM 术语的中英处理**
-- 产品 / PM 术语：**中文优先，首次出现可加英文备注**
-  - 例：`游戏设计文档（GDD）`、`架构决策记录（ADR）`、`最小可行产品（MVP）`
-  - 之后段落直接用中文或纯英文缩写均可
-- 代码向术语：**英文优先、不解释**
-  - 例：`hook`、`skill`、`agent`、`subagent`、`frontmatter`、`glob`、`regex`
-  - 禁止写"hook（钩子）"这种冗余释义
-- `story` 作为通道 tag 保留英文；作为叙述名词（"这个用户故事是…"）用中文
-
-**规则 4 · 中英混写的格式约束**
-- 英文 token 用反引号包裹：`` `git commit -m "[story] xxx"` ``
-- 中英之间用**半角空格**分隔：`这里调用 engine-specialist agent 完成` ✅ / `这里调用engine-specialist agent完成` ❌
-- 标点切换：中文段落用中文标点（，。："）；英文代码块或英文短句内部用英文标点
-- 表格列标题用中文；表格单元格内部 token 按规则 1 / 2 判断
-- 列表项开头：中文主导段用中文引导（"要求：…"），纯代码清单用英文（`- frontmatter fields:`）
-
-**规则 5 · 反模式清单（明确禁止）**
-- ❌ 把 frontmatter 字段名翻译成中文（`description:` → `描述:`）
-- ❌ 给代码向术语加冗余中文释义（`hook（钩子）`、`agent（代理）`）
-- ❌ 按**文件类型**强制统一语言（"所有 skill 必须全中文" / "所有 agent 必须全英文"）
-- ❌ 在 frontmatter 的 enum 字段里写中文值（`location: 项目`）
-- ❌ 反复给 Git / HTTP / 代码向概念加中文释义（首次释义可以，之后段落不要重复）
-- ❌ 中英之间漏空格（机器分词 / Markdown 渲染会歧义）
-
-**规则 6 · 只落一份 policy**
-- 落盘位置：`studio/docs/language-policy.md`
-- 同时服务人和 AI，**不拆双版**
-- 这份 policy 本身遵守自己的规则（中文主导、代码 token 英文），做自举示范
-- `.codebuddy/rules/` 下**不再**放独立的 language-policy；相关 rule 只用一句 `> 本规则遵循 studio/docs/language-policy.md` 引用
-
-**规则 7 · 门面文件纯中文主导**
-以下文件面向人、阅读量最大，除必要代码 token 外尽量纯中文：
-- `README.md`（工作室根 / 项目根）
-- `studio/docs/studio-handbook.md`（工作室总览）
-- `projects/*/PROJECT.md`（项目门面）
-- `.codebuddy/plans/*.md`（迁移规划类文档）
-
-这些文件里的代码 token、命令、文件路径照样英文（规则 2），但叙述必须纯中文，不出现整段英文技术描述。
-
-#### 9.1.3 实施节奏
-
-- **Phase 1 轮 B**：起草 `studio/docs/language-policy.md` 完整版（把 9.1.2 七条规则扩为可读文档 + 正反例）
-- **Phase 1 所有产出**：起草时直接对齐本规范，不等 policy 文档落盘
-- **Phase 2+**：新增产出同样遵循；违反规范在 retro 中记录并修正
-
-### 9.2 迁移稳定性保障（已锁定 · v1）
-
-> **来源**：用户迁移期要求 2
-> **状态**：已锁定，Phase 1 轮 B 直接按本节执行
-> **适用范围**：Phase 1 所有 10 个 Step + 轮 B 的 11.5 轮起草批次
-
-#### 9.2.0 已落地的部分（不再讨论）
-
-- ✅ Phase 0 现状盘点已产出（`studio/reference/analysis-report/current-state-inventory.md`，Phase 1.5 归位后路径）
-- ✅ Pre-migration baseline 已由用户建立（工作区整体压缩快照，存工作区外 — Phase 1 + Phase 1.5 期间唯一回滚原点）
-- ✅ Phase 1 期间现有内容"保持原位不动、Phase 1.5 由用户手动 mv 归位"原则已锁定
-- ✅ git init 推迟到 **Phase 2 第一个动作**；首次大 commit + `git tag v4-foundation` 作为 Phase 2+ 每次回滚的原点
-
-#### 9.2.1 Step 级自检 checklist
-
-Phase 1 共 10 个 Step。每 Step 结束必须跑自检，通过后才能进入下一 Step。
-
-**通用 checklist（每 Step 都跑）**
-- [ ] 文件新增位置正确：只在 `.codebuddy/`、`studio/`、`projects/` 下新建，**绝不动** `analysis-report/` / `my-game/` / `.codebuddy/plans/`
-- [ ] 命名规范：目录 / 文件名全英文小写 + hyphen，无空格、无中文文件名
-- [ ] frontmatter 完整：`name` / `description` / `location` 齐，enum 符合规范
-- [ ] 语言规范：对 §9.1 七条规则做一次粗扫（中英空格、反引号、无翻译 frontmatter）
-- [ ] **Phase 1 路径约束 1**：本批产出**无**直接引用 `analysis-report/` 或 `my-game/` 原路径（用 `search_content` 扫两个字符串）
-- [ ] **Phase 1 路径约束 2**：如必须引用，路径已写成未来位置 `studio/reference/analysis-report/...` 或 `studio/reference/my-game/...`
-- [ ] **Phase 1 路径约束 3**：所有 `studio/reference/...` 引用点已标注 `[Phase 1.5 归位后生效]`（可在引用后加括号注释，或集中在文件末尾的 Known Limitations 里说明）
-- [ ] Phase 1 期间**不 commit**：自检通过后在 `.codebuddy/plans/v4-migration-log.md` 追加一条记录（Step N / 时间 / 自检结果 / 产出文件数），**不**执行 `git commit`
-
-**起草 skill 时额外检查**
-- [ ] SKILL.md 有 description（说清"什么情况下加载本 skill"）
-- [ ] 流程向 skill：流程闭环、有明确退出条件
-- [ ] 引擎绑定 skill：Phase 1 只建流程骨架 + 引擎路由表，引擎具体知识放 `studio/docs/engine-reference/` 占位
-- [ ] 对外引用的 skill / agent / rule 名称必须在清单内存在
-
-**起草 hook 时额外检查**
-- [ ] hook 脚本可执行（Windows 用 `pwsh`，跨平台用 `bash` + `.sh`）
-- [ ] hook 不阻塞主流程超过 2 秒
-- [ ] validate-commit.sh 类 hook 双通道逻辑正确（`[story]` vs `[quick]` `[fix]` `[refactor]`）
-
-**起草 rule 时额外检查**
-- [ ] rule 有明确适用范围（全工作室 / 单项目 / 某类 agent）
-- [ ] rule 不与已有 rule 冲突
-
-**起草 agent 时额外检查**
-- [ ] agent 的 `subagent` 字段和调用方的 Task 参数一致
-- [ ] agent 有明确的输入 / 输出格式约定
-- [ ] 引擎类 agent 有对应的 `engine-reference/<engine>/` 占位路径
-
-**起草 template 时额外检查**
-- [ ] template 占位符用 `{{variable}}` 统一格式
-- [ ] template 有使用说明（哪个 skill / agent 会消费它）
-
-#### 9.2.2 批次级交叉引用闭合验证
-
-Phase 1 每跑完 1 个 Step 或每批 4-6 件产出，跑一次引用闭合扫描。
-
-**扫描对象**
-1. skill 互引：skill A 说明里提到"调用 skill B"，B 必须存在
-2. agent 互引：agent A 委托 agent B，B 必须存在
-3. rule 引用：`> 本规则遵循 xxx.md` 的 xxx.md 必须存在或标为 Phase 2
-4. template 消费：被某 skill / agent 引用，消费方必须存在
-5. engine-reference 占位路由：路由到 `engine-reference/<engine>/<topic>.md` 的占位文件必须已创建
-6. commit tag 引用：hook / rule 提到的 commit tag 必须在双通道定义内
-
-**扫描手段**
-- Phase 1 骨架期：AI 粗扫 + 人工抽查（产出量 125 件，可承受）
-- Phase 2+：建 `/self-check` skill 自动扫（见 §9.2.4）
-
-**悬空引用处理**
-- **A 类 · Phase 1 范围内的**：立即补建
-- **B 类 · Phase 2 才建的**：引用点标 `[Phase 2 TODO]`，占位文件写"Phase 2 待建"
-- **C 类 · 无必要的**：从引用方删除
-
-#### 9.2.3 轮 B 起草工作流（方案 B · 关键批 3 步回写）
-
-> **概念澄清**：本节讲的是 Phase 1 轮 B **密集新建产出时的协作节奏**，不是 my-game → studio 的移植方案（移植方案见 §6）。
-
-**分批节奏**
-
-| 批次 | 起草产物 | 单轮时长 | 回写方式 |
-|---|---|---|---|
-| 批 1 · 目录骨架 | 空目录 + README 占位 | 0.5 轮 | AI 自主落盘 |
-| 批 2 · language-policy | `studio/docs/language-policy.md` 完整版 | 1 轮 | **3 步回写**（是门面文件，用户全文 review）|
-| 批 3-5 · skill 骨架 | 22 个 skill 的 SKILL.md（含 art-asset-pipeline）| 3 轮（前两轮 7 个，末轮 8 个） | AI 自主落盘 + 用户抽查 2-3 个 |
-| 批 6 · hook 实现 | 5 个 hook（含可执行脚本） | 1 轮 | **3 步回写**（有代码风险，本地跑验证）|
-| 批 7-8 · agent 骨架 | 30 个 agent（含 art-director）| 2 轮（每轮 15 个） | AI 自主落盘 + 用户抽查 5 个 |
-| 批 9 · rule | 6 个 rule | 0.5 轮 | **3 步回写**（影响全工作室规则，用户全文 review）|
-| 批 10 · template | 9 个 template | 0.5 轮 | AI 自主落盘 |
-| 批 11 · engine-reference 占位 | 45 个占位文件 + 3 个引擎 README | 1 轮 | AI 自主落盘 |
-| 批 12 · 收尾一致性扫 | 引用闭合扫描 + 修复 + Phase 1.5 归位准备 | 1 轮 | **3 步回写**（用户确认后写入 v4-migration-log.md 封版，**不 commit**，等 Phase 2 统一 init）|
-
-共 ~11.5 轮。**3 步回写只用于 4 个关键批**（批 2 / 6 / 9 / 12），其余 7 个机械批 AI 自主落盘 + 事后抽查。
-
-**3 步回写法**
-1. AI 先出清单（本批要起草的文件列表 + 每个的 1 句话定位）
-2. AI 逐一起草，起草完**不直接写文件**，先放在回复里
-3. 用户确认 / 调整后，AI 用 write_to_file 批量落盘，然后在 `.codebuddy/plans/v4-migration-log.md` 追加批次完成记录（**Phase 1 期间不 commit，git init 在 Phase 2 才做**）
-
-**AI 自主落盘法**
-1. AI 出清单 → 直接落盘 → 在 `.codebuddy/plans/v4-migration-log.md` 追加批次记录 → 1 句话 summary
-2. 用户事后抽查（建议每批抽 2-5 个）
-3. 发现问题在下一轮开头说明，AI 立即修正
-
-#### 9.2.4 工作室内部一致性 self-check
-
-**Phase 1 不建独立 `/self-check` skill，推迟到 Phase 2**。
-
-理由：
-- Phase 1 产出量固定 ~125 件，人工 + AI 粗扫可承受
-- self-check 本身依赖"已有完整产出清单"，Phase 1 结束才有
-- Phase 1 用 "AI 读 §6.1.1 清单 + search_content" 粗扫即可
-
-**Phase 1 的轻量扫描项**（AI 每批次级扫描时执行）
-1. `search_content` 扫全部新产出里的 skill / agent / rule 名字，对照 §6.1.1 清单找悬空引用
-2. `search_content` 扫 frontmatter enum 字段（`location:` `type:`），确认全英文
-3. `search_content` 扫 `[Phase 2 TODO]` 标记，收集未来待建清单
-4. `search_content` 扫 `analysis-report/` 和 `my-game/` 字符串出现位置（违反 §9.2.1 路径约束的产出立即修正）
-5. `search_content` 扫 `[Phase 1.5 归位后生效]` 标记的引用点是否都改成 `studio/reference/...` 路径
-
-**Phase 2 建 `/self-check` skill 时的职责**（预告，Phase 1 不实施）
-- 跑完整引用闭合扫
-- 跑语言规范静态检查（中英空格、反引号、frontmatter enum）
-- 跑双通道 commit 分布统计（`[story]` / `[quick]` / `[fix]` / `[refactor]` 比例，**Phase 2 之后才有数据**）
-- 输出一致性报告到 `studio/reference/analysis-report/self-check-YYYYMMDD.md`（Phase 1.5 归位后路径）
-
-#### 9.2.5 紧急回滚触发条件
-
-**通用触发条件**（任一命中即暂停迁移）：
-
-1. **污染红线**：意外改到 `analysis-report/` / `my-game/` / `.codebuddy/plans/` 的已有文件
-2. **悬空引用超过 10%**：某批产出后扫出的悬空引用占本批 >10%（起草时系统性缺参考）
-3. **路径约束破例**：Phase 1 产出中出现直接引用 `analysis-report/` 或 `my-game/` 原路径（违反 §9.2.1 路径约束 1）
-4. **内部矛盾严重**：连续 2 批扫出同类矛盾（规则本身有 bug）
-
-**回滚方式按阶段不同**：
-
-| 阶段 | 是否有 git | 回滚方式 |
-|---|---|---|
-| Phase 1（无 git） | 无 | **手动 + 快照恢复**：根据 `v4-migration-log.md` 反推动了哪些文件，手动删；严重时由用户解压 pre-migration 快照覆盖工作区 |
-| Phase 1.5（无 git） | 无 | 同 Phase 1：归位失误时由用户手动 mv 回原位，或解压快照 |
-| Phase 2+（已 git init） | 有 | `git reset --hard v4-foundation`（重回基线）；或 `git revert <批次 commit>`（只撤某一批） |
-
-**Phase 1 / 1.5 回滚的额外注意**：
-- 因为没有 git，AI 必须**严格**按 §9.2.1 通用 checklist 的"位置正确"条款执行，不允许跨界改文件
-- 每 Step 完成后的 `v4-migration-log.md` 是手动反推的**唯一线索**，必须写清"本 Step 新建了哪些文件 / 修改了哪些已有文件"
-- 用户的压缩快照是**最终保险**，迁移期间不要删除
+**待起草的部分**：
+- Phase 1 每个 Step 完成后的**自检 checklist**（10 个 Step 各自跑什么验证）
+- 多文件起草期间的**交叉引用闭合验证**（起草完一批 skill / rule 后跑脚本扫引用）
+- 轮 B 起草过程的**回写确认机制**（每批起草完如何快速 review 再批量落盘）
+- 矛盾自检的 skill / hook（是否要建 `/self-check` 之类的 skill 跑工作室内部一致性？）
 
 ### 9.3 现状盘点（已完成）
 
-> 详见 `studio/reference/analysis-report/current-state-inventory.md`（Phase 1.5 归位后路径）
-> Phase 1 期间该文件仍在 `analysis-report/current-state-inventory.md` 原位（不动）
+> 详见 `analysis-report/current-state-inventory.md`（2026-05-13 产出）
 
 **关键事实**（Phase 1 实施时必须记住）：
-- F1：`d:/AI/GameStudio/` 根目录**无 `.git/`** — git init 推迟到 **Phase 2** 第一个动作
-- F2：`my-game/` 是**独立 git 仓**（origin = CCGS 上游 Donchitos/Claude-Code-Game-Studios）— Phase 1.5 mv 到 `studio/reference/my-game/` 后 `.gitignore` 隔离
+- F1：`d:/AI/GameStudio/` 根目录**无 `.git/`** — Phase 1.5 才 init
+- F2：`my-game/` 是**独立 git 仓**（origin = CCGS 上游 Donchitos/Claude-Code-Game-Studios）— 必须 `.gitignore` 隔离
 - F3：`my-game/` 无用户自己的 commit — 它等于纯净 CCGS v1.0 模板
-- F4：CCGS 框架本体在 `my-game/.claude/` — Phase 1 是抄改源头（Phase 1 期间访问 `my-game/.claude/`，Phase 1.5 后访问 `studio/reference/my-game/.claude/`）
-- F5：`analysis-report/` 是最珍贵的原创资产（v1 → v2 已修订，22 份 md）— Phase 1.5 归位到 `studio/reference/analysis-report/`
+- F4：CCGS 框架本体在 `my-game/.claude/` — Phase 1 是抄改源头
+- F5：`analysis-report/` 是最珍贵的原创资产（v1 → v2 已修订，22 份 md）
 - F6：`.codebuddy/plans/` 已存 5 份 plan artifact — Phase 1 只在 `.codebuddy/` **同级加新子目录**（agents/ skills/ hooks/ rules/ templates/），**绝不动 plans/**
-- F7（新）：Phase 1 期间 `analysis-report/` 和 `my-game/` **保持原位不动**，但 Phase 1 产出**不引用**这两个原路径，必要引用直接写 `studio/reference/...` 未来位置
 
 ### 9.4 未决 TODO（§9 范围内）
 
-- [x] §9.1 语言策略（2026-05-13 锁定 v2，7 条规则 + 只落一份 policy）
-- [x] §9.2 迁移稳定性保障（2026-05-13 锁定 v1，Step/批次/工作流/self-check/回滚五节）
-- [x] §9.3 现状盘点（含 Phase 1.5 归位事实 F7）
-- [x] 轮 B 密集起草的分批节奏（已在 §9.2.3 定稿：11.5 轮 / 12 批 / 方案 B 关键批 3 步回写）
+- [ ] §9.1 语言策略（下一轮起草）
+- [ ] §9.2 迁移稳定性保障（§9.1 之后起草）
+- [ ] 轮 B 密集起草的分批节奏（建议 8-12 轮，每轮 4-6 件产出）
 
 ---
 
-**文档结束**。支柱 1/2/3 + §8.1 LFS + §8.3 仓库结构 + §6 Phase 0-5（含 Phase 1.5 归位）+ §6.1 Phase 1 范围（125 件 + art 管线）+ §9 迁移工程规约（9.1 / 9.2 / 9.3）已全部锁定。后续展开方向：Phase 1 轮 B 密集起草（约 11.5 轮，无 git，写 v4-migration-log.md）→ Phase 1.5 用户手动 mv 归位 → Phase 2 git init + tag v4-foundation。
+**文档结束**。支柱 1 / 2 / 3 + §8.1 LFS + §8.3 仓库结构 + §6 Phase 1 范围 + §9 骨架已锁定。后续展开方向：§9.1 语言策略、§9.2 稳定性保障细则、轮 B Phase 1 产出密集起草。

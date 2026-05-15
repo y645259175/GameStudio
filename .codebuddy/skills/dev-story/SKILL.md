@@ -1,145 +1,89 @@
 ---
 name: dev-story
-description: Heavy-channel development workflow for a single user story (ready to done). Use when user says "做 S1-02 / 实现这个 story / develop story / 开发这个任务". Drives engineer + tester + reviewer through code → test → review → commit, with consistency-check gating before done.
-allowed-tools: read_file, write_to_file, list_dir, execute_command, search_content, replace_in_file
-disable: false
+type: skill
+status: active
+description: Heavy-channel development workflow for a single user story, from ready to done with consistency-check gating.
 ---
 
-# dev-story · Story 开发主流程（重通道）
+# Dev-Story · 开发主流程（重通道）
 
-## 何时加载
+## 何时使用
 
-- 一个 ready 的 story 进入 in-progress
-- 用户明确说"开发 S<N>-<NN>"
-- `sprint-plan` 选定本 story 后由用户主动启动
+实现一条 user story 的标准开发主流程。是双通道 commit 中的"重通道"入口（v4 §2 / `commit-discipline` rule）。
 
-**不加载场景**：< 30 分钟的小修 → `quick-fix`；架构决策 → `architecture-decision`。
+区别于 `quick-fix`：
+- `dev-story` = 重通道，story 驱动，含验收 + 一致性 + commit `[story]` tag
+- `quick-fix` = 轻通道，无 story，commit `[quick]` `[fix]` `[refactor]` tag
 
-## 输入契约
+典型触发：
+- "/dev-story <story-id>"
+- "开始做 story X"
+- `sprint-plan` 后用户选定 story 自动调用
 
-| 输入 | 来源 | 必需 |
-|---|---|---|
-| story 文件 | `projects/<name>/stories/S<N>-<NN>-*.md` | ✅ |
-| GDD 锚定章节 | story 中 gdd-anchor | ✅ |
-| 引擎 | `PROJECT.md` | ✅ |
-| 相关 ADR（如有） | story.adr-refs | 推荐 |
-| commit-discipline rule | 强制 | ✅ |
+## 输入 / 触发条件
 
-## 流程
+- 当前在项目根
+- 目标 story 已 ready（`story-readiness` 通过）
+- 当前 sprint 有容量
 
-### Step 1 · 任务展开
+## 流程步骤
 
-读 story + GDD + ADR，让 engineer agent 给出最小实现计划：
-- 文件变更清单（新增 / 修改）
-- 单元测试计划
-- 风险点
+1. **加载 story**：读 story 文件 + GDD 锚点 + 相关引擎参考
+2. **占位路由 · 引擎参考**：根据项目引擎（来自 `PROJECT.md`）路由到 `studio/docs/engine-reference/<engine>/` 对应章节
+3. **视觉资产前置检查**（新增，强制）：
+   - 若 story 涉及视觉表现，先扫 `assets/` 是否齐
+   - 缺资产 → 先调 `art-asset-pipeline`，或开 `[VISUAL_DEBT]` backlog story
+   - 不允许直接默认 ColorRect 占位 → 详见 `engineer` agent 的"视觉资产红线"
+4. **实现交互**：AI 提议代码改动，用户审 / 改 / 接受
+5. **配置改动**：如涉及数值，按 `data-driven` rule 落到配置文件而非代码硬编码
+6. **写测试**（按 `test-standards` rule）：
+   - 单元 / 集成 / 冒烟按场景选
+   - **真实玩家路径测试**：若 story 涉及玩家可见行为，必须有一条用 `Input.action_press` 等真实输入 API 的测试，不允许只通过直改内部状态（velocity / state）的 cheat 测试
+7. **绕过决策 SOP**（新增）：遇到 bug / 障碍：
+   - 绕过引入"假数据 / 假测试 / 架构妥协" → 必须修根因（spawn `debugger` 做 RCA）
+   - 绕过仅延迟外部 API 等待 → 可绕过
+   - 决定绕过时**必须**开 backlog story（带 priority + due milestone），不只是 retro
+8. **consistency-check**：实现完成后**自动调用** `consistency-check`（v4 §4.5 Q5=D 双触发之一）
+9. **DoD 自检**（新增）：
+   - 视觉债务清单（`[VISUAL_DEBT]` 占位）已登记
+   - 真实玩家路径测试存在且 PASS
+   - 已知 issue 数 ≤ story 容量预算（默认 ≤ 2）
+   - 否则路由 `story-done` 时会被 reviewer 拦下
+10. **critical = 0 → 路由 `story-done`**；critical > 0 → 暴露问题 + 修订 + 重扫
+11. **commit 建议**：`[story] <story-id>: <短描述>`（重通道）
 
-### Step 2 · 编码（engineer / 引擎 specialist）
+## 自主模式补充
 
-按 story 的引擎选择：
-- godot → `godot-gdscript` (Haiku) + `godot-scene` (Haiku) 协同
-- unity → `unity-csharp` + `unity-scene`
-- unreal → `unreal-cpp` 或 `unreal-blueprint`
+当 main agent 在自主模式下走 dev-story（无用户在线）：
 
-通用逻辑由 `engineer` (sonnet)。
+- 视觉资产红线**仍然适用**——main agent 自己 spawn art-director 处理或登记 VISUAL_DEBT
+- 真实玩家路径测试**仍然必须**——不允许 cheat-only PASS
+- producer 至少 spawn 一次做 milestone gate
+- 绕过决策仍按 SOP，不能为了"赶进度"违反
 
-每次写完代码：
-```
-godot --headless --check-only --path projects/<name>/game --quit
-```
-验证语法，有错自己修。
+详见 `studio/docs/autonomous-mode-charter.md`（待建）。
 
-### Step 3 · 单元测试（tester）
+## 输出
 
-调用 `tester` agent (sonnet) 写覆盖关键 AC 的单元测试。框架：
-- godot → GUT
-- unity → NUnit / Unity Test Framework
-- unreal → AutomationTest
+- 代码 / 配置 / 测试改动落盘
+- consistency-check 报告
+- 视觉债务清单 / 绕过决策记录
+- 终端内本 story 实现摘要
 
-跑测试，全绿才进 Step 4。
+## 引用
 
-### Step 4 · code review（reviewer）
+- 上游规划：v4 §2 §4.5 §6.1.1（带占位路由 4 之一）
+- 相关 skill：`story-readiness` `consistency-check` `story-done` `setup-engine` `art-asset-pipeline`
+- 相关 agent：`engineer`（主笔，含视觉资产红线）/ `art-director`（资产）/ `tester`（测试）/ `debugger`（RCA）
+- 相关 rule：`commit-discipline` `data-driven` `test-standards` `design-authoring` `agent-spawn-contract`
+- 占位路由：`studio/docs/engine-reference/<engine>/`（Phase 1 仅占位，Phase 2 起填充）
 
-调用 `reviewer` agent (sonnet) 给 verdict：
-- `APPROVED`
-- `CHANGES_REQUESTED`（具体条目）
-- `BLOCKED`（架构问题，升级 architect）
+## 历史教训
 
-如 CHANGES_REQUESTED → 回 Step 2。
+- **2026-05-15 mario-1-1 自主运行**：engineer 全场用 ColorRect 占位 + 14 个 issue 全部以"记 retro"绕过 + cheat-only 测试 PASS。修复：本 skill 加入"视觉资产前置检查"、"真实玩家路径测试"、"绕过决策 SOP"、"DoD 自检" 四段。
 
-### Step 5 · consistency-check（gating）
+## Known Limitations / Phase 2 Review Points
 
-调用 `consistency-check` skill：
-- GDD 锚定章节 vs 实际代码行为 是否一致
-- 数值表 vs 代码常量 是否一致
-- ADR 决策 vs 代码模式 是否一致
-
-verdict：
-- `CLEAN` → 进 Step 6
-- 有冲突 → 修代码或更新 GDD（决策权 designer/architect）
-
-### Step 6 · commit
-
-按 `commit-discipline` rule：
-```
-[story] <project>/<story-id>: <80 字内描述>
-
-- 关键变更
-- 验收覆盖：AC1, AC2, ...
-
-Story: <path>
-```
-
-如 hooks 启用，validate-commit + pre-commit-lite 会自动跑。
-
-### Step 7 · story 状态推进
-
-调用 `story-done` skill 完成最终签收（更新 status / 归档）。
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `DONE` / `IN_PROGRESS:<step>` / `BLOCKED:<reason>` |
-| `commit_sha` | commit hash |
-| `files_changed` | 文件列表 |
-| `tests_passed` | bool |
-| `consistency` | CLEAN / DIRTY |
-
-## 调用的 agent
-
-- `engineer` (sonnet) 或引擎 specialist (haiku)
-- `tester` (sonnet)
-- `reviewer` (sonnet)
-- 出问题升级 `architect` (opus) / `qa-lead` (opus)
-
-## 加载的 rule
-
-- `agent-spawn-contract`（spawn engineer/tester/reviewer 前的现状注入 + 交付协议）
-- `commit-discipline`（强制 [story] tag）
-- `test-standards`（测试金字塔）
-- `language-policy`
-- `project-structure`
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| Godot 校验报错 | engineer 自修 → 再校验，3 次失败升级 architect |
-| 单元测试失败 | debugger agent 介入 |
-| reviewer BLOCKED | 调 `architecture-decision` 起新 ADR |
-| consistency-check DIRTY | 决策：改代码 or 改 GDD（designer 仲裁） |
-| commit hook 失败 | 修 commit message 或排查 hook |
-
-## 验收标准
-
-- AC 全部覆盖（单元测试或人工验证）
-- code review APPROVED
-- consistency-check CLEAN
-- commit 通过 hook
-- story.status = `done` （由 `story-done` 落定）
-
-## Known Limitations
-
-- 单元测试覆盖率无强制阈值（test-standards 建议 ≥ 60%）
-- 跨 story 联调依赖人工 smoke
+- [Phase 2 TODO] 引擎参考占位 Phase 1 仅有空文件，路由实质为 noop；Phase 2 后填充才有效
+- [Phase 2 TODO] 测试自动化触发条件（哪种场景必跑哪种测试）未在 test-standards 中明确
+- [Phase 2 TODO] autonomous-mode-charter 待写

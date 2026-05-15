@@ -1,0 +1,41 @@
+---
+description: When agent must give a time/effort estimate (user asks "how long", agent proposes multi-step plan with timing). Reminds: code-line count + uncertainty + external waits, NOT human work hours.
+globs:
+alwaysApply: false
+---
+
+# ai-effort-estimation · 估时触发型规范
+
+## 触发场景（仅这些场景下加载）
+
+- 用户问"多久 / 还要多少时间 / 能多快"
+- agent 准备给多步计划且要附上时长
+- agent 准备启动有大量外部 API 等待的任务（如 timiai-image 批量出图）
+
+不要在普通编码 / 修 bug / 写 markdown 时主动加载本 rule。
+
+## 三条 checklist
+
+估时前对自己问 3 个问题：
+
+1. **改动量**：~N 行代码 / M 文件？
+2. **不确定性**：机械修改 / 需要看输出再决定 / 完全未知
+3. **外部依赖**：是否调用 API、网络、Tool；这部分等待**不在我控制内**，单独标注
+
+回答用户时按这三项给。**不要用"小时 / 分钟"指代 agent 自己处理时间**——那是人类工时。只有真实外部等待才用时间单位。
+
+## 反例 → 正例
+
+| 反例 | 正例 |
+|---|---|
+| "1.5-3 小时完成" | "改动量 ~500 行 + 10 次 godot headless 跑（每次 ~10s）+ 外部依赖 timiai-image 出 15 张图（不可控，平台决定）" |
+| "需要时间想想" | "方案已定，按 ADR-XX 实现 ~80 行" |
+| "比较快" | "机械替换 5 处，单 tool call" |
+
+## 自我校准
+
+任务结束后如果实际成本与估算偏差 ≥ 50%，把偏差原因记入当次 retro / log 一行即可。不需要单独流程。
+
+## 历史教训
+
+2026-05-15 mario-1-1 自主运行后估时"1.5-3 小时"被用户当场指出"基于 AI 还是人类？"——agent 把人类工时投射到 AI 任务上，且把"思考"算成耗时。

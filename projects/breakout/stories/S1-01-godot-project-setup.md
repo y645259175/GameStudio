@@ -1,13 +1,3 @@
-﻿---
-id: S1-01
-epic: E1
-priority: P0
-estimate: 1
-status: done
-gdd-anchor: gdd/gdd-breakout.md#§1-引擎配置
-completed-at: 2026-05-14
----
-
 # S1-01 · Godot 项目初始化
 
 **Epic**：E1 · 核心玩法原型
@@ -30,4 +20,3 @@ completed-at: 2026-05-14
 - Godot 4.x，GDScript
 - 渲染：Forward+
 - 窗口模式：固定 1280×720，不可拉伸
-

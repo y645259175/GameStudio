@@ -46,8 +46,8 @@ provider:
 |---|---|
 | `PROJECT.md` | 项目元数据（引擎/phase/里程碑）|
 | `README.md` | 项目级快速开始 + smoke checklist |
-| `gdd/` | GDD 文档（最小 5 维度 + 项目专属章节，由概念对话产出）|
-| `stories/` | User stories |
+| `gdd/` | GDD 文档（8 节结构）|
+| `stories/` | User stories（含 `backlog.md` 集中登记 issue / 视觉债 / 绕过项）|
 | `epics/` | Epics |
 | `adr/` | Architecture Decision Records |
 | `sprints/` | Sprint plan / smoke / retro（统一目录）|
@@ -76,6 +76,36 @@ skill / agent / hook / rule / template 的正文**不得**引用 `analysis-repor
 ### 约束 3：占位显式标注
 
 占位内容必须以 `[Phase 1.5+ TODO]` 或 `[Phase 2 TODO]` 显式标注，不得留空无说明。
+
+## backlog 格式约定（新增）
+
+`projects/<name>/stories/backlog.md` 是项目所有"未排期 issue / 视觉债 / 绕过项 / 风险点"的唯一登记处。
+
+格式：
+
+```markdown
+# <project> · Backlog
+
+## 未排期
+
+| ID | 类型 | 标题 | priority | due milestone | 来源 | 状态 |
+|---|---|---|---|---|---|---|
+| BL-001 | bug | 描述 | P0/P1/P2/P3 | M5 | retro 2026-05-15 | open / in-progress / done |
+| BL-002 | VISUAL_DEBT | 描述 | P1 | M6 | dev-story story-XX | open |
+| BL-003 | bypass | 描述 | P2 | M5 | engineer 决定 | open |
+```
+
+类型枚举：
+- `bug` — 已知 bug
+- `VISUAL_DEBT` — 视觉占位债务
+- `bypass` — 绕过决策（dev-story SOP 产生）
+- `risk` — 已识别风险但未触发
+- `improvement` — 流程 / 体验改进点
+
+约束：
+- retro 中的 action items **必须**每条对应一条 backlog 条目（由 postmortem-keeper 把关）
+- 不允许只把 issue 写进 retro 而不进 backlog
+- milestone gate 时检查 backlog 中 due ≤ 当前 milestone 的项是否已 done
 
 ## 关联 skill / agent
 

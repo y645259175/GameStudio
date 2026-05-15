@@ -1,138 +1,56 @@
 ---
 name: create-stories
-description: Break an epic into actionable user stories. Use when user says "拆 story / 把 epic 切小 / story breakdown / 写任务卡". Each story has acceptance criteria, GDD anchor, estimate (1-5 pts), and is sprint-deliverable.
-allowed-tools: read_file, write_to_file, list_dir
-disable: false
+type: skill
+status: active
+description: Breaks an epic into actionable user stories with acceptance criteria, tagged to GDD sections.
 ---
 
-# create-stories · Epic → Story 拆分
+# Create-Stories · 拆分 user stories
 
-## 何时加载
+## 何时使用
 
-- 某个 epic 即将进入 sprint 计划
-- 用户说"把 E1 拆成 stories"
-- `sprint-plan` 调用本 skill
+把一个 epic 拆成可执行的 user stories。每条 story 是一个 sprint 内可完成的最小交付单元。
 
-**不加载场景**：epic 尚未拆完（走 `create-epics`）；story 已存在仅修改（走 `quick-fix` 或直接编辑）。
+典型触发：
+- "/create-stories <epic-id>"
+- "把这个 epic 拆成 stories"
+- 由 `create-epics` skill 末段引导调用
 
-## 输入契约
+## 输入 / 触发条件
 
-| 输入 | 来源 | 必需 |
-|---|---|---|
-| Epic 文件 | `projects/<name>/epics/E<N>-*.md` | ✅ |
-| GDD 锚定章节 | epic 中 gdd-anchor | ✅ |
-| 团队 velocity（pt/sprint）| `PROJECT.md` 或历史 retro | 推荐 |
+- 当前在某项目根（`projects/<name>/`）
+- 目标 epic 已存在（`projects/<name>/epics/<epic-id>.md` 或在 GDD 中标注）
+- 可选：sprint 容量参考（来自上一 sprint 的 velocity）
 
-## 流程
+## 流程步骤
 
-### Step 1 · 读 epic + 锚定章节
+1. **读 epic**：解析 epic 的目标 / 范围 / 验收标准
+2. **GDD 锚定**：找到 epic 对应的 GDD 章节（违反 `design-authoring` rule 时阻塞）
+3. **粗拆**：AI 提议 3-8 条 user story，每条按 INVEST 原则（Independent / Negotiable / Valuable / Estimable / Small / Testable）
+4. **交互修订**：用户对每条 story 拍板"接受 / 修改 / 拆 / 合并"
+5. **细化**：每条 story 含：
+   - title（英文 kebab-case）
+   - 用户视角描述（中文："作为 X，我想 Y，以便 Z"）
+   - 验收标准（中文，3-5 条）
+   - 估算（XS / S / M / L / XL）
+   - GDD 引用（章节锚点）
+6. **落盘**：`projects/<name>/stories/<sprint>/<story-id>.md`，从 `templates/...` 中找 story 模板（**注**：当前 9 template 清单未列 story 模板，§9.4 兜底审计时评估）
+7. **commit 建议**：`[story] add stories for <epic-id>`
 
-并行：
-- `read_file projects/<name>/epics/E<N>-*.md`
-- `read_file projects/<name>/gdd/<chapter>.md`
+## 输出
 
-### Step 2 · 委托 pm 拆 story
+- 一组 `projects/<name>/stories/<sprint>/<story-id>.md`
+- 终端内 stories 摘要表
 
-调用 `pm` agent（opus），让它：
-- 拆 5-10 个 story
-- 每个 1-5 点（5 点为上限，超过要再拆）
-- 总点数 ≤ 团队 1 sprint velocity 的 1.5 倍（留缓冲）
+## 引用
 
-### Step 3 · 每个 story 必备字段
+- 上游规划：v4 §6.1.1
+- 相关 skill：`create-epics` `sprint-plan` `story-readiness` `design-review`
+- 相关 rule：`design-authoring`
+- 相关 template：[Phase 2 TODO] story.md.tpl（9 template 清单未列）
 
-```yaml
----
-id: S<N>-<NN>-<slug>
-epic: E<N>
-priority: P0/P1/P2
-estimate: 1/2/3/5
-status: ready/in-progress/done/blocked
-gdd-anchor: gdd/<chapter>.md#<section>
-adr-refs: []  # 可选
----
+## Known Limitations / Phase 2 Review Points
 
-# S<N>-<NN>: <title>
-
-## 用户故事
-> 作为 <角色>，我想 <动作>，以便 <价值>
-
-## 验收标准（AC）
-1. ...
-2. ...
-3. ...
-
-## 实现要点
-（不是详细设计，是关键节点提示）
-
-## Definition of Done
-- [ ] 单元测试通过
-- [ ] reviewer 评审通过
-- [ ] 文档更新
-
-## 依赖
-- 前置 story: [...]
-- 阻塞项: [...]
-```
-
-### Step 4 · DoR (Definition of Ready) 自检
-
-每个 story 必须满足 DoR 才落盘（用 `story-readiness` skill 思路）：
-- 有 ≥ 3 条 AC
-- 有 GDD 锚
-- 估值确定
-- 无未解决的阻塞依赖
-
-不满足 → 标 `status: draft` 或丢回 epic 待补。
-
-### Step 5 · 落盘
-
-每个 story 一个文件：`projects/<name>/stories/S<N>-<NN>-<slug>.md`
-
-更新 `epics/E<N>-*.md` 的"实际 stories"段。
-
-### Step 6 · 输出 story 索引
-
-```
-| ID | Story | Epic | Pts | Status |
-|---|---|---|---|---|
-```
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `STORIES_READY` / `STORIES_DRAFT:<count>` |
-| `story_ids` | [S1-01, S1-02, ...] |
-| `total_points` | int |
-| `next_skill` | `sprint-plan` |
-
-## 调用的 agent
-
-- `pm`（opus，主笔）
-- `designer`（opus，仅在 GDD 锚不清晰时）
-- `reviewer`（sonnet，DoR 复核）
-
-## 加载的 rule
-
-- `design-authoring`（AC 格式）
-- `project-structure`
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| 单 story > 5 pts | 强制再拆 |
-| AC < 3 条 | 标 draft，要求补 |
-| 总点数 > 2× velocity | 缩 scope 或分两个 sprint |
-
-## 验收标准
-
-- 5-10 个 story
-- 全部 ≤ 5 pts
-- 全部满足 DoR 或明确标 draft
-- 0 悬空 GDD 锚（每个 story 锚定的章节都存在）
-
-## Known Limitations
-
-- velocity 估算依赖历史数据，新项目首次估为 +-30%
-- AC 自然语言化，自动化校验难（依赖 reviewer 语义判断）
+- [Phase 2 TODO] story 模板未在 9 template 清单中
+- [Phase 2 TODO] INVEST 自检靠 AI 判断，未来可加 hook 自动校验
+- [Phase 2 TODO] 估算尺度（XS-XL）的具体含义需在工作室宪法中定义

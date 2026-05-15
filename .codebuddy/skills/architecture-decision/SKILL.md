@@ -1,121 +1,59 @@
 ---
 name: architecture-decision
-description: Architecture Decision Record (ADR) authoring flow. Use when user says "ADR / 架构决策 / 技术选型 / 重构方案 / refactor proposal / 引擎选择 / 数据库选 / pattern 选". Produces a structured ADR with context / options / decision / consequences. Calls architect agent.
-allowed-tools: read_file, write_to_file, list_dir, search_content
-disable: false
+type: skill
+status: active
+description: Architecture Decision Record (ADR) authoring flow for significant technical decisions with context, options, and consequences.
 ---
 
-# architecture-decision · ADR 起草
+# Architecture-Decision · ADR 起草
 
-## 何时加载
+## 何时使用
 
-- 影响 ≥ 2 个模块的技术决策
-- 引擎 / 框架 / 关键库选择
-- 重构 / 模式切换（如同步 → 异步）
-- 用户明确说"做个 ADR"
+记录重大技术决策（引擎选型 / 网络架构 / 数据库选型 / 框架升级 / 跨项目通用方案）。每个 ADR 是一份独立文档，结构标准化。
 
-**不加载场景**：单文件局部改动 → `quick-fix`；纯设计 → `design-review`；story 内技术细节 → `dev-story`。
+典型触发：
+- "/architecture-decision"
+- "记录一下这个技术决策"
+- "我要选引擎"
+- 由 `setup-engine` 或 `dev-story` 遇到重大选型时引导
 
-## 输入契约
+## 输入 / 触发条件
 
-| 输入 | 来源 |
-|---|---|
-| 决策主题 | 用户 |
-| 现状（status quo） | 代码 / GDD |
-| 候选方案 ≥ 2 | 用户或 architect 提议 |
-| 约束（性能 / 团队技能 / 时间） | 用户 |
+- 当前在项目根（项目级 ADR）或工作室根（工作室级 ADR）
+- 决策主题明确
 
-## 流程
+## 流程步骤
 
-### Step 1 · 委托 architect 收集 context
+1. **范围判断**：是项目级还是工作室级？
+   - 项目级 → 落 `projects/<name>/adr/`
+   - 工作室级 → 落 `studio/docs/adr/`（**注**：当前 §6.1.1 仅列 studio/docs 3 件，无 adr/，§9.4 兜底审计时评估）
+2. **占位路由 · 引擎 / 工具参考**：如涉及引擎选型，路由到 `studio/docs/engine-reference/`
+3. **ADR 五段式**（按 `templates/adr.md.tpl`）：
+   - **Status**: proposed / accepted / deprecated / superseded
+   - **Context**: 为什么要做这个决策（中文）
+   - **Options**: 候选方案对比（≥ 2 个）
+   - **Decision**: 选哪个 + 理由（中文）
+   - **Consequences**: 正面 / 负面影响 + 撤销成本
+4. **关联 GDD / story**：在 ADR 末尾列受影响的 GDD 章节 / stories
+5. **落盘**：`<scope>/adr/YYYY-MM-DD-<topic>.md`
+6. **commit 建议**：`[story] adr: <topic>`（重通道，因为 ADR 影响深远）
+7. **回溯链**：如本 ADR superseded 旧 ADR，旧 ADR status 改 superseded + 加链接
 
-调用 `architect` agent（opus），让它：
-- 用 ≤ 200 字描述现状
-- 列 ≥ 2 个候选方案
-- 列 trade-off 矩阵（性能 / 复杂度 / 学习成本 / 风险）
+## 输出
 
-### Step 2 · 用户确认选项范围
+- ADR 文档落盘
+- 受影响 GDD / story 的反向链接
 
-如 architect 给的方案 < 2 → 反问用户是否还有其他备选。
+## 引用
 
-### Step 3 · 决策推导
+- 上游规划：v4 §6.1.1（带占位路由 4 之一）
+- 相关 skill：`setup-engine` `dev-story` `quick-design`
+- 相关 rule：`commit-discipline` `project-structure`
+- 相关 template：`templates/adr.md.tpl`
+- 占位路由：`studio/docs/engine-reference/<engine>/`（Phase 1 占位）
 
-按 `templates/adr.md` 结构：
+## Known Limitations / Phase 2 Review Points
 
-```
-# ADR-NNNN: <title>
-## 状态
-- proposed / accepted / superseded
-## 背景（Context）
-## 候选方案（Options）
-### A. <name>
-### B. <name>
-## 决策（Decision）
-- 选 X 因为 Y
-## 后果（Consequences）
-- 正面
-- 负面
-- 风险缓解
-## 受影响的代码 / 文档
-- file1, file2, ...
-```
-
-### Step 4 · reviewer 交叉核对
-
-调用 `reviewer` agent 检查：
-- trade-off 是否客观
-- "决策"是否能回溯到"背景 + 选项"
-- 后果是否包含负面
-
-### Step 5 · 落盘
-
-`projects/<name>/adr/ADR-<NNNN>-<slug>.md`（4 位编号自增）。
-
-如有跨项目共享（架构原则） → 同时落 `studio/docs/adr/` （Phase 2 目录）。
-
-### Step 6 · 影响通知
-
-在受影响代码文件头注释中加：
-```
-# See: projects/<name>/adr/ADR-NNNN-<slug>.md
-```
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `ACCEPTED` / `PROPOSED` / `REJECTED` |
-| `adr_path` | `projects/<name>/adr/ADR-NNNN-*.md` |
-| `affected_files` | 文件列表 |
-| `next_action` | 实施 / 等用户复核 |
-
-## 调用的 agent
-
-- `architect`（opus，主笔）
-- `reviewer`（sonnet，复核）
-- 引擎相关时调对应 `<engine>-architect`
-
-## 加载的 rule
-
-- `agent-spawn-contract`（spawn architect 前的现状注入 + 交付协议）
-- `commit-discipline`（[story] tag 格式）
-- `language-policy`
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| 候选方案只有 1 个 | 标 `proposed` 但要求 architect 补 1 个对照方案 |
-| trade-off 评估困难 | 留空 + 加 `[Phase 2 evaluate]` 标注 |
-| 决策后被推翻 | 旧 ADR 状态改 `superseded`，新 ADR 引用旧 ID |
-
-## 验收标准
-
-- 5 节齐全（背景 / 候选 / 决策 / 后果 / 受影响）
-- 候选 ≥ 2 + trade-off 表
-- 后果含负面 + 缓解
-
-## Known Limitations
-
-- ADR 编号自增依赖目录扫描（Phase 2 评估元数据 index 文件）
-- 跨项目 ADR 与项目 ADR 的归档边界 Phase 2 决议
+- [Phase 2 TODO] 工作室级 `studio/docs/adr/` 目录未在 §6.1.1 列出，§9.4 兜底审计批量决议
+- [Phase 2 TODO] superseded 旧 ADR 的批量更新未自动化
+- [Phase 2 TODO] ADR 数量增多后的索引 / 检索机制未设计（≥ 30 ADR 时需要）

@@ -1,32 +1,34 @@
-﻿#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env bash
+# detect-gaps.sh · 缺口检测（骨架）
+# 用途：consistency-check skill 的 cli 包装入口，可被定时任务或 CI 调用
+# 触发：手动或定时（非 git hook）
+# 退出码：0 通过 / 1 发现 critical 缺口 / 2 配置错误
+# 上游来源：抄上游 my-game/（[Phase 1.5+ 从 reference/my-game/ 抄完整版]）
+#
+# Phase 1 状态：仅骨架，实质功能由 .codebuddy/skills/consistency-check/ 提供
+# 本 hook 是给非交互场景（CI / cron）用的入口，提示用户调用 skill。
 
-# Stop hook · AI 完成响应后检测一致性缺口
-# 触发：每次 AI 完成一轮响应时（CodeBuddy Stop 事件）
-# 功能：轻量检测本次响应是否可能导致 GDD ↔ 代码 不一致
-# 输入：stdin JSON
-# 输出：如检测到缺口，通过 systemMessage 提醒 AI 注意
+set -uo pipefail
 
-INPUT=$(cat)
-CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null || echo "")
+trap 'echo "[detect-gaps] 异常退出" >&2; exit 2' ERR
 
-# 检查是否有 .gd 文件被修改但对应 GDD 章节未更新
-# （轻量实现：看 git diff --name-only 中是否有 .gd 文件修改）
-MODIFIED_GD=$(cd "$CWD" 2>/dev/null && git diff --name-only HEAD 2>/dev/null | grep "\.gd$" || true)
+PROJECT_NAME="${1:-}"
 
-if [ -n "$MODIFIED_GD" ]; then
-    # 有 GDScript 改动，提醒检查一致性
-    cat <<EOF
-{
-    "continue": true,
-    "hookSpecificOutput": {
-        "hookEventName": "Stop",
-        "additionalContext": "注意：本轮有 GDScript 文件被修改（${MODIFIED_GD%%$'\n'*}...），建议确认 GDD/数值表是否需要同步更新。"
-    }
-}
-EOF
-else
-    echo '{"continue": true}'
+if [ -z "$PROJECT_NAME" ]; then
+  echo "用法：detect-gaps.sh <project-name>"
+  echo "提示：本 hook 是 consistency-check skill 的非交互入口"
+  echo "      Phase 1 期间请直接调用 skill：/consistency-check"
+  exit 2
 fi
+
+PROJECT_DIR="projects/$PROJECT_NAME"
+if [ ! -d "$PROJECT_DIR" ]; then
+  echo "[critical] 项目不存在：$PROJECT_DIR" >&2
+  exit 1
+fi
+
+echo "[detect-gaps] 项目 $PROJECT_NAME 的实质扫描功能由 consistency-check skill 提供"
+echo "[detect-gaps] Phase 1 期间，请在 AI 会话中调用 /consistency-check"
+echo "[detect-gaps] [Phase 1.5+ TODO] 从 reference/my-game/ 抄完整版，含 jq / awk 实现的扫描逻辑"
 
 exit 0

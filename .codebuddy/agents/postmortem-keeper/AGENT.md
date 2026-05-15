@@ -57,9 +57,18 @@ enabled: true
 ## 流程步骤
 
 1. **归档**：retro / incident 报告落 `projects/<name>/retros/`
-2. **action item 索引**：建立 owner / due / status 跟踪表
-3. **跨 sprint 提醒**：每个 sprint 起点检查未闭环 item
-4. **教训检索**：被询问时返回相关 retro 链接 + 摘要
+2. **backlog 把关**（关键，新增）：
+   - 检查每篇 retro 末尾的"action items"
+   - 每条 action item **必须**对应 `projects/<name>/stories/backlog.md` 中的一条条目（带 BL-XXX id）
+   - 没有对应 backlog id → reject 该 retro，要求作者先建 backlog story
+   - 防止"记 retro = 永久搁置"的恶性模式
+3. **action item 索引**：建立 owner / due / status 跟踪表（与 backlog 条目联动）
+4. **跨 sprint 提醒**：每个 sprint 起点检查未闭环 item（同时检查对应 backlog 是否还 open）
+5. **教训检索**：被询问时返回相关 retro 链接 + 摘要
+
+## 历史教训
+
+- **2026-05-15 mario-1-1**：14 个 issue 全部以"记 retro 后续修"作为终止动作，从未进入 backlog，导致永远不会被处理。新增"backlog 把关"步骤防止重演。
 
 ## 输出
 

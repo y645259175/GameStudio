@@ -28,23 +28,25 @@ disable: false
 
 ## 流程
 
-### Step 1 · 收集 5 项 quality 指标
+### Step 1 · 收集 7 项 quality 指标
 
 | 指标 | 数据来源 | 阈值（P0 release）|
 |---|---|---|
 | 1. 测试通过率 | run-tests.ps1 | ≥ 95% |
 | 2. 引擎校验 | godot --check-only | EXIT 0 必须 |
 | 3. consistency-check verdict | reports/consistency-*.md | CLEAN 或 MINOR |
-| 4. 已知 P0 bug 数 | qa/regression-matrix.md | = 0 |
+| 4. 已知 P0 bug 数 | qa/regression-matrix.md + backlog | = 0 |
 | 5. GDD 验收 P0 标准覆盖 | GDD §8 vs 实际功能 | 100% |
+| 6. **视觉债务**（[VISUAL_DEBT]）| `stories/backlog.md` 中的 VISUAL_DEBT 数 | milestone ≤ 2，release = 0 |
+| 7. **真实玩家路径测试**（非 cheat-only）| `tests/` 下含 InputMap action_press 的测试存在且 PASS | 必须 ≥ 1 条 |
 
 阈值按场景分级：
 
-| 场景 | 测试 | 引擎 | consistency | P0 bug | GDD P0 |
-|---|---|---|---|---|---|
-| sprint 收尾 | ≥ 80% | EXIT 0 | CLEAN/MINOR | ≤ 1 | ≥ 80% |
-| milestone gate | ≥ 90% | EXIT 0 | CLEAN | = 0 | 100% |
-| release gate | ≥ 95% | EXIT 0 | CLEAN | = 0 | 100% |
+| 场景 | 测试 | 引擎 | consistency | P0 bug | GDD P0 | 视觉债 | 真路径测试 |
+|---|---|---|---|---|---|---|---|
+| sprint 收尾 | ≥ 80% | EXIT 0 | CLEAN/MINOR | ≤ 1 | ≥ 80% | ≤ 5 | 推荐 |
+| milestone gate | ≥ 90% | EXIT 0 | CLEAN | = 0 | 100% | ≤ 2 | **必须 ≥ 1** |
+| release gate | ≥ 95% | EXIT 0 | CLEAN | = 0 | 100% | = 0 | **必须 ≥ 1 PASS** |
 
 ### Step 2 · 委托 qa-lead 综合判断
 
@@ -123,6 +125,16 @@ disable: false
 - 5 项指标齐全（或显式 N/A）
 - verdict 明确无歧义
 - 报告落盘
+
+## 自主模式强制门
+
+当 main agent 在自主模式下推进 milestone：
+
+- **必须**调用本 skill，不允许"我自己判断 milestone PASS"
+- 阈值按 milestone 列严格执行（不允许放宽）
+- `GATE_FAILED` 时不允许进下一 milestone
+- `CONDITIONAL_PASS` 必须 spawn `producer` agent 仲裁是否带条件推进
+- 详见 `studio/docs/autonomous-mode-charter.md`
 
 ## Known Limitations
 

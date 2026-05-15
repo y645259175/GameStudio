@@ -1,96 +1,57 @@
 ---
 name: setup-engine
-description: Engine-specific project scaffolding. Called by new-project skill (or directly when user says "init godot project / 初始化引擎 / setup unity"). Reads PROJECT.md.engine field and scaffolds engine-specific files (project.godot / .uproject / ProjectSettings) under projects/<name>/game/.
-allowed-tools: read_file, write_to_file, list_dir, execute_command
-disable: false
+type: skill
+status: active
+description: Engine initialization router that scaffolds engine-specific project files based on PROJECT.md engine field.
 ---
 
-# setup-engine · 引擎脚手架路由
+# Setup-Engine · 引擎初始化路由
 
-## 何时加载
+## 何时使用
 
-- 由 `new-project` 自动调用
-- 用户在已有项目中切换 / 补建引擎骨架（"我要加个 godot 项目结构"）
+`new-project` 完成后，给项目接上具体引擎（godot / unity / unreal）。是带占位路由 4 之一——本 skill 的核心是**路由到引擎参考**，不实现引擎具体细节。
 
-**不加载场景**：引擎相关代码层面工作（走 `dev-story` + 对应引擎 specialist agent）。
+典型触发：
+- "/setup-engine"
+- "接 godot 上来"
+- `new-project` 末段路由
 
-## 输入契约
+## 输入 / 触发条件
 
-| 输入 | 来源 |
-|---|---|
-| `project_name` | 调用方 / 当前 cwd |
-| `engine` | `projects/<name>/PROJECT.md` 的 engine 字段 |
-| `engine_version` | 同上（可选）|
+- 当前在项目根
+- `PROJECT.md` engine 字段已填（godot / unity / unreal）
+- 项目目录骨架已建好（`new-project` 完成）
 
-## 流程
+## 流程步骤
 
-### Step 1 · 读取项目元数据
+1. **引擎识别**：读 `PROJECT.md` engine 字段
+2. **占位路由 · 引擎参考**：定位到 `studio/docs/engine-reference/<engine>/`
+3. **engine-specialist agent 调用**：路由到 `agents/<engine>-specialist-*` 系列 agent（按需）
+4. **工程骨架建立**：
+   - **godot**：建 `project.godot` + `scenes/` + `scripts/` + `assets/`
+   - **unity**：提示用户用 Unity Hub 创建，AI 填 .gitignore + 初始 Assets/
+   - **unreal**：提示用户用 Epic Launcher 创建，AI 填 .gitignore + 初始 Source/
+5. **基础配置**：
+   - .gitignore（按引擎模板）
+   - 项目级 README 加引擎启动说明
+6. **commit 建议**：`[story] setup engine <engine>`
 
-```
-read_file projects/<name>/PROJECT.md
-```
+## 输出
 
-提取 `engine` / `engine_version` 字段。
+- 引擎工程骨架文件
+- 路由提示（接下来调用 `dev-story` 或 `architecture-decision`）
 
-### Step 2 · 路由到对应引擎分支
+## 引用
 
-| engine | 落盘内容 |
-|---|---|
-| `godot` | `game/project.godot`（最小可启动配置）+ `game/scenes/.gitkeep` + `game/scripts/.gitkeep` + `game/assets/.gitkeep` |
-| `unity` | `game/Assets/`、`game/ProjectSettings/`（占位 → Phase 2 完整版）|
-| `unreal` | `game/<Name>.uproject`（占位 → Phase 2 完整版）|
+- 上游规划：v4 §6.1.1（带占位路由 4 之一）、§3
+- 相关 skill：`new-project` `architecture-decision` `dev-story`
+- 相关 agent：`godot-specialist-*` / `unity-specialist-*` / `unreal-specialist-*`（30 agent 中的 15 个 engine-specialist）
+- 相关 rule：`project-structure`
+- 占位路由：`studio/docs/engine-reference/<engine>/`（Phase 1 占位 / Phase 2 填充）
 
-### Step 3 · 写入引擎参考链接
+## Known Limitations / Phase 2 Review Points
 
-在 `projects/<name>/README.md` 末尾追加：
-```
-## 引擎参考
-- studio/docs/engine-reference/<engine>/README.md
-```
-
-### Step 4 · 验证（如可用）
-
-如检测到 `engine/<Engine>/` 下有可执行文件，运行最小校验：
-- godot：`Godot.exe --headless --check-only --path projects/<name>/game --quit`
-- unity / unreal：跳过（Phase 1 占位）
-
-### Step 5 · 输出
-
-明确告诉用户：
-- 引擎骨架就位
-- 推荐的 specialist agent（如 `godot-architect` / `unity-architect`）
-- 下一步：写第一个 story 或调 `dev-story`
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `SCAFFOLDED` / `PLACEHOLDER_ONLY:<engine>` / `ABORTED:<reason>` |
-| `engine` | godot/unity/unreal |
-| `recommended_specialist` | `<engine>-architect` |
-
-## 调用的 agent
-
-- `<engine>-architect`（可选，咨询引擎特定的最佳目录结构）
-
-## 加载的 rule
-
-- `project-structure`
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| `PROJECT.md.engine` 字段缺失 | 询问用户 |
-| 引擎不在白名单 | 报错 + 列支持引擎 |
-| Unity/Unreal 完整脚手架未实现 | 落"占位 + `[Phase 2 TODO]`" 的 README |
-
-## 验收标准
-
-- godot：`game/project.godot` 通过 `--check-only`
-- unity/unreal：占位文件就位 + 标注 Phase 2
-
-## Known Limitations
-
-- Unity / Unreal 完整脚手架 Phase 2 完成
-- 引擎版本变更不自动迁移（需手动）
+- [Phase 2 TODO] unity / unreal 必须用各自 launcher 创建，本 skill 仅做"创建后接管"，不能完全 scaffold
+- [Phase 2 TODO] engine-specialist agent 系列在 Phase 1 仅占位（批 7-8 起草），路由实质为 noop
+- [Phase 2 TODO] 多引擎项目（如 godot 主 + unity 演示）的支持未设计
+- [Phase 2 TODO] 引擎版本固定 / 升级流程未包含（建议未来加 ADR 强制）

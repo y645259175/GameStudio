@@ -157,9 +157,9 @@ YAML / TOML / JSON 的 **key 与 value 都用英文**。
 ```yaml
 ---
 name: art-director
+type: agent
+status: active
 description: Coordinates art asset production via timiai-image skill.
-agentMode: agentic
-enabled: true
 ---
 ```
 

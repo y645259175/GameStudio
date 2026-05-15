@@ -102,6 +102,7 @@ verify 步骤：main agent 在收到"交付完成 message"后，**read_file 验�
 
 - 不替代 `design-authoring`（GDD 内容精度规范）
 - 与 `commit-discipline` 互补（前者管"产出 → 文件"，后者管"文件 → 提交"）
+- 与 `ai-effort-estimation` 互补：spawn 出来的 agent 若需给"多步计划 + 时间估计"，主 agent 在 prompt 中显式引用 `ai-effort-estimation` rule，避免 sub-agent 用人类工时表述
 
 ## 验证清单（spawn 前自检）
 

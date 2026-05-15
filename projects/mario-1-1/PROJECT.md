@@ -2,8 +2,8 @@
 project_name: mario-1-1
 engine: godot
 engine_version: 4.6.2
-phase: dev
-status: M5-clearable-via-cheat
+phase: design
+status: gdd-drafting
 created_at: 2026-05-15
 last_updated: 2026-05-15
 lead: ZStodio

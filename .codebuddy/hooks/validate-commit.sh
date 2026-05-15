@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 # validate-commit.sh · 重通道 commit 校验
-# 用途：每次 commit 前校验 GDD 最小覆盖维度 + JSON 文件合法性
+# 用途：每次 commit 前校验 GDD 8 节完整性 + JSON 文件合法性
 # 触发：git pre-commit hook（需在 Phase 2 git init 后启用）
 # 退出码：0 通过 / 1 critical 阻塞 / 2 配置错误
-# 上游来源：v4 §4 Q7-A（原创）；2026-05-15 改为最小 5 维度（design-authoring rule v2）
+# 上游来源：v4 §4 Q7-A（原创）
 
 set -euo pipefail
 
 # ===== 配置区 =====
-# 最小覆盖维度：所有 GDD 必须至少匹配以下 5 个之一的多个标题（按维度判定）
-# 见 rules/design-authoring/RULE.mdc
-GDD_DIMENSION_PATTERNS=(
-  "概述|项目定位"                    # 维度 1
-  "玩法循环|核心机制|核心玩法"       # 维度 2
-  "系统设计|子系统"                  # 维度 3
-  "视觉与美术|美术方向|美术 bible"   # 维度 4
-  "交付与验收|DoD|验收标准"          # 维度 5
+GDD_REQUIRED_SECTIONS=(
+  "## 概述"
+  "## 玩法循环"
+  "## 系统设计"
+  "## 数值与平衡"
+  "## UX"
+  "## 美术"
+  "## 音频"
+  "## 交付与验收"
 )
 
 # ===== fail-safe =====
@@ -28,7 +29,7 @@ if [ "${1:-}" = "--dry-run" ]; then
   echo "[validate-commit] dry-run 模式，不会阻塞 commit"
 fi
 
-# ===== 1. GDD 最小覆盖维度校验 =====
+# ===== 1. GDD 8 节完整性校验 =====
 critical=0
 warn=0
 
@@ -38,20 +39,14 @@ gdd_files=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null | grep -E
 if [ -n "$gdd_files" ]; then
   while IFS= read -r f; do
     [ -z "$f" ] && continue
-    # 排除草稿 / 概念对话 / 偏差说明等辅助文件
-    case "$f" in
-      */draft/*|*/concept-dialogue.md|*/gdd-skeleton-rationale.md) continue ;;
-    esac
     missing=()
-    idx=0
-    for pat in "${GDD_DIMENSION_PATTERNS[@]}"; do
-      idx=$((idx + 1))
-      if ! grep -qE "^##.*($pat)" "$f"; then
-        missing+=("dim-$idx[$pat]")
+    for sec in "${GDD_REQUIRED_SECTIONS[@]}"; do
+      if ! grep -qF "$sec" "$f"; then
+        missing+=("$sec")
       fi
     done
     if [ ${#missing[@]} -gt 0 ]; then
-      echo "[critical] $f 缺少 GDD 最小覆盖维度：${missing[*]}" >&2
+      echo "[critical] $f 缺少 GDD 必备小节：${missing[*]}" >&2
       critical=$((critical + 1))
     fi
   done <<< "$gdd_files"

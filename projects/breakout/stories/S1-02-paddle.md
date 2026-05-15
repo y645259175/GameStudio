@@ -1,13 +1,3 @@
-﻿---
-id: S1-02
-epic: E1
-priority: P0
-estimate: 2
-status: done
-gdd-anchor: gdd/gdd-breakout.md#§4-S1-挡板
-completed-at: 2026-05-14
----
-
 # S1-02 · 挡板移动
 
 **Epic**：E1 · 核心玩法原型
@@ -30,4 +20,3 @@ completed-at: 2026-05-14
 
 - 场景：`paddle.tscn`（CharacterBody2D 或 StaticBody2D + 脚本控制）
 - 输入映射：`move_left` `move_right`
-

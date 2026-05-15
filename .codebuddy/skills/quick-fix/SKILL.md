@@ -1,122 +1,54 @@
 ---
 name: quick-fix
-description: Light-channel quick-fix workflow for bugs, refactors, and small changes. Use when user says "修个 bug / 小改一下 / quick fix / refactor / 改个错". Skips full story flow but still requires test + reviewer for non-trivial changes. Uses [fix] / [refactor] / [quick] commit tags.
-allowed-tools: read_file, write_to_file, list_dir, execute_command, search_content, replace_in_file
-disable: false
+type: skill
+status: active
+description: Light-channel quick-fix workflow for bugs, refactors, and small changes that don't justify a full story.
 ---
 
-# quick-fix · 轻通道快速修复
+# Quick-Fix · 快速修复（轻通道）
 
-## 何时加载
+## 何时使用
 
-- 不值得开 story 的小问题（改 1-2 文件 / < 30 分钟）
-- 编译错 / 类型错 / typo / 小重构
-- 用户说"小修一下" / "fix this"
+不值得开 story 的小修小补：bug fix / 重构 / typo / 配置微调 / 依赖升级。是双通道 commit 中的"轻通道"入口。
 
-**不加载场景**：影响 ≥ 3 文件 / 涉及业务逻辑 / 影响 AC → 走 `dev-story`；架构 → `architecture-decision`。
+典型触发：
+- "/quick-fix"
+- "改个 bug"
+- "重构一下这个函数"
+- "升级 Pillow 版本"
 
-## 输入契约
+## 输入 / 触发条件
 
-| 输入 | 来源 | 必需 |
-|---|---|---|
-| 问题描述（1 句话）| 用户 | ✅ |
-| 错误日志 / bug 现象 | 用户或 IDE | 推荐 |
-| 受影响文件路径 | 推断或用户指定 | 推荐 |
+- 当前在项目根 或 工作室根（轻通道允许工作室级改动，如改 skill）
+- 改动范围明确、单点、不跨系统
 
-## 流程
+## 流程步骤
 
-### Step 1 · 范围判断
+1. **范围判断**：AI 评估改动规模——如发现影响 ≥ 1 个 story / 跨 ≥ 2 个文件大改 → 路由到 `dev-story`
+2. **tag 选择**（按 `commit-discipline` rule）：
+   - bug 修复 → `[fix]`
+   - 重构无功能变更 → `[refactor]`
+   - 其他小改 → `[quick]`
+3. **占位路由 · 引擎参考**：如涉及引擎代码，路由到 `studio/docs/engine-reference/<engine>/`
+4. **实现**：AI 提议改动，用户审 / 改 / 接受
+5. **测试**（按 `test-standards` rule）：bug fix 必加回归测试；refactor 必跑既有测试
+6. **commit 建议**：`[<tag>] <短描述>`（轻通道，无 story-id）
+7. **追溯**：如有相关 bug 报告，在 commit body 引用其 ID
 
-3 问：
-1. 改 ≥ 3 文件？
-2. 影响某个 story 的 AC？
-3. 引入新依赖 / 改公共接口？
+## 输出
 
-任一 YES → 升级 `dev-story`。
+- 代码 / 配置改动落盘
+- commit 建议（轻通道 tag）
 
-### Step 2 · 定位
+## 引用
 
-- 用户给了堆栈 → 直接读对应文件
-- 没给 → 用 `search_content` 找症状关键字
+- 上游规划：v4 §2 §6.1.1（带占位路由 4 之一）
+- 相关 skill：`dev-story` `consistency-check`（可选调用）
+- 相关 rule：`commit-discipline` `test-standards`
+- 占位路由：`studio/docs/engine-reference/<engine>/`（Phase 1 占位）
 
-### Step 3 · 委托 debugger 或 refactorer
+## Known Limitations / Phase 2 Review Points
 
-| 类型 | agent | tag |
-|---|---|---|
-| bug | `debugger` (sonnet) | `[fix]` |
-| 小重构 | `refactorer` (sonnet) | `[refactor]` |
-| 杂项（typo / 小整理）| `engineer` (sonnet) | `[quick]` |
-
-### Step 4 · 修复
-
-写代码。如 godot 项目，跑：
-```
-godot --headless --check-only --path projects/<name>/game --quit
-```
-
-### Step 5 · 最小测试（按需）
-
-| 改动类型 | 是否需测试 |
-|---|---|
-| typo / 注释 | ❌ |
-| 函数行为修改 | ✅ 至少 1 个单测 |
-| 重构 | ✅ 跑既有测试全绿 |
-
-### Step 6 · review（按需）
-
-| 改动行数 | 是否需 reviewer |
-|---|---|
-| < 10 | ❌ 自检即可 |
-| 10-50 | ✅ reviewer 必跑 |
-| > 50 | 强制升级 `dev-story` |
-
-### Step 7 · commit
-
-按 `commit-discipline` rule：
-
-```
-[fix] <project>: <30 字内描述>
-
-- 根因
-- 验证方式
-```
-
-或 `[refactor]` / `[quick]`。
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `FIXED` / `ESCALATED_TO_DEV_STORY` |
-| `commit_sha` | hash |
-| `files_changed` | 1-2 个 |
-| `tag_used` | fix/refactor/quick |
-
-## 调用的 agent
-
-- `debugger` (sonnet) / `refactorer` (sonnet) / `engineer` (sonnet)
-- 必要时 `reviewer` (sonnet)
-
-## 加载的 rule
-
-- `commit-discipline`（轻通道 tag）
-- `language-policy`
-
-## 失败 / 降级
-
-| 异常 | 策略 |
-|---|---|
-| Step 1 范围超阈 | 立即升 `dev-story` |
-| 修了但 godot 校验报错 | debugger 再排查 |
-| 改动暴露了更深 bug | 暂存 + 立 story 跟进 |
-
-## 验收标准
-
-- commit tag 正确（fix/refactor/quick 之一）
-- 改动行数 ≤ 50（否则应升级）
-- 不破坏既有测试
-
-## Known Limitations
-
-- 范围判断主观，可能误判应升级的修复
-- 无强制单测覆盖（依赖 agent 判断）
+- [Phase 2 TODO] 升级范围阈值（≥ 1 story / ≥ 2 文件）需项目实战校准
+- [Phase 2 TODO] 与 `consistency-check` 关系：quick-fix 默认**不**强制调用 consistency，但用户可主动触发；判据需明确
+- [Phase 2 TODO] 跨项目 quick-fix（同时改两个 project 的相同 bug）的处理流程未设计

@@ -1,8 +1,8 @@
 ---
-description: GDD authoring standard - 5 minimum-coverage dimensions (overview/core-gameplay/systems/visual/acceptance), content precision rules (animation/perception/numbers), concept-dialogue-driven structure, review gates, and anchor stability for cross-doc referencing.
+description: GDD authoring standard - 8 mandatory sections, content precision rules (animation/perception/numbers), review gates, and anchor stability for cross-doc referencing.
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-15T19:00:00.000Z
+updatedAt: 2026-05-15T11:35:00.000Z
 provider:
 ---
 
@@ -55,55 +55,27 @@ GDD 不写（由其他角色出）：
 | 美术总监 | 定视觉方向 + 审核最终效果 | `art-director` |
 | 制作人 | 拍板 GDD 进入下一阶段 | `producer` |
 
-## 8 节强制结构 → 已废弃，改为"最小覆盖 5 维度 + 项目专属章节"
+## 8 节强制结构
 
-> **历史教训**（2026-05-15）：8 节强制结构在 mario-1-1 等项目可用，但对 breakout（无叙事/无章节节奏）属于过度结构，对未来 roguelike / pvp / 叙事驱动 / 沙盒 类项目则严重不匹配。模板应是"建议起点"，不是"预设答案"。
+GDD 文件**必须**包含以下 8 个二级标题，顺序固定：
 
-### 最小覆盖维度（5 项，所有项目必须有）
-
-无论项目类型，GDD 至少必须覆盖以下 5 个维度：
-
-| # | 维度 | 标题示例（可调） | 说明 |
-|---|---|---|---|
-| 1 | **概述** | `## 概述` / `## 项目定位` | 一句话核心概念 + 目标玩家 + 类型定位 + 范围声明 |
-| 2 | **核心玩法** | `## 玩法循环` / `## 核心机制` | 玩家在玩什么（秒级 / 局级 / meta 三层至少有 1 层） |
-| 3 | **系统设计** | `## 系统设计` / `## 子系统拆解` | 关键系统的职责、规则、边界 |
-| 4 | **视觉与美术** | `## 视觉与美术` / `## 美术方向` | 风格基线 + 色板 + 参考图（最少：风格关键词 + 1 张参考） |
-| 5 | **交付与验收** | `## 交付与验收` / `## DoD` | 验收标准 + 风险 + 已知限制 |
-
-**这 5 个维度是底线**。少于 5 个 → 强制 BLOCKED。
-
-### 项目专属章节（由概念对话决定）
-
-除最小 5 维度外，章节由 `design-review` skill 的"概念对话"步骤产生（详见该 skill）。
-
-**典型扩展示例**（仅供参考，不是模板）：
-
-| 项目类型 | 可能的额外章节 |
-|---|---|
-| 横版平台跳跃 | `## 内容与节奏`（关卡 beat） / `## UX 与 HUD` |
-| 打砖块 / 单屏休闲 | 不需要"内容与节奏"，可能只需要 `## 数值与平衡`（一节即可） |
-| Roguelike | `## 程序生成参数` / `## meta 系统` / `## 种子与随机` |
-| 多人 PvP | `## 匹配系统` / `## 网络同步` / `## 平衡补丁节奏` |
-| 叙事驱动 AVG | `## 分支结构` / `## 文本系统` / `## 角色弧线` |
-| 沙盒建造 | `## 工具系统` / `## 自由度边界` / `## 玩家创造保护` |
-
-**重要**：不允许照搬这些示例当模板。每个项目的章节必须从"我们要做的是什么游戏"对话中产生。
-
-### 偏离建议骨架的回顾要求
-
-如果概念对话产出的章节列表与 `templates/gdd-skeleton.md` 建议骨架（约 8 节）偏差较大（增删 ≥ 3 节），必须在 GDD frontmatter 的 `note` 字段或单独的 `gdd-skeleton-rationale.md` 中说明：
-- 为什么砍掉某节（例：breakout 没有 meta loop，砍掉 `## 内容与节奏`）
-- 为什么加了某节（例：roguelike 加 `## 程序生成参数`，因为这是核心玩法的支柱）
-
-回顾的目的不是"必须改回标准"，而是"确保不是因为偷懒而砍 / 不是因为复制粘贴而加"。
+| # | 章节 | 内容 |
+|---|---|---|
+| 1 | `## 概述` | 一句话核心概念 + 目标玩家 + 类型定位 |
+| 2 | `## 玩法循环` | core loop / meta loop |
+| 3 | `## 视觉与美术` | 风格基线 / 色板 / 参考图引用 |
+| 4 | `## 系统设计` | 战斗 / 经济 / 养成 / 社交 等子系统拆解 |
+| 5 | `## 数值与平衡` | 数值表结构 / 关键公式 / 平衡假设 |
+| 6 | `## 内容与节奏` | 关卡 / 章节 / 故事 / 进度曲线 |
+| 7 | `## UX 与 HUD` | 界面流转 / HUD 元素清单 / 无障碍 |
+| 8 | `## 交付与验收` | 验收标准 / 风险 / 已知限制 |
 
 ## 锚点稳定性原则
 
-- 章节标题在 `status: locked` 之前可由概念对话调整；进入 `locked` 后**不得修改**（标点 / 措辞 / 大小写都不行）
-- 章节顺序在 `status: locked` 之前可由 designer 调整；进入 `locked` 后不得调整
-- 章节内子标题（`### xxx`）任何阶段可自由调整
-- 已 `locked` 后新增 / 删除章节必须经 ADR 决议并同步本规则
+- 章节标题**不得修改**（标点 / 措辞 / 大小写都不行）
+- 章节顺序**不得调整**
+- 章节内子标题（`### xxx`）可自由调整
+- 新增第 9 节及以上必须经 ADR 决议并同步更新本规则
 
 ## frontmatter 规范
 
@@ -112,20 +84,18 @@ GDD 不写（由其他角色出）：
 gdd_id: <项目缩写>-<章节号>-<语义名>
 status: draft / review / locked
 last_review: YYYY-MM-DD
-sections: [<本项目实际章节标题数组>]   # 由概念对话产出，不是固定 1-8
-skeleton_deviation: none | minor | major   # 与 gdd-skeleton.md 的偏差程度
-deviation_rationale: <若 major，简述原因>
+sections_complete: [1, 2, 3, 4, 5, 6, 7, 8]
 ---
 ```
 
-`sections` 用于 `review-all-gdds` 跨章节扫描。**不再用固定 `sections_complete: [1,2,...,8]`**。
+`sections_complete` 用于 `review-all-gdds` 跨章节扫描定位空节。
 
 ## review 门槛
 
 | 状态转换 | 触发条件 |
 |---|---|
-| draft → review | 5 个最小覆盖维度均有非空内容 + 概念对话产出的所有章节均有 ≥ 1 段实质内容 |
-| review → locked | `design-review` skill 通过（含草稿/互审/修订三轮） + producer 拍板 |
+| draft → review | 8 节均有非空内容 |
+| review → locked | `design-review` skill 通过 + producer 拍板 |
 | locked → draft | 必须经 ADR 决议 |
 
 ## 锚点引用约定

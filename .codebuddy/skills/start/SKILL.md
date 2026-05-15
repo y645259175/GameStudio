@@ -1,98 +1,51 @@
 ---
 name: start
-description: Entry point and intent router for new sessions. Use when the user says "begin / start / what should I do / 开始 / 接下来做什么 / 不知道从哪开始" or whenever the request is ambiguous and a routing decision is needed before any other skill loads.
-allowed-tools: read_file, list_dir, search_content
-disable: false
+type: skill
+status: active
+description: Entry point skill that identifies user intent and routes to the appropriate workshop or project-level skill.
 ---
 
-# start · 工作室入口路由 skill
+# Start · 工作室入口 skill
 
-## 何时加载
+## 何时使用
 
-- 新会话第一句意图模糊（"开始吧" / "继续" / "今天做什么"）
-- 用户在工作室根目录但未指定 project / story
-- 需要"先确定上下文，再选 skill"的场景
+用户在新会话开始、不确定从哪个 skill 入手、或意图模糊时加载本 skill。典型触发：
+- "我想开始一个新项目"
+- "今天该做什么"
+- "帮我看看现状"
+- 未明确触发任何其他 skill 的初始指令
 
-**不要加载本 skill 的场景**：用户已经明确说"我要写 GDD"（直接走 `design-review`）/ "我要建项目"（直接走 `new-project`）/ 已经在某个 story 上下文里继续工作。
+## 输入 / 触发条件
 
-## 输入契约
+- 用户的自然语言初始指令
+- 当前工作区根目录（用于检测是工作室根 / 项目根 / 空仓库）
+- 现有项目状态（`projects/*/PROJECT.md` 是否存在）
 
-| 输入 | 来源 | 必需 |
-|---|---|---|
-| 用户原始意图（自然语言） | 当前消息 | ✅ |
-| 当前工作目录 | 系统 | ✅ |
-| `studio/docs/studio-handbook.md` | 文件读取 | 推荐 |
-| `projects/*/PROJECT.md` 列表 | 目录扫描 | 推荐 |
+## 流程步骤
 
-## 流程
+1. **环境识别**：读 `studio/docs/studio-handbook.md` 与 `projects/*/PROJECT.md`，判断当前在工作室根还是某项目下
+2. **意图分类**：把用户输入归为以下之一：
+   - 新建项目 → 路由到 `new-project` skill
+   - 日常开发 → 路由到 `dev-story` 或 `quick-fix` skill
+   - 检查 / 验收 → 路由到 `daily-check` / `smoke-check` / `consistency-check`
+   - 设计 / 评审 → 路由到 `design-review` / `architecture-decision`
+   - 美术资产 → 路由到 `art-asset-pipeline`
+   - 不确定 → 进入交互澄清（最多 3 个候选 skill 二选一）
+3. **路由**：明确告知用户"我要切换到 `<skill-name>` skill"，加载目标 skill
+4. **兜底**：如果意图无法归类，引导用户阅读 `studio/docs/studio-handbook.md` 或调用 `help` skill
 
-### Step 1 · 环境侦察（30 秒内）
+## 输出
 
-并行读取：
-- `list_dir projects/`
-- `read_file studio/docs/studio-handbook.md`（如存在）
-- 当前 cwd 是否在某个 `projects/<name>/` 下
+- 一句话路由说明（中文）
+- 加载目标 skill 后由该 skill 接管
 
-### Step 2 · 意图分类（输出 verdict）
+## 引用
 
-按优先级匹配：
+- 上游规划：v4 §6.1.1（22 skill 工作室级 8 之首）
+- 相关 skill：`new-project` `dev-story` `quick-fix` `daily-check` `help`
+- 相关 rule：`project-structure`、`ai-effort-estimation`（涉及多步规划 / 时间估计时按此 rule 表述）
 
-| 触发关键词 | 路由 verdict |
-|---|---|
-| "新项目 / new project / 建项目" | `ROUTE: new-project` |
-| "story / 任务 / 开发" + 已有项目 | `ROUTE: dev-story` 或 `ROUTE: story-readiness` |
-| "bug / 修一下 / fix" | `ROUTE: quick-fix` |
-| "GDD / 设计 / 玩法" | `ROUTE: design-review` 或 `ROUTE: quick-design` |
-| "架构 / 技术选型 / ADR" | `ROUTE: architecture-decision` |
-| "美术 / 资产 / 出图" | `ROUTE: art-asset-pipeline` |
-| "测一下 / smoke / 检查" | `ROUTE: smoke-check` 或 `ROUTE: consistency-check` |
-| "今天 / 日报 / daily" | `ROUTE: daily-check` |
-| "sprint / 计划 / 排期" | `ROUTE: sprint-plan` |
-| "复盘 / retro" | `ROUTE: retrospective` |
-| "发版 / release" | `ROUTE: release-checklist` |
-| 模糊 / 多个匹配 | `CLARIFY: 列 2-3 个候选 skill 让用户选` |
+## Known Limitations / Phase 2 Review Points
 
-### Step 3 · 路由 / 澄清
-
-- **明确**：输出一句中文路由说明 + 加载目标 skill
-  - 例："识别为新建项目意图，加载 `new-project` skill。"
-- **模糊**：列 2-3 个候选，问用户选哪个，**不要**自动猜
-
-### Step 4 · 兜底
-
-如完全无法分类：建议用户运行 `help` skill 查看能力索引。
-
-## 输出契约
-
-| 字段 | 内容 |
-|---|---|
-| `verdict` | `ROUTE: <skill-name>` / `CLARIFY` / `FALLBACK_HELP` |
-| `rationale` | 一句中文判断依据 |
-| `loaded_skill` | 实际加载的 skill 名（仅 ROUTE 时） |
-
-## 调用的 agent
-
-无（路由本身不需要 agent）。后续 skill 会按需调用。
-
-## 加载的 rule
-
-`project-structure`（确定当前在哪一层）
-
-## 失败 / 降级
-
-| 异常 | 降级策略 |
-|---|---|
-| `studio/docs/studio-handbook.md` 不存在 | 跳过该文件，仅依据 `projects/` 与用户语义判断 |
-| 工作区为空（无 `.codebuddy` 也无 `studio`） | 输出 `FALLBACK: 这不是工作室仓库`，建议用户 `cd` 到工作室根 |
-| 用户连续 2 次指令模糊 | 强制加载 `help` skill |
-
-## 验收标准
-
-- AI 在 ≤ 3 个工具调用内完成路由判断
-- 路由 verdict 与用户实际意图一致率 ≥ 90%（实战记录）
-- 不产生越级行为（不直接执行目标 skill 的工作，仅做路由）
-
-## Known Limitations
-
-- 意图分类靠语义匹配，无统计模型；歧义高的输入需人工澄清
-- 与 `help` 边界：`start` = 路由，`help` = 能力索引说明书
+- [Phase 2 TODO] 意图分类目前靠 AI 判断，无明确规则表；积累若干会话后可总结分类决策树
+- [Phase 2 TODO] 与 `help` skill 的边界待打磨（help 偏说明书，start 偏路由）

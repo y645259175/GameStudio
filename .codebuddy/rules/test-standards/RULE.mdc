@@ -48,6 +48,21 @@ provider:
 - **要求**：每个 fixed bug 必须加回归用例
 - **覆盖目标**：核心路径 + 高风险模块
 
+### 真实玩家路径测试（红线）
+
+涉及玩家可见行为的 milestone / story 必须包含：
+
+- 至少 1 条**真实玩家路径**测试
+- 该测试**只能**用真实输入 API（`Input.action_press` / 模拟 key event），**禁止**直接修改 `velocity` / `position` / 内部 state
+- production 代码**不允许**含 `cheat_*` / `debug_skip_*` 等专为测试调用的开关；这类 debug 接口必须在 `#if DEBUG` 或测试目录里
+
+**通过的口径**：
+- cheat 模式 PASS ≠ 真实路径 PASS
+- 两者分开报告，milestone gate 看真实路径那一栏
+- 真实路径不存在或 FAIL → milestone 不通过（自主模式不放宽）
+
+详见 `studio/docs/autonomous-mode-charter.md` 底线 2。
+
 ## 引擎测试框架
 
 | 引擎 | 框架 | 位置 |
