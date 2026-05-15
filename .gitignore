@@ -32,3 +32,6 @@ __pycache__/
 
 # === Node (if ever used) ===
 node_modules/
+
+# === CodeBuddy team mode runtime ===
+.codebuddy/teams/
