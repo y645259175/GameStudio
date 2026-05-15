@@ -1,5 +1,5 @@
 {
-  "_meta": { "version": "1.0", "description": "Mario 角色控制 + 状态机数值。所有数值可调，复刻 NES 原作手感。" },
+  "_meta": { "version": "2.0-bolt", "description": "Bolty 角色控制 + 状态机数值。所有数值可调，致敬 NES 时代横版手感。" },
   "walk": { "maxSpeed": 90, "accel": 200 },
   "run": { "maxSpeed": 150, "accel": 300 },
   "turnAround": { "decel": 400 },
@@ -20,9 +20,9 @@
     { "id": "dead", "canShoot": false, "canCrouch": false, "hitboxKey": "none" }
   ],
   "transitions": [
-    { "from": "small", "to": "big", "trigger": "mushroom", "freezeFrames": 30 },
-    { "from": "big", "to": "fire", "trigger": "flower", "freezeFrames": 30 },
-    { "from": "small", "to": "fire", "trigger": "flower", "freezeFrames": 30 },
+    { "from": "small", "to": "big", "trigger": "powerBerry", "freezeFrames": 30 },
+    { "from": "big", "to": "fire", "trigger": "sparkBloom", "freezeFrames": 30 },
+    { "from": "small", "to": "fire", "trigger": "sparkBloom", "freezeFrames": 30 },
     { "from": "fire", "to": "big", "trigger": "hit", "freezeFrames": 18, "iframes": 180 },
     { "from": "big", "to": "small", "trigger": "hit", "freezeFrames": 18, "iframes": 180 },
     { "from": "small", "to": "dead", "trigger": "hit" },

@@ -1,9 +1,9 @@
 {
-  "_meta": { "version": "1.0", "description": "HUD 与主菜单" },
+  "_meta": { "version": "2.0-bolt", "description": "HUD 与主菜单（bolt-1-1 工业风）" },
   "title": {
-    "title": { "text": "SUPER MARIO BROS.", "fontSizeRatio": 0.08 },
-    "subtitle": { "text": "World 1-1", "fontSizeRatio": 0.04 },
-    "cta": { "text": "Press SPACE to Start", "blinkPeriod": 1.0, "fontSizeRatio": 0.035 },
+    "title": { "text": "BOLT", "fontSizeRatio": 0.10 },
+    "subtitle": { "text": "Sector 1-1", "fontSizeRatio": 0.04 },
+    "cta": { "text": "Press SPACE to Activate", "blinkPeriod": 1.0, "fontSizeRatio": 0.035 },
     "controls": [
       { "label": "MOVE",  "keys": "← →   or   A D" },
       { "label": "JUMP",  "keys": "SPACE  or   Z" },
@@ -11,20 +11,20 @@
       { "label": "PAUSE", "keys": "ESC" }
     ],
     "background": {
-      "skyGradient": ["#0a0a3a", "#2a2a6a"],
-      "mountainColor": "#1a1a4a",
+      "skyGradient": ["#0A0E1C", "#1C2440"],
+      "mountainColor": "#283050",
       "moon": { "x": 1100, "y": 120, "radius": 32 }
     }
   },
   "ingame": {
     "score": { "digits": 6, "padZero": true, "fontSizeRatio": 0.04 },
-    "coin":  { "digits": 2, "padZero": true, "highlightAt": 90, "celebrateAt": 100 },
-    "world": { "text": "1-1", "fontSizeRatio": 0.04 },
+    "cog":   { "digits": 2, "padZero": true, "highlightAt": 90, "celebrateAt": 100 },
+    "sector": { "text": "1-1", "fontSizeRatio": 0.04 },
     "time":  { "digits": 3, "warningThreshold": 100, "blinkPeriod": 0.5 },
     "colors": {
       "normal": "#FFFFFF",
-      "warning": "#FC0000",
-      "celebrate": "#FCBC3C"
+      "warning": "#D04030",
+      "celebrate": "#FFC820"
     }
   },
   "pause": {
