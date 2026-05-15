@@ -31,17 +31,27 @@ description: GDD authoring and review facilitator that ensures the 8-section str
 4. **一致性自检**：与已有 GDD 章节交叉验证（数值不冲突 / 玩法循环闭合 / 引用名一致）
 5. **落盘**：`projects/<name>/gdd/<chapter>.md`，按 `templates/gdd-8-sections.md.tpl` 填充
 6. **path 标注**：在章节末尾加"上游 epic / 下游 stories"链接（如已存在）
-7. **路由提示**：评审通过后建议调用 `create-epics` 或 `review-all-gdds`
+7. **key visual gate**（新增，强制）：
+   - 当评审涉及 §3 美术 节、且项目即将进入开发期时，必须 spawn `art-director` agent 生成 1 张 key visual
+   - 内容：游戏标志性场景（主角 + 关键敌人 + 关键道具同框）
+   - 落盘：`projects/<name>/art/key-visual.png`
+   - 没有 key visual → design-review verdict 为 `GDD-CHANGES`，不允许进入开发期
+   - 详见 `studio/docs/autonomous-mode-charter.md` 底线 4 + `art-director` AGENT.md "Key Visual 早期生成"
+8. **路由提示**：评审通过后建议调用 `create-epics` 或 `review-all-gdds`
 
 ## 输出
 
 - `projects/<name>/gdd/<chapter>.md`
 - 终端内 8 节完整性表（每节 ✅ / ⚠️）
+- key visual 路径（如触发 step 7）
+- verdict：`GDD-PASS` / `GDD-CHANGES` / `GDD-BLOCKED`（与 `reviewer` agent 决议词汇一致）
 
 ## 引用
 
 - 上游规划：v4 §4 Q7-C、§6.1.1
+- 工作室宪章：`studio/docs/autonomous-mode-charter.md`（底线 4 视觉节奏）
 - 相关 skill：`review-all-gdds` `create-epics` `quick-design`
+- 相关 agent：`art-director`（key visual 生成 + §3 美术节评审）/ `reviewer`（GDD 互审）/ `designer`
 - 相关 rule：`design-authoring`
 - 相关 template：`templates/gdd-8-sections.md.tpl`
 
