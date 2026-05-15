@@ -90,3 +90,32 @@ GameStudio 是一个 **AI 辅助游戏开发工作室**，使用 CodeBuddy 作�
 - `my-game/`：CCGS v1.0 上游模板
 
 详见 [`studio/reference/README.md`](../reference/README.md)
+
+## 8. Common Pitfalls（踩坑备忘）
+
+> 来源：breakout 项目 Sprint 1-2 实战经验。后续项目请优先阅读此节。
+
+### Godot 4.6 类型推断
+
+`var x := dict.get("key", 0)` 会报 "Cannot infer the type" 错误——因为 `Dictionary.get()` 返回 Variant。
+**修复**：显式声明类型 `var x: float = dict.get("key", 0)` 或用 `absf()` 替代 `abs()`。
+
+### autoload 在 headless `-s` 模式下不加载
+
+用 `godot -s tests/test_xxx.gd` 跑测试时，project.godot 中注册的 Autoload（如 GameManager / ConfigLoader）**不会被注入全局命名空间**。
+**修复**：测试脚本中用 `preload("res://scripts/xxx.gd").new()` 手动实例化，或通过 `Engine.get_main_loop().root.get_node("xxx")` 弱引用。
+
+### Godot 4.6 的 anchors_preset=8 不可靠
+
+在 .tscn 手写 UI 时，`anchors_preset = 8`（中心锚点）+ 负 offset 的组合可能导致文字跑到屏幕左边。
+**修复**：用 `anchor_left=0, anchor_right=1.0`（占满全宽）+ `horizontal_alignment=1`（文字居中）。
+
+### 数据驱动不能"假做"
+
+在 `data/gameplay.json` 中定义了字段，但代码里仍然用 `const SPEED = 500` 硬编码——改表不生效，形同虚设。
+**修复**：所有数值必须通过 ConfigLoader（或等价机制）在 `_ready()` 时读取。const 只用于不可能被策划改动的物理常量（如 `PI`）。
+
+### 两份 JSON 不要存重复字段
+
+`levels.json` 和 `gameplay.json` 同时存 `paddle.width`，修了一个忘了另一个 → 数值冲突。
+**修复**：明确单一数据源原则——关卡相关（layout / ball_speed）放 levels.json，其余全放 gameplay.json。
