@@ -1,3 +1,7 @@
+﻿# [NOT APPLICABLE] This hook was designed for Claude Code (upstream CCGS).
+# CodeBuddy does not support session/tool lifecycle hooks.
+# Retained for reference only; will not be triggered by git or CodeBuddy.
+
 #!/usr/bin/env bash
 # detect-gaps.sh · 缺口检测（骨架）
 # 用途：consistency-check skill 的 cli 包装入口，可被定时任务或 CI 调用
@@ -32,3 +36,4 @@ echo "[detect-gaps] Phase 1 期间，请在 AI 会话中调用 /consistency-chec
 echo "[detect-gaps] [Phase 1.5+ TODO] 从 reference/my-game/ 抄完整版，含 jq / awk 实现的扫描逻辑"
 
 exit 0
+

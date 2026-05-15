@@ -40,15 +40,28 @@ provider:
 
 ### `projects/` 项目层
 
+每个项目 `projects/<name>/` 包含以下标准子目录（由 `new-project` skill 创建）：
+
 | 子目录 | 内容 |
 |---|---|
-| `<name>/PROJECT.md` | 项目元数据 |
-| `<name>/gdd/` | GDD 文档 |
-| `<name>/stories/` | User stories |
-| `<name>/adr/` | Architecture Decision Records |
-| `<name>/releases/` | Release notes |
-| `<name>/retros/` | Retro 归档 |
-| `<name>/qa/` | 测试策略 / 回归矩阵 |
+| `PROJECT.md` | 项目元数据（引擎/phase/里程碑）|
+| `README.md` | 项目级快速开始 + smoke checklist |
+| `gdd/` | GDD 文档（8 节结构）|
+| `stories/` | User stories |
+| `epics/` | Epics |
+| `adr/` | Architecture Decision Records |
+| `sprints/` | Sprint plan / smoke / retro（统一目录）|
+| `data/` | 数值表（JSON，策划主本）|
+| `reports/` | 一致性检查 / daily report |
+| `retros/` | Retro 归档索引 |
+| `releases/` | Release notes / checklist |
+| `qa/` | 测试策略 / 回归矩阵 / run-tests.ps1 |
+| `art/` | 参考图 / style guide / prompt 文件 |
+| `assets/` | 美术资产（art-asset-pipeline 产出）|
+| `docs/` | 项目级文档（README 之外的）|
+| `game/` | **交付物**（复制出来即可独立运行）|
+
+> `game/` 是自包含交付目录，不引用 `game/` 外面的文件。`data/` 是策划主本，`game/data/` 是程序副本（通过 `sync-data.ps1` 同步）。
 
 ## 路径约束（Phase 1 期间强制）
 

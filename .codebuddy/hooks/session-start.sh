@@ -1,3 +1,7 @@
+﻿# [NOT APPLICABLE] This hook was designed for Claude Code (upstream CCGS).
+# CodeBuddy does not support session/tool lifecycle hooks.
+# Retained for reference only; will not be triggered by git or CodeBuddy.
+
 #!/usr/bin/env bash
 # session-start.sh · AI 会话启动检查（骨架）
 # 用途：新会话开始时打印工作室元信息 + 警告未完成事项
@@ -44,3 +48,4 @@ exit 0
 # - 上次 session 未完成事项扫描
 # - 阻塞 / 风险快照
 # - skill / agent 推荐（基于上下文）
+

@@ -1,3 +1,7 @@
+﻿# [NOT APPLICABLE] This hook was designed for Claude Code (upstream CCGS).
+# CodeBuddy does not support session/tool lifecycle hooks.
+# Retained for reference only; will not be triggered by git or CodeBuddy.
+
 #!/usr/bin/env bash
 # log-agent.sh · AI 会话事件审计（骨架）
 # 用途：记录 skill / agent 调用事件到 jsonl 日志
@@ -34,3 +38,4 @@ exit 0
 # - 多种事件类型支持（pre / post / error / metric）
 # - 日志轮转（按大小 / 按日期）
 # - 与 .codebuddy/plans/ 的关联（log → plan 反查）
+
