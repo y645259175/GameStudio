@@ -119,3 +119,14 @@ GameStudio 是一个 **AI 辅助游戏开发工作室**，使用 CodeBuddy 作�
 
 `levels.json` 和 `gameplay.json` 同时存 `paddle.width`，修了一个忘了另一个 → 数值冲突。
 **修复**：明确单一数据源原则——关卡相关（layout / ball_speed）放 levels.json，其余全放 gameplay.json。
+
+### 不要相信 studio/reference/ 中的 CodeBuddy 能力分析
+
+`studio/reference/analysis-report/` 是 CCGS 项目最初基于早期 CodeBuddy 版本做的能力分析报告。多处论断已被实战证伪：
+
+| 报告论断 | 实际情况 |
+|---|---|
+| "CodeBuddy 不支持 hook 事件" | ❌ 错。完全兼容 Claude Code 7 种 hook（SessionStart/End / Pre/PostToolUse / UserPromptSubmit / Stop / PreCompact）|
+| "CodeBuddy 不支持 skill 内并行 spawn subagent" | ⚠️ 部分错。task 工具的 Team Mode 支持异步并行（system prompt 提供，文档未公开）|
+
+**原则**：判断 CodeBuddy 能力时，优先查阅 https://www.codebuddy.ai/docs/zh/ide/Features/ 的最新文档，不要直接相信 reference 区的旧分析。reference 区作为历史归档，仅供回溯参考。
