@@ -1,7 +1,9 @@
-# Mario 1-1 · Sprint 1 Plan
+# Bolt 1-1 · Sprint 1 Plan
+
+> Pivot 注：本计划在 mario-1-1 阶段制定并执行；S1 全部 stories 在 pivot 前已完成。bolt-1-1 仅做命名替换，保留原 sprint 框架作为审计痕迹。
 
 **起止**：2026-05-15 ~ TBD（约 1 周）
-**目标（DoD）**：核心玩法可玩——马里奥可移动、跳跃、踩到地面会停、跳跃手感符合原作（变高度跳）、有简单地面，**还没有敌人/道具/HUD**。
+**目标（DoD）**：核心玩法可玩——Bolty 可移动、跳跃、踩到地面会停、跳跃手感符合 NES 时代横版手感（变高度跳）、有简单地面，**还没有敌人/道具/HUD**。
 
 ## velocity
 
@@ -27,7 +29,7 @@
 - **Player 用 CharacterBody2D**（Godot 内置）做移动，自己实现重力（不用引擎物理）
 - **状态机扁平**（不嵌套），用 GDScript enum + match
 - **数值全部走 ConfigLoader**（参考 breakout 模式）
-- **暂时没有美术**，用 ColorRect 占位（红色方块=Mario 小，红+蓝=Mario 大）
+- **暂时没有美术**，用 ColorRect 占位（红色方块=Bolty 小，红+蓝=Bolty 大）
 
 ## 风险
 
@@ -37,4 +39,4 @@
 | Camera 不可回退实现复杂 | 中 | Sprint 2 再做完整版，S1 先做简单跟随 |
 | Godot 4.6 类型推断 | 中 | 已有 SOP（每次 check-only） |
 
-## verdict: SPRINT_PLANNED
+## verdict: SPRINT_PLANNED（已 done，状态切到 SPRINT_CLOSED）

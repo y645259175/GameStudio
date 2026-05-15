@@ -80,7 +80,7 @@ description: Heavy-channel development workflow for a single user story, from re
 
 ## 历史教训
 
-- **2026-05-15 mario-1-1 自主运行**：engineer 全场用 ColorRect 占位 + 14 个 issue 全部以"记 retro"绕过 + cheat-only 测试 PASS。修复：本 skill 加入"视觉资产前置检查"、"真实玩家路径测试"、"绕过决策 SOP"、"DoD 自检" 四段。
+- **2026-05-15 项目 A pivot 事故的自主运行**：engineer 全场用 ColorRect 占位 + 14 个 issue 全部以"记 retro"绕过 + cheat-only 测试 PASS。修复：本 skill 加入"视觉资产前置检查"、"真实玩家路径测试"、"绕过决策 SOP"、"DoD 自检" 四段。
 
 ## Known Limitations / Phase 2 Review Points
 

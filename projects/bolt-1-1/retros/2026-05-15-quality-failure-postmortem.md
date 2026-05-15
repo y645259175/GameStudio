@@ -6,6 +6,12 @@ mode: autonomous-run-quality-failure
 status: in-analysis
 ---
 
+> **历史档案 · 2026-05-15 之前命名版本**
+>
+> 项目已在 2026-05-15 pivot 至 bolt-1-1 完全原创版本。
+> 本档案保留旧命名作为审计痕迹，不代表当前项目状态。
+> 当前命名见 `docs/naming-map.md`，当前 GDD 见 `gdd/gdd-bolt-1-1.md`。
+
 # Postmortem · 自主运行交付品质失败
 
 ## 用户反馈

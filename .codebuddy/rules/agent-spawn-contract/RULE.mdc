@@ -10,9 +10,9 @@ provider:
 
 ## 为什么要这条 rule
 
-历史教训（mario-1-1 detail 阶段，2026-05-15）：
+历史教训（项目 A 的 GDD detail 阶段，2026-05-15）：
 
-- 现状：`gdd-mario-1-1.md` 已存在 999 行 reviewed 版本
+- 现状：项目 GDD 已存在 999 行 reviewed 版本
 - 错误：main agent spawn `designer-1` 时只说"填 §1/§2/§4/§6/§8"，**没注入现有内容**，也没声明任务模式
 - 后果：designer-1 从零起草了一份独立版本，与现状结构不同（6 beat → 5 beat、5 状态 → 3 状态），形成"两份互有详略的设计"
 - 同时 `art-director-1` 也独立写了 `section-3-visual.md`，与已有 §3 内容冲突

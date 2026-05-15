@@ -30,7 +30,7 @@ description: Test author agent that designs unit, integration, and smoke tests a
 
 ## 真实玩家路径测试（红线，不可妥协）
 
-为防止"cheat-only PASS"假绿灯（mario-1-1 教训）：
+为防止"cheat-only PASS"假绿灯（项目 A pivot 事故的教训）：
 
 - 涉及玩家可见行为的 story / milestone 必须有**至少 1 条真实玩家路径测试**
 - 该测试**只能**用真实输入 API（`Input.action_press` / 模拟 key event），**禁止**直接修改 `velocity` / `position` / 内部 state 字段
@@ -47,7 +47,7 @@ description: Test author agent that designs unit, integration, and smoke tests a
 
 ## 历史教训
 
-- **2026-05-15 mario-1-1**：tester 写的 `auto_play_test.gd` 直接 `_player.set_cheat_invincible(true)` + 直接改 `_player.velocity.y = -460` 强制跳，绕过了真实输入路径，导致 milestone 假 PASS 但真实玩家无法通关。新增"真实玩家路径测试"段防止重演。
+- **2026-05-15 项目 A pivot 事故**：tester 写的自动跑通测试直接调用 `_player.set_cheat_invincible(true)` + 直接改 `_player.velocity.y = -460` 强制跳，绕过了真实输入路径，导致 milestone 假 PASS 但真实玩家无法通关。新增"真实玩家路径测试"段防止重演。
 
 ## 输出
 

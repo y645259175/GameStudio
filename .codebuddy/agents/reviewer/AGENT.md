@@ -41,7 +41,7 @@ description: Code reviewer agent that audits diffs for correctness, style, and r
 
 ## 历史教训
 
-- **2026-05-15 mario-1-1**：reviewer 未在 milestone gate 介入，导致"全 ColorRect + 14 issue + cheat-only PASS"的版本通过了 M5/M6。新增"milestone gate 专项扫"防止重演。
+- **2026-05-15 项目 A pivot 事故**：reviewer 未在 milestone gate 介入，导致"全 ColorRect + 14 issue + cheat-only PASS"的版本通过了 M5/M6。新增"milestone gate 专项扫"防止重演。
 
 ## 引用
 

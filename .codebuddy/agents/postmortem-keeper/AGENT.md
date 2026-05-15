@@ -68,7 +68,7 @@ enabled: true
 
 ## 历史教训
 
-- **2026-05-15 mario-1-1**：14 个 issue 全部以"记 retro 后续修"作为终止动作，从未进入 backlog，导致永远不会被处理。新增"backlog 把关"步骤防止重演。
+- **2026-05-15 项目 A pivot 事故**：14 个 issue 全部以"记 retro 后续修"作为终止动作，从未进入 backlog，导致永远不会被处理。新增"backlog 把关"步骤防止重演。
 
 ## 输出
 

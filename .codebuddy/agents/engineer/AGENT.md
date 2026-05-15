@@ -70,7 +70,7 @@ description: Generic software engineer agent that implements stories, writes tes
 
 ## 历史教训（自身改进点）
 
-- **2026-05-15 mario-1-1 自主运行**：engineer 默认全场用 ColorRect 占位，未检查 assets 也未发起 art-asset-pipeline，交付出"看起来像调试图"的游戏。新增"视觉资产红线"段防止重演。
+- **2026-05-15 项目 A pivot 事故的自主运行**：engineer 默认全场用 ColorRect 占位，未检查 assets 也未发起 art-asset-pipeline，交付出"看起来像调试图"的游戏。新增"视觉资产红线"段防止重演。
 - **同次事故**：14 个 issue 全部以"记 retro"绕过未修。新增"绕过决策 SOP"，明确"现象级绕过"必须升级 debugger / 开 backlog。
 
 ## Known Limitations / Phase 2 Review Points

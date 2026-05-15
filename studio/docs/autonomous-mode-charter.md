@@ -76,4 +76,4 @@
 
 ## 历史教训（本宪章存在的原因）
 
-- **2026-05-15 mario-1-1 自主运行事故**：main agent 在自主模式下交付了 ColorRect 拼图 + 14 个未修 issue + cheat-only 通关测试，外形上"milestone PASS"但实质上是垃圾。复盘见 `projects/mario-1-1/retros/2026-05-15-quality-failure-postmortem.md`。
+- **2026-05-15 项目 A pivot 事故**：main agent 在自主模式下交付了 ColorRect 拼图 + 14 个未修 issue + cheat-only 通关测试，外形上"milestone PASS"但实质上是垃圾。复盘归档于 `projects/<project-A>/retros/2026-05-15-quality-failure-postmortem.md`（含旧命名审计痕迹，已加 disclaimer 标记 pivot）。
