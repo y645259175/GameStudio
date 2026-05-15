@@ -1,11 +1,11 @@
 {
-  "_meta": { "version": "1.0", "description": "关卡元素行为参数" },
+  "_meta": { "version": "2.0-bolt", "description": "关卡元素行为参数（bolt-1-1 命名）" },
   "brick": { "breakable": true, "bumpFrames": 12 },
-  "questionBlock": { "activeFlashFrames": 30 },
-  "pipe": {
+  "cacheBox": { "activeFlashFrames": 30 },
+  "conduit": {
     "lengths": { "short": 32, "medium": 48, "long": 64, "extraLong": 80 }
   },
-  "coin": { "spawnHeight": 48, "value": 200 },
-  "flagpole": { "totalHeight": 144, "slideSpeed": 144 },
-  "castle": { "enterDuration": 1.5, "flagRiseDuration": 1.5 }
+  "cog": { "spawnHeight": 48, "value": 200 },
+  "signalTower": { "totalHeight": 144, "slideSpeed": 144 },
+  "outpost": { "enterDuration": 1.5, "flagRiseDuration": 1.5 }
 }

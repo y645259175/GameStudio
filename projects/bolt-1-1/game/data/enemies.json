@@ -1,23 +1,24 @@
 {
-  "_meta": { "version": "1.0", "description": "敌人 AI 数值" },
+  "_meta": { "version": "2.0-bolt", "description": "敌人 AI 数值（bolt-1-1 命名）" },
   "spawnDistance": 300,
-  "goomba": {
+  "mossroll": {
     "walkSpeed": 30,
     "score": 100,
     "flatDuration": 30,
     "fallsOffCliff": true
   },
-  "koopaGreen": {
+  "shellpod": {
     "walkSpeed": 30,
     "shellSpeed": 200,
     "shellWaitFrames": 300,
     "score": 100,
     "fallsOffCliff": false
   },
-  "piranha": {
+  "spiker": {
     "riseHeight": 24,
     "cycleFrames": 240,
-    "hideOnPlayerNearDistance": 32
+    "hideOnPlayerNearDistance": 32,
+    "_note": "Phase 2 TODO，本期未实现"
   },
   "shellChainScores": [100, 200, 400, 800, 1000, 2000, 4000, 8000, "1UP"]
 }

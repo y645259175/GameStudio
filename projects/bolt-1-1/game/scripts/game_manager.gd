@@ -45,12 +45,15 @@ func add_score(points: int) -> void:
 
 
 func add_coin() -> void:
+	# bolt-1-1: coin -> cog (key 重命名)。变量名保持 coin* 以减少改动面，语义已是 cog。
 	var cl := _get_cl()
-	var coin_value: int = int(cl.get_value("scoring.score.coin", 200)) if cl else 200
+	var coin_value: int = 200
+	if cl:
+		coin_value = int(cl.get_value("scoring.score.cog", cl.get_value("scoring.score.coin", 200)))
 	coins += 1
 	add_score(coin_value)
 	coins_changed.emit(coins)
-	# 100 coin → 1UP
+	# 100 cog → 1UP（蓝水晶等价 1 命）
 	if coins >= 100:
 		coins = 0
 		add_life()

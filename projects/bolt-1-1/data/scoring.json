@@ -1,12 +1,12 @@
 {
-  "_meta": { "version": "1.0", "description": "计分系统" },
+  "_meta": { "version": "2.0-bolt", "description": "计分系统（bolt-1-1 命名）" },
   "score": {
-    "coin": 200,
-    "goomba": 100,
-    "koopa": 100,
+    "cog": 200,
+    "mossroll": 100,
+    "shellpod": 100,
     "shellChain": [100, 200, 400, 800, 1000, 2000, 4000, 8000, "1UP"]
   },
-  "flagpole": {
+  "signalTower": {
     "byHeight": [
       { "minRatio": 0.95, "score": 5000, "label": "TOP" },
       { "minRatio": 0.7,  "score": 4000 },
@@ -16,6 +16,6 @@
     ]
   },
   "timeBonus": 50,
-  "lives": { "initial": 3, "gainPer100Coins": 1 },
+  "lives": { "initial": 3, "gainPer100Cogs": 1 },
   "time": { "initial": 300, "warningAt": 100 }
 }
