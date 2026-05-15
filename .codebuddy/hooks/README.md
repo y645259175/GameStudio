@@ -15,6 +15,7 @@
 | 3 | `log-agent.sh` | CodeBuddy PostToolUse | AI 每次调完工具后 | 记录工具调用日志到 session-logs/ | ✅ 完整 |
 | 4 | `session-start.sh` | CodeBuddy SessionStart | 新会话开始 | 记录会话元信息 + 检测项目 phase | ✅ 完整 |
 | 5 | `detect-gaps.sh` | CodeBuddy Stop | AI 完成一轮响应后 | 轻量检测 GDScript 改动是否需要同步 GDD/数值表 | ✅ 完整 |
+| 6 | `validate-assets.sh` | git pre-commit | 美术/音频文件 commit 前 | 命名/扩展名/尺寸校验（错误阻塞 / 警告不阻塞） | ✅ 完整 |
 
 ## 启用方式
 
