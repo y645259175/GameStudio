@@ -115,6 +115,7 @@ Story: <path>
 
 ## 加载的 rule
 
+- `agent-spawn-contract`（spawn engineer/tester/reviewer 前的现状注入 + 交付协议）
 - `commit-discipline`（强制 [story] tag）
 - `test-standards`（测试金字塔）
 - `language-policy`

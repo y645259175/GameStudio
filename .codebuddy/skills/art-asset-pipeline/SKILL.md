@@ -93,6 +93,7 @@ art-director 按 verdict：
 
 ## 加载的 rule
 
+- `agent-spawn-contract`（spawn art-director/timiai-image 前的现状注入 + 交付协议）
 - `language-policy`（prompt 英文 / 描述中文）
 - `project-structure`（assets/ vs art/ 分流）
 

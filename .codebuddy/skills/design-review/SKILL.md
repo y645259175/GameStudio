@@ -49,14 +49,45 @@ disable: false
 7. UX/HUD/无障碍（UX）
 8. 交付与验收（Acceptance）
 
-### Step 3 · 委托 designer agent 起草
+### Step 3 · 委托 designer agent 起草 / 精修
 
-调用 `designer` agent（model: opus），传入：
-- concept
-- 类似游戏参考
-- 平台 / 团队规模约束
+**强制遵守 `agent-spawn-contract` rule**（6 项 spawn 前自检全过）。
 
-designer 产出 8 节内容的草稿。
+#### Step 3.1 · 现状注入（契约 1）
+
+spawn 前必须先 read：
+- 现有 `projects/<name>/gdd/gdd-<chapter>.md`（如存在）
+- 同项目的 `section-*.md` 拆章文件
+- `PROJECT.md` 中的 phase / status
+
+把现状内容（或路径 + 关键章节摘要）**直接 inject 到 spawn prompt**。
+
+#### Step 3.2 · 任务模式声明（契约 2）
+
+四选一，写在 prompt 第一段：
+
+| Mode | 何时用 |
+|---|---|
+| `DRAFT` | 现状文档不存在，或现状被 producer 判定废弃 |
+| `REFINE` | 现状存在且大部分可用，要做章节级精修 |
+| `PATCH` | 只补特定字段 / 表格 / 段落 |
+| `REVIEW` | 只读评审，不写 |
+
+#### Step 3.3 · 落盘 + 交付协议（契约 3、4）
+
+prompt 必须包含以下三条要求：
+1. 完成后**先发 type="message" 携带完整产出**
+2. 同时**落盘到指定 path**（main agent 提供）
+3. 最后才发 shutdown_response（不允许把产出写在 reason）
+
+#### Step 3.4 · 多 agent 并行的额外要求
+
+如果同时 spawn `designer` + `art-director` + `ux-designer`：
+- **每个 agent 都收到完整现状**，不是各自只看自己负责的章节
+- 章节边界声明清晰（designer 写 §1/2/4/6/8，art-director 写 §3，ux-designer 写 §3.6/§7）
+- 章节有交叉时，必须显式说明谁主谁辅
+
+designer 产出 8 节内容的草稿（或精修后的 diff）。
 
 ### Step 4 · 一致性自审
 
@@ -101,6 +132,7 @@ designer 产出 8 节内容的草稿。
 
 ## 加载的 rule
 
+- `agent-spawn-contract`（**强制**：spawn agent 前的现状注入 + 模式声明 + 交付协议）
 - `design-authoring`（强制 8 节）
 - `language-policy`
 - `project-structure`
@@ -123,3 +155,7 @@ designer 产出 8 节内容的草稿。
 
 - 评审依赖 reviewer agent 的语义判断，缺自动化指标
 - 跨章节冲突需人工 review（依赖 `consistency-check` 后续覆盖）
+
+## 历史教训
+
+- **2026-05-15 mario-1-1 detail 事故**：spawn designer-1 时未注入现有 999 行 GDD 现状，导致 agent 从零重写产出与现状互冲的版本。修复手段：新增 `agent-spawn-contract` rule，强制 6 项 spawn 前自检。本 skill 的 Step 3 已重写。

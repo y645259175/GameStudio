@@ -97,6 +97,7 @@ disable: false
 
 ## 加载的 rule
 
+- `agent-spawn-contract`（spawn architect 前的现状注入 + 交付协议）
 - `commit-discipline`（[story] tag 格式）
 - `language-policy`
 

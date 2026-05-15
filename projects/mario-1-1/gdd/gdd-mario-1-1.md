@@ -3,8 +3,9 @@ gdd_id: mario-1-1
 status: review
 sections_complete: [1, 2, 3, 4, 5, 6, 7, 8]
 owner: designer
-version: 1.0-detail-complete
+version: 1.2-ux-refined
 last_review: 2026-05-15
+note: v1.2 合入 ux-designer-2 的 15 条补丁（5 MUST + 7 SHOULD + 3 NICE），含缓动总则、过场常量、VFX 精确化、HUD 交叉引用补全、可达性章节展开。详见 reports/ux-refine-patches-2026-05-15.md
 ---
 
 # GDD · Mario 1-1 复刻
@@ -52,11 +53,26 @@ last_review: 2026-05-15
 | 35-50s | 大坑+Koopa | 高度紧张 | 学风险跳+踩龟壳 |
 | 50-60s | 升降台+旗杆 | 紧张→释放 | 关底高潮 |
 
-### 1.4 范围声明
+### 1.4 范围声明（Scope Statement）
 
-**做**：1-1 完整复刻 / 5 状态马里奥 / 3 敌人（Goomba/Koopa/Piranha）/ 4 道具（蘑菇/火花/星星/1UP）/ 关卡元素全套 / HUD / 死亡重生 / 通关结算
+**做（IN）**：
+- World 1-1 完整关卡（出生 → 旗杆 → 城堡过场）
+- 马里奥 5 状态：小 / 大 / 火力 / 无敌 / 死亡
+- 敌人：Goomba、Koopa Troopa（绿）、Piranha Plant（占位）
+- 道具：超级蘑菇、火之花、星星、1UP 蘑菇
+- 关卡元素：地面、砖块、问号块、管道（含 1 个可进入金币房）、金币、旗杆、城堡
+- HUD：MARIO 得分 / 金币数 / WORLD 标识 / TIME 倒计时
+- 死亡 / 重生 / 通关流程
+- 开场短动画 + 通关动画（旗杆下滑 + 城堡进入）
 
-**不做**：其他关卡 / 多人 / 存档 / 移动端 / 音乐自制 / 水下关卡 / Boss / 自定义键位
+**不做（OUT）**：
+- 1-2 / 1-3 等其他关卡
+- 双人模式 / 世界地图 / 存档
+- Lakitu / Bowser / 1-1 之外的敌人
+- 水下关 / 城堡内部关卡
+- 配置选项菜单（仅占位）
+- 多语言（仅英文 HUD 占位）
+- 移动端 / 自定义键位 / 自制音乐
 
 ### 1.5 参考与对标
 
@@ -166,42 +182,57 @@ last_review: 2026-05-15
 
 ### 3.1 整体艺术风格
 
-**关键词**：NES 像素风 · 16x16 tile · 高饱和度 · 简洁几何 · 现代清晰度
-
-**约束**：
-- 不直接复制原作 sprite（避免 IP 风险）；自制风格要素接近原作但不抄
-- tile 基础尺寸 16×16（角色 / 敌人 / 物件）；大马里奥 16×32
-- 背景与前景必须有明显色差区分（玩家可玩区始终最显眼）
-- 不使用任何抗锯齿（pixel-perfect render）
-- 调色板限制在 32 色以内（NES 风格约束）
+- **基调**：NES 8-bit 像素 + 现代清晰度（pixel-perfect、关闭双线性过滤、整数缩放）
+- **基础 tile 单元**：`16x16` 像素（与 NES 原作一致，便于对位地图与碰撞）
+- **小尺寸子单元**：`8x8` 像素，用于 HUD 字体、UI 数字、coin 图标与小型装饰
+- **逻辑分辨率**：`256x240`（NES 原生），运行时按窗口大小做整数倍缩放（2x / 3x / 4x），禁止小数缩放
+- **风格关键词**：`retro-pixel` / `flat-shading` / `hard-edge` / `limited-palette` / `readable-silhouette`
+- **现代化处理**：保留像素硬边，但允许使用更宽色域（不限于 NES 的 54 色）以提升可读性；阴影 / 描边按需引入但不破坏像素轮廓
+- **参考对标**：NES Super Mario Bros. (1985) 1-1 关卡截图为主参考；色彩饱和度向 All-Stars 复刻方向略偏
+- **不做**：不做 HD 重绘风、不做 3D、不做手绘水彩风、不做 outline 描边主体（仅 UI 可有描边）
+- **不直接复制原作 sprite**（避免 IP 风险）；自制风格要素接近原作但不抄
+- **存放路径**：参考图归 `art/reference/`，风格 prompt 归 `art/style-guide.md`，最终资产输出 `assets/`
 
 ### 3.2 色板（Palette）
 
-字段：`data/palette.json`
+字段：`data/palette.json`。所有美术资产**必须**从此表取色。
 
-| 类别 | 字段 | 基准 hex | 说明 |
-|---|---|---|---|
-| 天空 | `sky.day` | `#5C94FC` | 蓝天 |
-| 山远景 | `mountain.far` | `#FFC0FC` | 粉色（原作风）|
-| 树丛 | `bush.green` | `#00A800` | 草绿 |
-| 云 | `cloud.white` | `#FFFFFF` | 纯白 |
-| 地面 | `ground.brown` | `#E45C10` | 棕橙 |
-| 砖块 | `brick.brown` | `#FC8800` | 亮橙 |
-| 问号块 active | `question.gold` | `#FCBC3C` | 金黄 |
-| 问号块 used | `question.brown` | `#A04500` | 暗棕 |
-| 硬砖 | `hardblock.gray` | `#A4A4A4` | 灰 |
-| 管道 | `pipe.green` | `#00A800` | 翠绿 |
-| 旗杆 | `flag.silver` | `#BCBCBC` | 银 |
-| 城堡 | `castle.gray` | `#787878` | 深灰 |
-| Mario 红 | `mario.red` | `#FC0000` | 帽子+衣服 |
-| Mario 蓝 | `mario.blue` | `#0058FC` | 工装裤 |
-| Mario 肤色 | `mario.skin` | `#FCBC8C` | 脸 |
-| Goomba 棕 | `goomba.brown` | `#8B4513` | 蘑菇身 |
-| Koopa 绿 | `koopa.green` | `#00C800` | 龟壳 |
-| Koopa 黄 | `koopa.yellow` | `#FCFC00` | 腹部 |
-| 金币黄 | `coin.gold` | `#FCBC3C` | 金币 |
-| HUD 白 | `hud.white` | `#FFFFFF` | 文字 |
-| 警告红 | `hud.warning` | `#FC0000` | TIME 警告闪烁 |
+| 用途 | Hex | palette.json 字段 |
+|---|---|---|
+| 背景天空 | `#5C94FC` | `bg_sky` |
+| 背景天空（地下） | `#000000` | `bg_underground` |
+| 地面草绿顶 | `#00A800` | `ground_top` |
+| 地面土棕 | `#A04000` | `ground_body` |
+| 砖块橙红 | `#D87050` | `brick_main` |
+| 砖块阴影 | `#7C2820` | `brick_shadow` |
+| 问号块 active | `#FAC000` | `qblock_active` |
+| 问号块 used | `#9C5C20` | `qblock_used` |
+| 硬砖灰 | `#BCBCBC` | `hard_block` |
+| 管道主绿 | `#00A800` | `pipe_main` |
+| 管道高光 | `#80D010` | `pipe_highlight` |
+| 管道阴影 | `#006800` | `pipe_shadow` |
+| Mario 红 | `#E40058` | `mario_red` |
+| Mario 蓝 | `#0058F8` | `mario_blue` |
+| Mario 肤 | `#FCBCB0` | `mario_skin` |
+| Mario 棕 | `#6C2810` | `mario_brown` |
+| Fire Mario 白 | `#FCFCFC` | `mario_fire_white` |
+| Goomba 主色 | `#A85820` | `goomba_main` |
+| Goomba 暗 | `#5C2C00` | `goomba_dark` |
+| Koopa 壳绿 | `#00A800` | `koopa_shell` |
+| Koopa 身黄 | `#FAC000` | `koopa_body` |
+| 旗杆灰 | `#BCBCBC` | `flagpole_pole` |
+| 旗帜白绿 | `#80D010` | `flagpole_flag` |
+| 城堡灰 | `#A0A0A0` | `castle_main` |
+| 云 / 高光白 | `#FCFCFC` | `cloud_white` |
+| 远山深绿 | `#007000` | `mountain_dark` |
+| 树丛绿 | `#48A810` | `bush_main` |
+| 金币黄 | `#FAC000` | `coin_main` |
+| HUD 文字白 | `#FCFCFC` | `hud_text` |
+| 警告红 | `#FC0000` | `hud_warning`（TIME 警告闪烁） |
+
+- 所有 sprite / tile **不得**引入未登记色；新色须先回写 `data/palette.json` 并触发 consistency-check
+- 此表也用于自动校验工具：扫 `assets/*.png` 像素是否全部命中 palette
+- Phase 2 TODO：补 `palette-grayscale.json` 用于色弱模式
 
 ### 3.3 角色精灵
 
@@ -229,26 +260,40 @@ last_review: 2026-05-15
 
 ### 3.5 关卡 Tileset
 
-字段：`data/sprites/tiles.json`
+字段：`data/sprites/tiles.json`。地图 tile 全部基于 `16x16` 单元。
 
-| 类型 | 尺寸 | 变体 | 说明 |
+| Tile 名 | 尺寸 | 变体数 | 说明 |
 |---|---|---|---|
-| 地面 | 16×16 | 1 | 草+泥 |
-| 普通砖 | 16×16 | 1 | 可破坏 |
-| 砖块碎片 | 8×8 | 1 | 4 个碎片粒子 |
-| 问号块 | 16×16 | 4 (active 3 帧动画 + used 1) | 闪烁 |
-| 硬砖 | 16×16 | 1 | 不可破坏 |
-| 管道 | 16×16 tile | 4 长度（短/中/长/超长）+ 顶部口/身体两 tile | 拼接 |
-| 金币（场景内）| 16×16 | 4（旋转）| 关卡内金币 |
-| 旗杆 | 16×16 tile × 12 高 | 杆+顶球 | 终点 |
-| 城堡 | 80×80 (5×5 tile) | 1 | 通关 |
-| 云 | 32×16 (2×1 tile) | 3 形状 | 背景 |
-| 山 | 48×32 (3×2 tile) | 2 形状 | 背景 |
-| 树丛 | 32×16 (2×1 tile) | 2 形状 | 装饰 |
+| `ground` 地面 | `16x16` | 1 | 顶层带草绿，下层纯土棕 |
+| `brick` 砖块 | `16x16` | 1（+碎片 4 帧 8x8） | 大马砸碎后 4 块独立碎片 sprite |
+| `qblock_active` 问号块 | `16x16` | 4（闪烁循环） | 含 `?` 字 + 金黄底色循环亮度 |
+| `qblock_used` 问号块（已用） | `16x16` | 1 | 暗棕硬块，不可再触发 |
+| `hard_block` 硬砖 | `16x16` | 1 | 灰岩石，不可破坏 |
+| `pipe` 管道 | 见下 | 4 长度 | xs/s/m/l |
+| `flagpole` 旗杆 | `16x176` | 1 杆 + 1 顶球 + 1 旗 | 杆为 `16x16` × 11 段堆叠 |
+| `castle` 城堡 | `80x80` | 1 | 5×5 tile 组合，含门洞与塔顶 |
+| `cloud` 云 | `32x16` / `48x16` | 2 | 小 / 大云（背景层） |
+| `mountain` 山 | `48x32` | 2 | 大山（深绿） / 小山（带白顶） |
+| `bush` 树丛 | `32x16` / `48x16` | 2 | 小丛 / 大丛（前景装饰） |
+| `coin` 金币（关卡内） | `16x16` | 4（旋转循环） | 与 HUD coin 图标区分 |
+
+**管道 4 种长度**（统一宽 2 tile = 32px）：
+
+| 名 | 高 (tile) | 像素 | 用途 |
+|---|---|---|---|
+| `pipe_xs` | 2 | `32x32` | 起始低管 |
+| `pipe_s` | 3 | `32x48` | 标准管 |
+| `pipe_m` | 4 | `32x64` | 中管 |
+| `pipe_l` | 5 | `32x80` | 终段高管 |
+
+- 管道由 `pipe_top_left / pipe_top_right / pipe_body_left / pipe_body_right` 四片 tile 组成
+- Tileset 总图：`assets/tileset-overworld.png`（建议 `256x256`）
+- 背景元素（cloud / mountain / bush）单独打 `assets/tileset-bg.png` 便于视差
+- 字段名约定与 Godot TileSet 资源对齐
 
 ### 3.6 动画规格表（VFX）
 
-> 由 designer 代为起草（ux-designer subagent 暂未注册）。每条 VFX 描述触发与方向，具体像素值由 art-director 在实施时确定。
+> v1.1: ux-designer-2 已 review 并产出 15 条补丁（见 `reports/ux-refine-patches-2026-05-15.md`），MUST/SHOULD 级已合并到下方"缓动曲线总则"+"过场常量"+"VFX 精确化补充"。每条 VFX 默认 ease 见总则；具体像素值/帧时长以本节补充表为准。
 
 | # | 名称 | 触发 | 表现描述 | 反馈通道 | 优先级 |
 |---|---|---|---|---|---|
@@ -283,22 +328,83 @@ last_review: 2026-05-15
 | VFX-29 | 旗杆下滑 | 玩家碰旗杆 | 角色抓杆 → 沿杆下滑（线性，约 1.0s）→ 落地挥旗 0.5s + 旗下降音 + 计分加成 | 视觉+音效 | P0 |
 | VFX-30 | 城堡进入 | 旗杆挥旗结束 | 角色自动右走入城堡门（1.5s）+ 城堡旗升起 + 通关音乐 + WORLD CLEAR 字幕淡入 | 视觉+音效+过场 | P0 |
 
+#### 3.6.1 缓动曲线总则（Patch-01）
+
+字段：`data/vfx.json#easing.defaults`
+
+| 类型 | 默认 ease | 适用 VFX |
+|---|---|---|
+| 位移类（弹起 / 飘字 / 砖碎抛物线） | `easeOutQuad` | VFX-12 / VFX-19 / VFX-21 |
+| 缩放类（变身 / 缩小 / 进管道） | `easeInOutQuad` | VFX-09 / VFX-10 / VFX-11 / VFX-22 |
+| HUD 闪烁类 | 方波（无缓动，纯切换） | VFX-25 / VFX-26 |
+| 镜头抖动 | 衰减正弦 `amplitude × cos × decay` | VFX-23 / VFX-24 |
+| 帧动画循环（walk/run） | `linear`（无缓动，等距帧） | VFX-02 / VFX-03 |
+| 默认（未指定） | `linear` | 其余 |
+
+#### 3.6.2 过场常量（Patch-10）
+
+字段：`data/vfx.json#transition`
+
+| 常量 | 值 | 引用方 |
+|---|---|---|
+| `transition.fadeIn` | 0.5s | VFX-27 / VFX-28 |
+| `transition.holdReady` | 1.5s | VFX-27 |
+| `transition.flagSlide` | 1.0s | VFX-29 |
+| `transition.castleWalkIn` | 1.5s | VFX-30 |
+| `transition.castleFlagRise` | 1.5s | VFX-30 |
+| `transition.deathHoverV` | -320 px/s | VFX-12 |
+| `transition.deathFallTotal` | 2.6s | VFX-12 |
+
+#### 3.6.3 VFX 精确化补充（MUST/SHOULD 级补丁）
+
+| VFX | 补丁 | 精确参数 |
+|---|---|---|
+| VFX-09 变大 transform | Patch-02 [MUST] | 冻结 `0.5s`（暂停物理/HUD/输入），6 次切换 = 12 帧 × 42ms；power-up SE offset 0ms；闪烁色 small/big sprite 直接交替 |
+| VFX-10 变火力 | Patch-02 [MUST] | 同 VFX-09 时序；闪烁色为白 `#FCFCFC` / 红 `#E52521` 交替（shader tint 叠加，不替像素） |
+| VFX-11 受伤 iframes | Patch-03 [MUST] | 闪烁周期 `100ms on / 100ms off`（5 Hz，3s 闪 15 次）；alpha `0.4 / 1.0`；无颜色变（与 VFX-13 区分）；iframes 期间忽略接触伤害但保留掉坑/超时死亡 |
+| VFX-12 死亡 | Patch-04 [SHOULD] | initial v `-320 px/s`，重力 `1200`；2.6s 跳出屏 + 0.4s 黑屏前停 = 3.0s（与 §7.4 一致）；镜头停止跟随 |
+| VFX-13 无敌闪烁 | Patch-05 [SHOULD] | 4 色 100ms/帧（红 `#E52521` / 橙 `#F89818` / 黄 `#FBD000` / 白 `#FCFCFC`）；总 10s，前 8s 正常 + 后 2s 加速到 50ms/帧；shader tint 叠加 |
+| VFX-19 砖碎 | Patch-11 [NICE] | 4 碎片初速：上对称 `(±90, -240)`、下对称 `(±60, -120) px/s`；重力 1200；出屏销毁；不参与碰撞 |
+| VFX-21 金币飘字 | Patch-06 [SHOULD] | 金币上飘 +24px `easeOutQuad` 0.3s；"+200" 飘字 +16px 0.5s alpha 1→0；字体复用 HUD 8x8 白 |
+| VFX-22 进管道 | Patch-07 [SHOULD / NEED_HANDOFF] | 三阶段：A 0-0.6s 缩入（y +32px, scale.y 1→0 `easeInOutQuad`）→ B 0.6-0.8s 消失+音尾 → C 0.8-1.0s 黑屏淡入 0.2s。**HANDOFF**：1-1 是否含真实管道分支由 designer 决定 |
+| VFX-23 屏幕微抖 | Patch-08 [SHOULD] | `shake(amplitude=2, duration=0.2s) + decay easeOutQuad`；多源叠加取 max 不相加 |
+| VFX-24 火球击中震动 | Patch-08 [SHOULD] | `shake(amplitude=3, duration=0.25s)`；其余同 VFX-23 |
+| VFX-25 时间警告 | Patch-09 [MUST] | `blinkPeriod = 500ms`（250ms 红 `#E52521` / 250ms 白 `#FCFCFC`）；BGM 加速 `1.25x`；**仅 TIME 区域闪**，不波及其他 HUD |
+
 ### 3.7 UI 视觉
 
 字段：`data/hud.json`
 
-- **字体**：NES 风像素等宽字体（8×8 字符），大字号 16×16
-- **数字样式**：等宽数字，前导 0 补齐（score 6 位 / coin 2 位 / time 3 位）
-- **颜色**：默认白色 `#FFFFFF` / 警告红 `#FC0000` / 庆祝金 `#FCBC3C`
+- **字体**：等宽像素体 `8x8`（自制 bitmap 或 Press Start 2P 8x8 子集），字符仅 `A-Z / 0-9 / 空格 / × / -`
+- **HUD 布局**（256x240 逻辑分辨率，距上 16px）：
+  - 左上：`MARIO` + 6 位分数（`000000`）
+  - 中左：金币图标 `×` + 2 位金币数（`×00`）
+  - 中右：`WORLD` + `1-1`
+  - 右上：`TIME` + 3 位倒计时（`400`）
+- **数字样式**：纯白 `hud_text` (#FCFCFC)，无描边无阴影；TIME ≤100 时每秒闪 2 次
+- **Coin 图标**：`8x8` 简化版（与关卡内 16x16 金币区分），单帧静态
+- **颜色规范**：HUD 一律白；不出现彩色文本（Phase 2 可加 1UP 飘字绿）
+- **暂停界面**：黑色半透明蒙层（`#000000` α=0.5）+ 居中 `PAUSE` 字（白色 8x8 放大 2x）
+- **死亡 / 通关浮字**：复用 HUD 字体，居中显示
 - **边距**：HUD 顶部留 16px padding，左右各 16px
 - **对齐**：MARIO/Score 左对齐 / coin 居左中 / WORLD 居右中 / TIME 右对齐
 
 ### 3.8 过场与转场
 
-- **开场**：Title → Press SPACE → 淡黑 0.5s → Loading → Ready 1.5s → Playing
-- **死亡**：死亡动画 3s → 黑屏淡入 0.5s → 剩余生命展示 1.5s → 重生/Game Over
-- **通关**：旗杆下滑 1.0s → 挥旗 0.5s → 自动走入城堡 1.5s → 城堡旗升起 1.5s → WORLD CLEAR 字幕 + timeBonus 结算 3s → 标题
-- **暂停**：黑色遮罩淡入 0.2s → 显示 PAUSE → ESC 触发淡出 0.2s
+| 过场 | 触发 | 表现 | 时长档 |
+|---|---|---|---|
+| **开场** | 关卡载入完 | **不**做"走出管道"；直接黑→正常淡入 + HUD 亮起 + Mario idle | 短 ~0.5s |
+| **死亡** | 触敌 / 落坑 / TIME=0 | 音效 + 死亡 sprite + 悬停 → 抛物线下落出屏 → 黑屏 | 中 ~2.5s |
+| **降级** | 受击 | 闪烁 transform + 1.5s 无敌 + sprite 缩小 | 短 ~1.5s |
+| **变身** | 吃蘑菇 / 花 | 闪烁 transform + sprite 替换 + 暂停 0.5s | 短 ~0.5s |
+| **通关旗杆** | 触旗 | 抓杆 + 旗帜下滑 + Mario 同步下滑 + 落地走 | 中 ~3s |
+| **通关城堡** | 进城堡门 | 进门消失 + 城堡顶升小旗 + 烟花 ×3 | 中长 ~4s |
+| **结算** | 烟花结束 | TIME→分数（每剩 1s = 50 分，加分音效）+ 停顿 | 中 ~3s |
+| **暂停** | Playing 按 ESC | 黑色遮罩 alpha 0→0.6 淡入 0.15s `easeOutQuad` → PAUSE → ESC 触发淡出 0.2s `easeInQuad`（冻结在淡入完成瞬间开始）| 瞬时 |
+
+- **黑屏过渡统一**：纯黑 `#000000` 全屏，淡入淡出 0.3s（不用马赛克/圆圈花式过渡，保 NES 风）
+- **烟花**：3 发依次绽放，每发 8 颗白色像素粒子扩散（具体时序由 §3.6 VFX-30 登记）
+- **不做**：cutscene CG / 角色对话 / 镜头特写
 
 ---
 
@@ -841,12 +947,12 @@ last_review: 2026-05-15
 
 | 元素 | 触发更新 | 视觉反馈 |
 |---|---|---|
-| 分数 | 任何 score 事件 | 数字立即跳变（无 tween）|
+| 分数 | 任何 score 事件 | 数字立即跳变（无 tween，刻意保持 NES 原版风格，无对应 VFX）|
 | 金币 +1 | 拾取/顶问号 | 数字 +1，图标 pop（VFX-21）|
 | 金币 ≥ 90 | 接近 100 | 图标轻微高亮（VFX-26 提示）|
-| 金币 = 100 | 触发 1UP | 图标强闪 + 数字归零 + HUD 短暂金光 |
+| 金币 = 100 | 触发 1UP | 图标强闪 + 数字归零 + HUD 短暂金光（VFX-26 实现）|
 | TIME | 每秒 -1 | 数字跳变 |
-| TIME ≤ 100 | 警告阈值 | 数字+标签红白闪烁（VFX-25）+ BGM 加速 |
+| TIME ≤ 100 | 警告阈值 | TIME 区域 红白闪烁 `blinkPeriod=500ms`（VFX-25）+ BGM 加速 1.25x |
 | TIME = 0 | 触发死亡 | 闪烁停止，进入死亡流程 |
 
 **字段**：`data/hud.json#ingame` → `layout.regions[]` / `score.{digits,padZero}` / `coin.{iconSprite,highlightAt,celebrateAt}` / `world.text` / `time.{warningThreshold,blinkPeriod}` / `colors.{normal,warning,celebrate}`
@@ -891,7 +997,7 @@ last_review: 2026-05-15
 | 阶段 | 时长 | 内容 |
 |---|---|---|
 | 抓旗杆 | 即时 | 角色抓杆姿态切换 + 旗下降音 |
-| 旗杆下滑 | ~1.0s | 角色沿杆下滑（线性）+ 计算分段得分 |
+| 旗杆下滑 | ~1.0s | 角色沿杆下滑（前 0.9s 线性，末 0.1s `easeOutQuad` 微减速增加落地冲击）+ 计算分段得分 |
 | 落地挥旗 | ~0.5s | 挥旗 sprite + 高度奖励飘字（5000/4000/2000/800/100）|
 | 走入城堡 | ~1.5s | 角色自动右走 + 城堡门进入 |
 | 城堡旗升 | ~1.5s | 城堡顶旗子升起 + 通关音乐起 |
@@ -926,9 +1032,17 @@ last_review: 2026-05-15
 - A/B → 跳跃
 - X/Y → 跑步
 
-**可达性占位**（Phase 2+）：
-- 色盲模式：HUD 警告通过形状变化辅助（如 TIME 警告时数字旁加 ⚠ 图标）
-- 屏幕阅读器支持：暂时无
+**可达性占位**（Phase 2+，本期仅占位不实现）：
+
+| 项 | 方案 | Phase |
+|---|---|---|
+| 色盲形状辅助 | TIME 警告时数字旁加 ⚠ 图标；金币 100 触发时除金光外加形状脉动 | 2 |
+| HUD 高对比 | HUD 文字加 1px 黑色描边可选开关（默认关，纯白复刻原作）| 2 |
+| 输入重映射 | 设置菜单提供键位重绑定（保留默认 + 自定义两套）| 2 |
+| 减少抖动开关 | 开启后禁用 VFX-23/24 镜头抖动（仅平移效果保留）| 2 |
+| 字幕 | 关键 SE（升级/死亡/通关）出文字提示 | 2 TODO |
+| 屏幕阅读器 | **本期不支持**（NES 风像素游戏受限于视觉空间布局）| 不支持 |
+| 长按二次确认 | 本作不引入（与原作一致，所有输入即时响应）| 不做 |
 
 ---
 
@@ -991,6 +1105,10 @@ last_review: 2026-05-15
 | 状态机转移期物理 bug | 中 | 漂移 / 卡墙 | freezeFrames 期间冻结所有物理 |
 | 火球穿过砖块 | 中 | 玩法异常 | 火球独立碰撞层 + 单测 |
 | 性能：屏幕内敌人/道具过多 | 低 | 帧率下降 | 屏幕外不激活 + 对象池 |
+| 教学第一段玩家"反向走"无反馈 | 中 | 教学失败 / 玩家迷茫 | 出生点紧贴左墙：即使按 ← 也不动；摄像机不可回退；进入 Beat 1 后无任何向左路径 |
+| 物理在 60FPS 下步长差异导致跳跃高度不稳 | 中 | 手感不一致 | 使用固定步长物理（physics_fps=60）+ delta 解耦 |
+| 金币房切场 bug 导致玩家卡死 | 高 | 卡进度 | Sprint 2 专项 QA + 兜底"卡死 5s 自动重生" |
+| Koopa 壳连击逻辑产生反复弹跳 bug | 中 | 玩法异常 | 单元测试覆盖壳碰撞 6 种边界场景 |
 
 ### 8.6 已知限制
 
