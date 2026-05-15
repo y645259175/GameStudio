@@ -1,12 +1,59 @@
 ---
-description: GDD authoring standard - 8 mandatory sections in fixed order, frontmatter with gdd_id/status/last_review/sections_complete, review gates (draft→review→locked), and anchor stability for cross-doc referencing.
+description: GDD authoring standard - 8 mandatory sections, content precision rules (animation/perception/numbers), review gates, and anchor stability for cross-doc referencing.
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-14T16:38:00.000Z
+updatedAt: 2026-05-15T11:35:00.000Z
 provider:
 ---
 
 # design-authoring · 设计文档起草规范
+
+## GDD 内容精度三原则
+
+策划案是"照着做就能做对"的规格说明书，但**不越界代替其他角色的决策**。
+
+### 原则 1 · 动画/动效
+
+GDD 必须写清楚：
+- ✅ **触发时机**（"砖块 HP 归零时"）
+- ✅ **表现描述**（"同色碎片四散 + 淡出"）
+- ✅ **可选的时长范围 / 频率 / 颜色倾向**（"约 0.5-0.8s"、"偏暖色"）
+
+GDD 不写（由其他角色出）：
+- ❌ 具体像素尺寸 / 精确缓动曲线 / 最终配色值 → `ux-designer` 出交互规格
+- ❌ 美术风格 / 资产细节 → `art-director` 定方向
+
+### 原则 2 · 道具/技能/系统的玩家感知
+
+每个系统/道具/技能必须覆盖**玩家感知全链路**：
+
+| 时刻 | 必须描述 |
+|---|---|
+| 看到（出现） | 玩家如何识别它是什么 |
+| 获得（触发） | 获得瞬间发生什么反馈 |
+| 生效中 | 玩家如何知道效果还在 |
+| 结束 | 效果消失时的表现 |
+
+### 原则 3 · 数值
+
+- ❌ 不在 GDD 正文中写死"最终数值"或使用"适当"/"合理"等模糊词
+- ✅ 在 GDD 中标注数值表的字段名 + 填一个**基准初始值**作为参考
+- ✅ 实际数值独立管理在 `data/*.json`（或 TOML/CSV），程序读表获取
+- ✅ 调数值时**只改数据文件**，不需要改代码或 GDD
+
+示例：
+```
+球速：见 `data/levels.json` → levels.<N>.ball_speed（基准：L1=300 px/s）
+```
+
+## 角色分工
+
+| 角色 | 职责 | agent |
+|---|---|---|
+| 游戏设计师 | GDD 内容主笔（功能 + 玩家感知 + 数值表结构） | `designer` |
+| 交互设计师 | 出交互/动效规格（时长 / 缓动 / 反馈通道） | `ux-designer` |
+| 美术总监 | 定视觉方向 + 审核最终效果 | `art-director` |
+| 制作人 | 拍板 GDD 进入下一阶段 | `producer` |
 
 ## 8 节强制结构
 
@@ -66,4 +113,4 @@ GDD §<章节号>.<子标题路径>（gdd-<id>.md）
 - `review-all-gdds` 跨章节扫描
 - `quick-design` 小型设计决策（不入 GDD 主体）
 - `consistency-check` 引用闭合验证
-- `designer` agent 主笔 / `producer` 拍板
+- `designer` agent 主笔 / `ux-designer` 出交互规格 / `art-director` 出视觉方向 / `producer` 拍板
