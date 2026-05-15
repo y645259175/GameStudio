@@ -41,7 +41,7 @@ disable: false
 | skill | 22 | start / new-project / design-review / dev-story / smoke-check |
 | agent | 30 | producer / pm / architect / engineer / qa-lead |
 | rule | 6 | project-structure / commit-discipline / language-policy |
-| template | 9 | gdd-8-sections / sprint-plan / retro / adr |
+| template | 9 | gdd-skeleton / sprint-plan / retro / adr |
 
 ### Step 3 · REQUIRED vs OPTIONAL 区分
 

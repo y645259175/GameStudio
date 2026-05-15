@@ -34,7 +34,7 @@ disable: false
 
 | 当前 → 目标 | 必需产物 |
 |---|---|
-| concept → design | GDD 8 节齐 + design-review APPROVED |
+| concept → design | GDD 最小 5 维度齐全 + 概念对话产出章节全部有内容 + design-review APPROVED |
 | design → dev | epics 拆完 + sprint 1 plan 就位 |
 | dev → test | 核心 P0 epics 全 done + smoke 全 PASS |
 | test → release | release-checklist 全过 |

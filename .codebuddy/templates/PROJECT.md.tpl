@@ -62,7 +62,7 @@ ${GENRE}
 \`\`\`
 projects/${PROJECT_NAME}/
 ├── PROJECT.md          ← 本文件
-├── gdd/                ← GDD 文档（8 节结构）
+├── gdd/                ← GDD 文档（最小 5 维度 + 项目专属章节，由概念对话产出）
 ├── stories/            ← User stories
 ├── adr/                ← Architecture Decision Records
 ├── data/               ← 数值表（JSON / TOML / CSV）

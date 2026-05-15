@@ -1,7 +1,9 @@
 ---
 gdd_id: mario-1-1
 status: review
-sections_complete: [1, 2, 3, 4, 5, 6, 7, 8]
+sections: ["概述", "玩法循环", "视觉与美术", "系统设计", "数值与平衡", "内容与节奏", "UX 与 HUD", "交付与验收"]
+skeleton_deviation: none
+deviation_rationale: ""
 owner: designer
 version: 1.2-ux-refined
 last_review: 2026-05-15

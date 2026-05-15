@@ -10,7 +10,7 @@ enabled: true
 
 ## Domain Owned
 
-- GDD 8 节起草与维护（特别是 §1 概述 / §2 玩法循环 / §4 系统设计 / §5 数值平衡）
+- GDD 起草与维护（概念对话产出的章节，特别是概述 / 玩法循环 / 系统设计 / 数值平衡）
 - 设计支柱（design pillars）定义与守护
 - 玩法循环（core loop / meta loop）一致性
 - 数值公式设计（具体数值表落 `data/`）
@@ -82,7 +82,7 @@ design-review 时用：
 - 协作协议：[`studio/docs/collaboration-protocol.md`](../../../studio/docs/collaboration-protocol.md)
 - 相关 skill：`design-review` `review-all-gdds` `quick-design` `architecture-decision`
 - 相关 rule：`design-authoring` `data-driven`
-- 相关 template：`templates/gdd-8-sections.md`
+- 相关 template：`templates/gdd-skeleton.md`
 - 相关 agent：`producer`（升级）/ `art-director`（视觉协商）/ `architect`（技术协商）
 
 ## Known Limitations / Phase 2 Review Points

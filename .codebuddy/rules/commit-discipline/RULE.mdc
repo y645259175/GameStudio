@@ -15,8 +15,8 @@ provider:
 格式：`[story] <story-id> <短描述>`
 
 - 触发条件：完成 user story / 重大架构变更 / GDD 章节定稿
-- 必须满足：story 已 Done / GDD 8 节完整 / consistency-check 通过
-- hook 校验：story-id 存在 + GDD 8 节完整 + JSON 配置可解析
+- 必须满足：story 已 Done / GDD 最小 5 维度齐全 / consistency-check 通过
+- hook 校验：story-id 存在 + GDD 最小覆盖维度齐全 + JSON 配置可解析
 
 ### 轻通道（局部 / 不阻塞）
 
