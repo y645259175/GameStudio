@@ -1,6 +1,6 @@
 extends Area2D
 
-## 球弹射与反弹 · 数值从 ConfigLoader 读取
+## 球弹射与反弹 · 弱引用 ConfigLoader
 
 signal ball_lost
 
@@ -16,9 +16,18 @@ var _launch_angle_max: float = 120.0
 
 func _ready() -> void:
 	paddle = get_tree().get_first_node_in_group("paddle")
-	_min_angle_deg = float(ConfigLoader.get_value("ball.min_angle_deg", 15))
-	_launch_angle_min = float(ConfigLoader.get_value("ball.launch_angle_min", 60))
-	_launch_angle_max = float(ConfigLoader.get_value("ball.launch_angle_max", 120))
+	var cl := _get_cl()
+	if cl:
+		_min_angle_deg = float(cl.get_value("ball.min_angle_deg", 15))
+		_launch_angle_min = float(cl.get_value("ball.launch_angle_min", 60))
+		_launch_angle_max = float(cl.get_value("ball.launch_angle_max", 120))
+
+
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func _physics_process(delta: float) -> void:

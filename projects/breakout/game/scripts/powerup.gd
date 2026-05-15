@@ -1,19 +1,19 @@
 extends Area2D
 
-## 道具掉落物 · 数值从 ConfigLoader 读取
+## 道具掉落物 · 弱引用 ConfigLoader
 
 const COLORS := {
 	"wide_paddle": Color("#16c79a"),
 	"narrow_paddle": Color("#e74c3c"),
 	"speed_ball": Color("#f5a623"),
-	"multi_ball": Color("#3498db"),
+	"clear_row": Color("#3498db"),
 	"extra_life": Color("#e91e63"),
 }
 const ICONS := {
 	"wide_paddle": "宽",
 	"narrow_paddle": "窄",
 	"speed_ball": "快",
-	"multi_ball": "轰",
+	"clear_row": "轰",
 	"extra_life": "♥",
 }
 
@@ -29,13 +29,22 @@ var _wobble_amp: float = 2.0
 @onready var label: Label = $Label
 
 
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
+
+
 func setup(p_type: String) -> void:
 	powerup_type = p_type
 	_origin_x = position.x
-	_fall_speed = float(ConfigLoader.get_value("powerup.fall_speed", 150))
-	_pulse_freq = float(ConfigLoader.get_value("vfx.powerup_pulse_frequency", 2.0))
-	_wobble_freq = float(ConfigLoader.get_value("vfx.powerup_wobble_frequency", 3.0))
-	_wobble_amp = float(ConfigLoader.get_value("vfx.powerup_wobble_amplitude", 2.0))
+	var cl := _get_cl()
+	if cl:
+		_fall_speed = float(cl.get_value("powerup.fall_speed", 150))
+		_pulse_freq = float(cl.get_value("vfx.powerup_pulse_frequency", 2.0))
+		_wobble_freq = float(cl.get_value("vfx.powerup_wobble_frequency", 3.0))
+		_wobble_amp = float(cl.get_value("vfx.powerup_wobble_amplitude", 2.0))
 	if color_rect:
 		color_rect.color = COLORS.get(p_type, Color.WHITE)
 	if label:

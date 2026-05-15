@@ -42,7 +42,7 @@
       "wide_paddle": 25,
       "narrow_paddle": 15,
       "speed_ball": 20,
-      "multi_ball": 20,
+      "clear_row": 20,
       "extra_life": 20
     },
     "durations": {

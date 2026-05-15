@@ -1,7 +1,7 @@
 extends Node
 
 ## GameManager · 全局单例（Autoload）
-## 管理生命、分数、关卡状态 · 数值从 ConfigLoader 读取
+## 弱引用 ConfigLoader，在无 ConfigLoader 时用默认值（便于 headless 测试）
 
 signal life_lost
 signal game_over
@@ -21,15 +21,24 @@ var _life_bonus_per_life: int = 50
 
 
 func _ready() -> void:
-	# ConfigLoader 先于 GameManager 加载（project.godot 中顺序靠前）
-	lives = int(ConfigLoader.get_value("lives.initial", 3))
-	max_lives = int(ConfigLoader.get_value("lives.max", 5))
-	_clear_bonus_per_level = int(ConfigLoader.get_value("scoring.clear_bonus_per_level", 100))
-	_life_bonus_per_life = int(ConfigLoader.get_value("scoring.life_bonus_per_life", 50))
+	var cl := _get_config_loader()
+	if cl:
+		lives = int(cl.get_value("lives.initial", 3))
+		max_lives = int(cl.get_value("lives.max", 5))
+		_clear_bonus_per_level = int(cl.get_value("scoring.clear_bonus_per_level", 100))
+		_life_bonus_per_life = int(cl.get_value("scoring.life_bonus_per_life", 50))
+
+
+func _get_config_loader() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func reset_game() -> void:
-	lives = int(ConfigLoader.get_value("lives.initial", 3))
+	var cl := _get_config_loader()
+	lives = int(cl.get_value("lives.initial", 3)) if cl else 3
 	score = 0
 	current_level = 1
 	bricks_remaining = 0

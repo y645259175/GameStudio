@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-## 挡板控制脚本 · 数值从 ConfigLoader 读取
+## 挡板控制脚本 · 弱引用 ConfigLoader
 
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var sprite: ColorRect = $ColorRect
@@ -11,10 +11,18 @@ var _speed: float = 500.0
 
 
 func _ready() -> void:
-	_default_width = float(ConfigLoader.get_value("paddle.default_width", 120))
-	_speed = float(ConfigLoader.get_value("paddle.speed", 500))
+	var cl := _get_cl()
+	_default_width = float(cl.get_value("paddle.default_width", 120)) if cl else 120.0
+	_speed = float(cl.get_value("paddle.speed", 500)) if cl else 500.0
 	current_width = _default_width
 	_update_size(_default_width)
+
+
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func _physics_process(_delta: float) -> void:

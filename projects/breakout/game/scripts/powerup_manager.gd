@@ -1,6 +1,6 @@
 extends Node
 
-## 道具管理器 · 数值从 ConfigLoader 读取
+## 道具管理器 · 弱引用 ConfigLoader
 
 const POWERUP_SCENE: PackedScene = preload("res://scenes/powerup.tscn")
 
@@ -8,24 +8,33 @@ var powerups_dropped_this_run: int = 0
 var active_timers: Dictionary = {}
 
 var _max_per_run: int = 6
-var _weights: Dictionary = {}
-var _durations: Dictionary = {}
+var _weights: Dictionary = {"wide_paddle":25,"narrow_paddle":15,"speed_ball":20,"clear_row":20,"extra_life":20}
+var _durations: Dictionary = {"wide_paddle":10,"narrow_paddle":10,"speed_ball":8}
 var _speed_multiplier: float = 1.3
-var _drop_rates: Dictionary = {}
+var _drop_rates: Dictionary = {"1":0.10,"2":0.18,"3":0.25,"-1":0.0}
 var _default_paddle_width: float = 120.0
 var _wide_multiplier: float = 1.5
 var _narrow_multiplier: float = 0.7
 
 
 func _ready() -> void:
-	_max_per_run = int(ConfigLoader.get_value("powerup.max_per_run", 6))
-	_weights = ConfigLoader.get_value("powerup.weights", {"wide_paddle":25,"narrow_paddle":15,"speed_ball":20,"multi_ball":20,"extra_life":20}) as Dictionary
-	_durations = ConfigLoader.get_value("powerup.durations", {"wide_paddle":10,"narrow_paddle":10,"speed_ball":8}) as Dictionary
-	_speed_multiplier = float(ConfigLoader.get_value("powerup.speed_multiplier", 1.3))
-	_drop_rates = ConfigLoader.get_value("powerup.drop_rates", {"1":0.10,"2":0.18,"3":0.25,"-1":0.0}) as Dictionary
-	_default_paddle_width = float(ConfigLoader.get_value("paddle.default_width", 120))
-	_wide_multiplier = float(ConfigLoader.get_value("paddle.wide_multiplier", 1.5))
-	_narrow_multiplier = float(ConfigLoader.get_value("paddle.narrow_multiplier", 0.7))
+	var cl := _get_cl()
+	if cl:
+		_max_per_run = int(cl.get_value("powerup.max_per_run", 6))
+		_weights = cl.get_value("powerup.weights", _weights) as Dictionary
+		_durations = cl.get_value("powerup.durations", _durations) as Dictionary
+		_speed_multiplier = float(cl.get_value("powerup.speed_multiplier", 1.3))
+		_drop_rates = cl.get_value("powerup.drop_rates", _drop_rates) as Dictionary
+		_default_paddle_width = float(cl.get_value("paddle.default_width", 120))
+		_wide_multiplier = float(cl.get_value("paddle.wide_multiplier", 1.5))
+		_narrow_multiplier = float(cl.get_value("paddle.narrow_multiplier", 0.7))
+
+
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func reset_run() -> void:
@@ -74,7 +83,7 @@ func apply(powerup_type: String, paddle: Node, ball: Node, main: Node = null) ->
 			_apply_paddle_size(paddle, _narrow_multiplier, "narrow_paddle")
 		"speed_ball":
 			_apply_speed_ball(ball, _speed_multiplier)
-		"multi_ball":
+		"clear_row":
 			if main and main.has_method("powerup_clear_row"):
 				main.powerup_clear_row()
 		"extra_life":

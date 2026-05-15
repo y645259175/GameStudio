@@ -1,6 +1,6 @@
 extends Node
 
-## 关卡生成器 · 布局数值从 ConfigLoader 读取
+## 关卡生成器 · 弱引用 ConfigLoader
 
 var brick_scene: PackedScene = preload("res://scenes/brick.tscn")
 var level_data: Dictionary = {}
@@ -12,11 +12,20 @@ var _start_y: float = 80.0
 
 
 func _ready() -> void:
-	_brick_width = float(ConfigLoader.get_value("brick.width", 80))
-	_brick_height = float(ConfigLoader.get_value("brick.height", 24))
-	_brick_gap = float(ConfigLoader.get_value("brick.gap", 4))
-	_start_y = float(ConfigLoader.get_value("brick.start_y", 80))
+	var cl := _get_cl()
+	if cl:
+		_brick_width = float(cl.get_value("brick.width", 80))
+		_brick_height = float(cl.get_value("brick.height", 24))
+		_brick_gap = float(cl.get_value("brick.gap", 4))
+		_start_y = float(cl.get_value("brick.start_y", 80))
 	_load_level_data()
+
+
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func _load_level_data() -> void:
@@ -55,7 +64,6 @@ func generate_level(level_num: int, parent: Node) -> void:
 			var type_key := str(int(row[col_idx]))
 			if type_key == "0":
 				continue
-
 			var brick_info: Dictionary = brick_types.get(type_key, {})
 			if brick_info.is_empty():
 				continue
@@ -73,7 +81,9 @@ func generate_level(level_num: int, parent: Node) -> void:
 			brick.setup(int(row[col_idx]), score, is_indestructible)
 
 			if not is_indestructible:
-				GameManager.register_brick()
+				var tree := Engine.get_main_loop() as SceneTree
+				if tree and tree.root.has_node("GameManager"):
+					tree.root.get_node("GameManager").register_brick()
 
 			brick.brick_destroyed.connect(_on_brick_destroyed)
 			var main_node := get_tree().current_scene
@@ -82,7 +92,9 @@ func generate_level(level_num: int, parent: Node) -> void:
 
 
 func _on_brick_destroyed(_pos: Vector2, _brick_color: Color, score: int, _brick_type: int) -> void:
-	GameManager.destroy_brick(score)
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("GameManager"):
+		tree.root.get_node("GameManager").destroy_brick(score)
 
 
 func get_ball_speed(level_num: int) -> float:

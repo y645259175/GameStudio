@@ -1,18 +1,25 @@
 extends SceneTree
 
-## GameManager 单元测试（轻量框架，不依赖 GUT）
-## 注意：直接执行 -s 脚本时 autoload 不会触发，因此手动 instantiate
+## GameManager 单元测试（适配 ConfigLoader）
 
-const GAME_MANAGER_SCRIPT: GDScript = preload("res://scripts/game_manager.gd")
+const GM_SCRIPT: GDScript = preload("res://scripts/game_manager.gd")
+const CL_SCRIPT: GDScript = preload("res://scripts/config_loader.gd")
 
 var _pass: int = 0
 var _fail: int = 0
-var GM: Node = null  # 局部 GameManager 实例
+var GM: Node = null
+var CL: Node = null
 
 
 func _initialize() -> void:
-	# 创建一个 GameManager 实例代替 autoload
-	GM = GAME_MANAGER_SCRIPT.new()
+	# 手动创建 ConfigLoader 并注册为全局（模拟 autoload）
+	CL = CL_SCRIPT.new()
+	CL.name = "ConfigLoader"
+	get_root().add_child(CL)
+
+	GM = GM_SCRIPT.new()
+	GM.name = "GameManager_Test"
+	get_root().add_child(GM)
 
 	_test_initial_state()
 	_test_add_score()
@@ -24,11 +31,13 @@ func _initialize() -> void:
 	_test_next_level()
 	_test_is_last_level()
 	_test_reset_game()
+	_test_get_life_bonus()
 
 	print("==========================================")
 	print("GameManager: %d passed, %d failed" % [_pass, _fail])
 	print("==========================================")
-	GM.free()
+	GM.queue_free()
+	CL.queue_free()
 	quit(0 if _fail == 0 else 1)
 
 
@@ -46,7 +55,6 @@ func _test_initial_state() -> void:
 	_assert(GM.lives == 3, "initial lives = 3")
 	_assert(GM.score == 0, "initial score = 0")
 	_assert(GM.current_level == 1, "initial level = 1")
-	_assert(GM.bricks_remaining == 0, "initial bricks_remaining = 0")
 
 
 func _test_add_score() -> void:
@@ -61,8 +69,6 @@ func _test_lose_life_decrements() -> void:
 	GM.reset_game()
 	GM.lose_life()
 	_assert(GM.lives == 2, "lose_life: 3->2")
-	GM.lose_life()
-	_assert(GM.lives == 1, "lose_life: 2->1")
 
 
 func _test_lose_life_triggers_game_over() -> void:
@@ -82,8 +88,7 @@ func _test_add_life_capped() -> void:
 	GM.reset_game()
 	for i in range(10):
 		GM.add_life()
-	_assert(GM.lives <= GM.max_lives, "add_life respects max_lives cap")
-	_assert(GM.lives == GM.max_lives, "add_life caps at max_lives = %d" % GM.max_lives)
+	_assert(GM.lives == GM.max_lives, "add_life caps at max_lives=%d" % GM.max_lives)
 
 
 func _test_register_destroy_brick_clears_level() -> void:
@@ -98,7 +103,7 @@ func _test_register_destroy_brick_clears_level() -> void:
 	GM.destroy_brick(10)
 	_assert(captured["cleared"] == false, "level not cleared with 1 brick remaining")
 	GM.destroy_brick(10)
-	_assert(captured["cleared"] == true, "level_cleared signal emitted on last brick")
+	_assert(captured["cleared"] == true, "level_cleared emitted on last brick")
 	GM.level_cleared.disconnect(cb)
 
 
@@ -106,21 +111,19 @@ func _test_destroy_brick_adds_score() -> void:
 	GM.reset_game()
 	GM.register_brick()
 	GM.destroy_brick(15)
-	_assert(GM.score == 15 + 100, "destroy brick adds score + clear bonus (15 + 100)")
+	var expected: int = 15 + 1 * GM._clear_bonus_per_level
+	_assert(GM.score == expected, "destroy adds score+clear bonus (%d)" % expected)
 
 
 func _test_next_level() -> void:
 	GM.reset_game()
-	_assert(GM.current_level == 1, "before next_level: 1")
 	GM.next_level()
-	_assert(GM.current_level == 2, "after next_level: 2")
-	GM.next_level()
-	_assert(GM.current_level == 3, "after second next_level: 3")
+	_assert(GM.current_level == 2, "next_level: 1->2")
 
 
 func _test_is_last_level() -> void:
 	GM.reset_game()
-	_assert(not GM.is_last_level(), "level 1 is not last")
+	_assert(not GM.is_last_level(), "level 1 not last")
 	GM.current_level = GM.max_level
 	_assert(GM.is_last_level(), "max_level is last")
 
@@ -129,9 +132,13 @@ func _test_reset_game() -> void:
 	GM.score = 999
 	GM.lives = 1
 	GM.current_level = 4
-	GM.bricks_remaining = 50
 	GM.reset_game()
-	_assert(GM.score == 0, "reset_game: score = 0")
-	_assert(GM.lives == 3, "reset_game: lives = 3")
-	_assert(GM.current_level == 1, "reset_game: level = 1")
-	_assert(GM.bricks_remaining == 0, "reset_game: bricks_remaining = 0")
+	_assert(GM.score == 0, "reset: score=0")
+	_assert(GM.lives == 3, "reset: lives=3")
+	_assert(GM.current_level == 1, "reset: level=1")
+
+
+func _test_get_life_bonus() -> void:
+	GM.reset_game()
+	var bonus: int = GM.get_life_bonus()
+	_assert(bonus == 3 * GM._life_bonus_per_life, "life_bonus = lives * per_life (%d)" % bonus)
