@@ -1,4 +1,87 @@
 {
+  "permissions": {
+    "defaultMode": "acceptEdits",
+
+    "_allow_comment": "白名单：以下命令/工具自动执行，永不弹审批。规则用 Tool(prefix:*) 前缀匹配，不是正则。",
+    "allow": [
+      "Bash(Remove-Item:*)",
+      "Bash(Move-Item:*)",
+      "Bash(Copy-Item:*)",
+      "Bash(New-Item:*)",
+      "Bash(Get-Item:*)",
+      "Bash(Get-ChildItem:*)",
+      "Bash(Get-Content:*)",
+      "Bash(Set-Content:*)",
+      "Bash(Test-Path:*)",
+      "Bash(Select-String:*)",
+      "Bash(Start-Process:*)",
+      "Bash(Start-Sleep:*)",
+
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git restore:*)",
+      "Bash(git stash:*)",
+      "Bash(git branch:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout:*)",
+
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+
+      "Bash(godot:*)",
+      "Bash(*godot*--headless*)",
+
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "MultiEdit(**)",
+      "Glob(**)",
+      "Grep(**)",
+
+      "WebFetch(https://www.codebuddy.ai/**)",
+      "WebFetch(https://copilot.tencent.com/**)",
+      "WebFetch(https://docs.godotengine.org/**)",
+      "WebFetch(https://api.timiai.woa.com/**)",
+      "WebSearch"
+    ],
+
+    "_ask_comment": "灰名单：仍需用户确认的高风险操作。",
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git rebase:*)",
+      "Bash(git config:*)"
+    ],
+
+    "_deny_comment": "黑名单：永远禁止。注意 Bash 是前缀匹配，可被绕过；真正敏感的写保护靠 sandbox.denyWrite。",
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /:*)",
+      "Read(./.timiai_key)",
+      "Read(**/.timiai_key)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ],
+
+    "additionalDirectories": []
+  },
+
   "hooks": {
     "SessionStart": [
       {
