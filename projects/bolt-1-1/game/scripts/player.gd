@@ -38,6 +38,12 @@ var iframes_remaining: int = 0
 # M6 BL-012：真实贴图 sprite。如果资产存在，新建 Sprite2D 覆盖 ColorRect 占位。
 var _tex_sprite: Sprite2D = null
 
+# M6.1 动画系统
+# 每个状态 4 张贴图: idle / walk1 / walk2 / jump（fire 复用 fire 单图）
+var _anim_textures: Dictionary = {}    # state -> {"idle":Texture2D, "walk1":..., "walk2":..., "jump":...}
+var _anim_frame_t: float = 0.0
+const WALK_FRAME_DURATION: float = 0.12  # 每帧 0.12s（速度感）
+
 
 var _cheat_invincible: bool = false
 
@@ -48,13 +54,14 @@ func _ready() -> void:
 	add_to_group("player")
 	_load_config()
 	_init_texture_sprite()
+	_load_anim_textures()
 	_apply_state_size()
 
 
 ## 在场景 ColorRect 之上额外创建一个 Sprite2D 用于贴图。
 ## 如果贴图不存在，留空，依赖 ColorRect 占位。
 func _init_texture_sprite() -> void:
-	if not ResourceLoader.exists("res://assets/bolty_small.png"):
+	if not ResourceLoader.exists("res://assets/bolty_small.png") and not ResourceLoader.exists("res://assets/bolty_small_idle.png"):
 		return  # 没有贴图 → 用 ColorRect 占位
 	_tex_sprite = Sprite2D.new()
 	_tex_sprite.name = "TexSprite"
@@ -63,6 +70,30 @@ func _init_texture_sprite() -> void:
 	# 占位 ColorRect 隐藏（保留作为 debug 备用）
 	if sprite:
 		sprite.visible = false
+
+
+## 预加载所有动画帧贴图
+func _load_anim_textures() -> void:
+	var states := {
+		State.SMALL: "small",
+		State.BIG: "big",
+		State.FIRE: "fire",
+	}
+	for state in states.keys():
+		var prefix: String = states[state]
+		var t: Dictionary = {}
+		# 优先用 _idle/_walk1/_walk2/_jump 多帧；fallback 单图 _<state>.png
+		var fallback_path := "res://assets/bolty_%s.png" % prefix
+		var fallback_tex: Texture2D = null
+		if ResourceLoader.exists(fallback_path):
+			fallback_tex = load(fallback_path) as Texture2D
+		for frame_name in ["idle", "walk1", "walk2", "jump"]:
+			var p := "res://assets/bolty_%s_%s.png" % [prefix, frame_name]
+			if ResourceLoader.exists(p):
+				t[frame_name] = load(p) as Texture2D
+			else:
+				t[frame_name] = fallback_tex  # 缺帧用 fallback
+		_anim_textures[state] = t
 
 
 ## DEBUG-only cheat. In release builds (OS.is_debug_build() == false) this is a no-op.
@@ -113,12 +144,77 @@ func _physics_process(delta: float) -> void:
 	if current_state == State.DEAD:
 		return
 
+	# iframes 倒计时（受伤后无敌帧）
+	if iframes_remaining > 0:
+		iframes_remaining -= 1
+
 	_handle_horizontal(delta)
 	_handle_jump(delta)
 	_apply_gravity(delta)
 
 	move_and_slide()
 	_update_facing()
+	_update_animation(delta)
+
+
+## M6.1 动画系统：根据当前运动状态选择 idle / walk1 / walk2 / jump 帧
+func _update_animation(delta: float) -> void:
+	if not _tex_sprite or current_state == State.DEAD:
+		return
+	var state_textures: Dictionary = _anim_textures.get(current_state, {})
+	if state_textures.is_empty():
+		return
+
+	var frame_name: String
+	if not is_on_floor():
+		# 跳跃 / 下落
+		frame_name = "jump"
+	elif absf(velocity.x) > 5.0:
+		# 走 / 跑：交替 walk1 walk2
+		_anim_frame_t += delta
+		# 跑步状态下动画播得快一点
+		var dur: float = WALK_FRAME_DURATION * 0.6 if absf(velocity.x) > _walk_max + 5 else WALK_FRAME_DURATION
+		if fmod(_anim_frame_t, dur * 2) < dur:
+			frame_name = "walk1"
+		else:
+			frame_name = "walk2"
+	else:
+		# 待机
+		frame_name = "idle"
+		_anim_frame_t = 0.0
+
+	var tex: Texture2D = state_textures.get(frame_name, null)
+	if tex == null:
+		# 选不到帧时用 idle 兜底
+		tex = state_textures.get("idle", null)
+	if tex and _tex_sprite.texture != tex:
+		_tex_sprite.texture = tex
+		# 切贴图后重新计算 scale（贴图可能尺寸不同）
+		_apply_tex_sprite_size()
+
+	# 朝向翻转：facing_left 时镜像
+	_tex_sprite.flip_h = not facing_right
+
+	# iframes 闪烁（视觉表达 — 倒计时已在 _physics_process 处理）
+	if iframes_remaining > 0:
+		_tex_sprite.modulate.a = 0.5 if (iframes_remaining / 4) % 2 == 0 else 1.0
+	else:
+		_tex_sprite.modulate.a = 1.0
+
+
+## 设置 _tex_sprite 的 scale 和 position 基于当前 state 的目标显示尺寸
+func _apply_tex_sprite_size() -> void:
+	if not _tex_sprite or not _tex_sprite.texture:
+		return
+	var target_size: Vector2
+	match current_state:
+		State.SMALL: target_size = Vector2(16, 16)
+		State.BIG, State.FIRE: target_size = Vector2(16, 32)
+		_: target_size = Vector2(16, 16)
+	var src := _tex_sprite.texture.get_size()
+	if src.x > 0 and src.y > 0:
+		_tex_sprite.scale = Vector2(target_size.x / src.x, target_size.y / src.y)
+	_tex_sprite.position = Vector2(0, -target_size.y / 2.0)
 
 
 func _handle_horizontal(delta: float) -> void:
@@ -186,8 +282,6 @@ func _apply_state_size() -> void:
 	# small=Bolty 红 16x16；big=Bolty 红+银金属饰带 16x32；fire=银白 16x32（火力态）
 	if not sprite or not collision:
 		return
-	var target_size: Vector2 = Vector2(16, 16)
-	var tex_path: String = ""
 	match current_state:
 		State.SMALL:
 			sprite.color = Color("#E03030")  # Bolty 红（bolt 配色）
@@ -196,8 +290,6 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 16)
 				collision.position = Vector2(0, -8)
-			target_size = Vector2(16, 16)
-			tex_path = "res://assets/bolty_small.png"
 		State.BIG:
 			sprite.color = Color("#E03030")  # 大态保持 Bolty 红（视觉差异由身高表达）
 			sprite.size = Vector2(16, 32)
@@ -205,8 +297,6 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
-			target_size = Vector2(16, 32)
-			tex_path = "res://assets/bolty_big.png"
 		State.FIRE:
 			sprite.color = Color("#D8E0F0")  # 火力态：银白外壳 + 偏蓝调
 			sprite.size = Vector2(16, 32)
@@ -214,22 +304,17 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
-			target_size = Vector2(16, 32)
-			tex_path = "res://assets/bolty_fire.png"
 		State.DEAD:
 			sprite.color = Color("#404040")
 			# 死亡时贴图保留最后状态，不切换
 
-	# 同步真实 sprite（如果存在）
-	if _tex_sprite and tex_path != "" and ResourceLoader.exists(tex_path):
-		var tex := load(tex_path) as Texture2D
-		if tex:
-			_tex_sprite.texture = tex
-			var src := tex.get_size()
-			if src.x > 0 and src.y > 0:
-				_tex_sprite.scale = Vector2(target_size.x / src.x, target_size.y / src.y)
-			# 锚点对齐：collision 中心在 (0, -target_size.y/2)，sprite center 也放这
-			_tex_sprite.position = Vector2(0, -target_size.y / 2.0)
+	# 状态切换时给 _tex_sprite 设置初始贴图（idle 帧）
+	if _tex_sprite:
+		var state_tex: Dictionary = _anim_textures.get(current_state, {})
+		var idle_tex: Texture2D = state_tex.get("idle", null)
+		if idle_tex:
+			_tex_sprite.texture = idle_tex
+			_apply_tex_sprite_size()
 
 
 func transform_to(new_state: State) -> void:

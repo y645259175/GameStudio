@@ -120,12 +120,21 @@ func _respawn() -> void:
 	player.transform_to(0)
 	if level_loader:
 		player.global_position = level_loader.get_spawn_position()
+	# M6.1 修 BUG：重置 camera no-scroll-back 状态，让镜头能跟玩家回到 spawn
+	if camera and camera.has_method("reset_to_target"):
+		camera.reset_to_target()
 	GameManager.time_left = 300
 	GameManager.current_state = "playing"
 
 
 func _show_game_over() -> void:
+	# M6.1 修 BUG：停止 _handle_death 循环，否则玩家会一直下落 + overlay 显示但行为异常
+	_is_dead = false
 	GameManager.current_state = "gameover"
+	# 让玩家停下来
+	if player:
+		player.velocity = Vector2.ZERO
+		player.collision_mask = 1
 	print("[Main] SYSTEM FAILURE")
 	var overlay_script := preload("res://scripts/clear_overlay.gd")
 	var overlay = overlay_script.new()

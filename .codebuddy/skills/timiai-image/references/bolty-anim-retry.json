@@ -1,0 +1,74 @@
+{
+  "_comment": "重试 6 张失败的动画帧。这次 fallback=auto，但去掉 quality 参数避免 gemini 报 unsupported.",
+  "concurrency": 2,
+  "stage_dir": "projects/bolt-1-1/art/_pipeline_stage",
+  "defaults": {
+    "model": "gpt-image-2",
+    "size": "1024x1024",
+    "fallback": "auto",
+    "timeout": 240,
+    "max_retries": 3
+  },
+  "tasks": [
+    {
+      "id": "bolty-small-walk1",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character centered, square proportion: Bolty, tiny red metallic robot, WALK FRAME 1 - mid-step pose. RIGHT leg lifted forward and bent at knee, LEFT leg straight planted on ground. Both arms swinging slightly: right arm back, left arm forward. Round head with yellow camera-lens eye #FFC820, red body #E03030 with shadow #9C2020. Strong 1px black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_walk1.png"
+    },
+    {
+      "id": "bolty-small-jump",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character centered, square proportion: Bolty, tiny red metallic robot, JUMP pose - mid-air, both legs slightly bent and lifted under body, both arms raised slightly outward as if balancing. Looking forward with yellow camera-lens eye #FFC820 wide. Red body #E03030. Strong black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_jump.png"
+    },
+    {
+      "id": "bolty-big-idle",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character centered, tall vertical proportion (16:32): Bolty in BIG mode, IDLE pose - standing facing slightly right, legs straight, arms hanging. Same red robot but TALLER with extended chassis body section, armor plating with rivets visible #B02828, main red color #E03030, yellow camera-lens eye #FFC820. Two short legs, grey metal feet #686868. Strong black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_big_idle.png"
+    },
+    {
+      "id": "bolty-big-walk1",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character, tall vertical proportion: Bolty BIG mode, WALK FRAME 1 - right leg lifted forward bent, left planted. Arms in counter-swing. Tall red body with chassis #E03030 and #B02828 plating, yellow eye #FFC820. Strong black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_big_walk1.png"
+    },
+    {
+      "id": "bolty-big-walk2",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character, tall vertical proportion: Bolty BIG mode, WALK FRAME 2 - left leg lifted forward bent, right planted. Arms in counter-swing opposite of walk1. Tall red body #E03030 and #B02828 plating, yellow eye #FFC820. Strong black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_big_walk2.png"
+    },
+    {
+      "id": "bolty-big-jump",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character, tall vertical proportion: Bolty BIG mode, JUMP pose - mid-air with both legs bent under, arms raised outward for balance. Tall red body #E03030 and #B02828 plating, yellow eye #FFC820. Strong black outline, flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_big_jump.png"
+    }
+  ]
+}

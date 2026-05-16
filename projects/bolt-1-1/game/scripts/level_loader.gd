@@ -221,12 +221,53 @@ func _spawn_conduit(e: Dictionary) -> void:
 		actual_h = 32.0
 	# 用 conduit_h 作为参考但不强制（json 已用 y 表达高度差）
 	center.y = y + actual_h / 2.0
-	# M6 BL-014：用真实 conduit 贴图（带 fallback）
-	_make_static_box_textured(
-		ground_root, center, Vector2(conduit_w, actual_h),
-		"res://assets/conduit.png", "",
-		COLOR_CONDUIT, "Conduit"
-	)
+	# M6 BL-014 + M6.1：用真实 conduit 贴图，专用渲染（顶部凸起 + 身体竖直 stretch）
+	_make_conduit(ground_root, center, Vector2(conduit_w, actual_h), "Conduit")
+
+
+## Conduit 专用渲染：把 conduit.png 整张拉伸到目标高度（不平铺），保留顶部凸起
+## conduit.png 是 64×64 单图，包含顶部凸起 + 直筒身体
+func _make_conduit(parent: Node2D, center: Vector2, size: Vector2, label: String) -> StaticBody2D:
+	var body := StaticBody2D.new()
+	body.name = label
+	body.position = center
+	body.collision_layer = 1
+	body.collision_mask = 0
+	parent.add_child(body)
+
+	if ResourceLoader.exists("res://assets/conduit.png"):
+		var tex := load("res://assets/conduit.png") as Texture2D
+		if tex:
+			# 用 Sprite2D 整张拉伸（避免平铺造成顶部凸起重复 = 断层）
+			var s := Sprite2D.new()
+			s.texture = tex
+			s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			var src := tex.get_size()
+			if src.x > 0 and src.y > 0:
+				s.scale = Vector2(size.x / src.x, size.y / src.y)
+			s.position = Vector2.ZERO  # body 中心 = sprite 中心
+			body.add_child(s)
+		else:
+			_add_fallback_rect(body, size, COLOR_CONDUIT)
+	else:
+		_add_fallback_rect(body, size, COLOR_CONDUIT)
+
+	var col := CollisionShape2D.new()
+	var shape := RectangleShape2D.new()
+	shape.size = size
+	col.shape = shape
+	body.add_child(col)
+	return body
+
+
+func _add_fallback_rect(body: StaticBody2D, size: Vector2, color: Color) -> void:
+	var rect := ColorRect.new()
+	rect.color = color
+	rect.size = size
+	rect.position = -size / 2.0
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.name = "_PLACEHOLDER_Sprite"
+	body.add_child(rect)
 
 
 func _get_cl() -> Node:
