@@ -1,6 +1,7 @@
 # === Godot ===
 .godot/
-*.import
+# 注意：*.import 必须 commit（Godot 资源元数据，clone 后游戏才能正确加载贴图）
+# 早期版本错误把 *.import 加了 ignore，2026-05-16 改正
 
 # === OS ===
 Thumbs.db
