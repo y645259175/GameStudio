@@ -1,0 +1,116 @@
+{
+  "_comment": "bolt-1-1 完整资产生成 pipeline 配置示例。覆盖 GDD §7 art bible 全部 8 类资产，与 backlog BL-012 ~ BL-017 对齐。提交方式：python scripts/daemon.py submit --tasks references/pipeline-bolt-1-1.json --kind pipeline",
+
+  "concurrency": 3,
+  "stage_dir": "projects/bolt-1-1/art/_pipeline_stage",
+
+  "defaults": {
+    "model": "gpt-image-2",
+    "size": "1024x1024",
+    "quality": "medium",
+    "fallback": "auto",
+    "timeout": 180,
+    "max_retries": 2
+  },
+
+  "tasks": [
+    {
+      "id": "bolty-small",
+      "_backlog": "BL-012",
+      "prompt": "Pixel art sprite sheet on transparent background, showing one character in 4 horizontal frames (idle / walk-1 / walk-2 / jump). Subject: Bolty, a small red metallic robot. Round head with single yellow glowing camera lens eye #FFC820 on black surround, red metallic body #E03030 with darker red shadow #9C2020, small black arms, two short legs with grey metal feet #686868. NO mustache, NO hat, NO human face features. Style: clean 8-bit NES-era pixel art, 1px outlines, no anti-aliasing, no gradients, sharp pixel edges, fully transparent background. No text, no Mario references.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "4x2", "frame": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_strip.png"
+    },
+    {
+      "id": "bolty-big",
+      "_backlog": "BL-012",
+      "prompt": "Pixel art sprite sheet on transparent background, 4 horizontal frames (idle / walk-1 / walk-2 / jump) of Bolty in BIG mode: same red metallic robot but taller (16 wide × 32 tall), with chassis body extension visible, same single yellow glowing camera lens eye on black, more armor plating on body. Style: 8-bit NES pixel art, transparent bg, no anti-aliasing.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "4x2", "frame": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_big_strip.png"
+    },
+    {
+      "id": "bolty-fire",
+      "_backlog": "BL-012",
+      "prompt": "Pixel art sprite sheet on transparent background, 4 frames of Bolty in FIRE mode: same body as big mode but silver-white outer shell #D8E0F0 instead of red, blue glowing camera lens eye #3CC0FF instead of yellow. Style: 8-bit NES pixel art, transparent bg.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "4x2", "frame": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_fire_strip.png"
+    },
+    {
+      "id": "mossroll",
+      "_backlog": "BL-013",
+      "prompt": "Pixel art sprite sheet, transparent background, 2 frames (walk-1 / walk-2) of Mossroll, a small green moss-ball enemy. Round body covered in moss-green texture #5C8030, two short stubby legs with grey feet, small black eyes, moss tuft sticking up on top. Size approximately 28×28 px. Style: 8-bit NES pixel art, 1px outlines, no anti-aliasing.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "2x1", "frame": "28x28"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/mossroll_strip.png"
+    },
+    {
+      "id": "shellpod",
+      "_backlog": "BL-013",
+      "prompt": "Pixel art sprite sheet on transparent background, 3 frames of Shellpod beetle enemy: walk-1 / walk-2 / shell-tucked. Walk frames: green-shelled metallic beetle, body color metallic grey #8B9090, top shell copper-green #3C9050, two short legs. Shell-tucked frame: legless dome shape, just the green shell. Style: 8-bit NES pixel art.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "3x1", "frame": "28x40"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/shellpod_strip.png"
+    },
+    {
+      "id": "items",
+      "_backlog": "BL-017",
+      "prompt": "Pixel art sprite sheet, 4 horizontal frames on transparent background. Frame 1: Power Berry — red glowing fruit #C42040 with golden leaf crown #FFC820. Frame 2: Spark Bloom — white 4-petal electric flower #FFFFFF with central blue-white electric arc #3CC0FF. Frame 3: Blue Crystal — blue prismatic gemstone #3878F0 with white highlight. Frame 4: Cog — brass gear #E8A018 with 6 teeth, viewed straight-on. Each frame ~16×16. Style: 8-bit NES pixel art, transparent bg, no anti-aliasing.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "4x1", "frame": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/items_strip.png"
+    },
+    {
+      "id": "tiles",
+      "_backlog": "BL-014",
+      "prompt": "Pixel art tile set, 4 tiles arranged in horizontal strip on transparent background, each 16×16 pixels: Tile 1: ground top — dry mossy yellow #9C8830 with some moss tufts hanging off bottom edge. Tile 2: ground body — rust-brown solid earth #783820 with small darker speckles. Tile 3: brick — orange-red industrial brick #D87050 with grey mortar lines. Tile 4: hard block — solid grey metal #BCBCBC with rivets in corners. Style: 8-bit NES pixel art, tileable edges, no anti-aliasing.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "4x1", "frame": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/tiles_strip.png"
+    },
+    {
+      "id": "cache-box",
+      "_backlog": "BL-014",
+      "prompt": "Pixel art sprite, 2 frames horizontal: Frame 1: active Cache Box — golden metal box #FAC000 with glowing blue '?' symbol in center, rivets in corners. Frame 2: used Cache Box — same shape but dark muted brown #9C5C20, no glow, no '?'. Each 16×16, transparent bg. Style: 8-bit NES pixel art.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "atlas", "grid": "2x1", "frame": "16x16"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/cache_box_strip.png"
+    },
+    {
+      "id": "level-end",
+      "_backlog": "BL-015",
+      "prompt": "Pixel art, 2 elements side-by-side on transparent background: Left: Signal Tower — tall metal pole #A0A0A8, height ~144 px, with a red signal flag #D04030 at top. Right: Outpost — small metal base shack ~80×80 with antenna on roof, dark grey walls #787878, small red door, glowing yellow window. Style: 8-bit NES pixel art.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/level_end_raw.png"
+    },
+    {
+      "id": "background",
+      "_backlog": "BL-015",
+      "prompt": "Pixel art parallax background elements on transparent background, multi-layer: top — gradient sky from dark industrial gray-blue #445C78 to slightly lighter; middle — distant abandoned industrial silhouettes (broken smokestacks, dilapidated towers) in lighter grey #6C7888; foreground — silhouettes of small dead bushes #404830. Style: 8-bit NES pixel art.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/background_raw.png"
+    }
+  ]
+}

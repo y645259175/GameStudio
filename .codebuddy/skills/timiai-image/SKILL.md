@@ -65,6 +65,10 @@ Step 5  生图 + 复盘     → 调脚本出图；出图后主动询问"是否�
 | 有 1-4 张参考图；需要精确像素尺寸（如 2160x3840）；需要 `quality` 控制 | **`scripts/image_edit.py`** | **`gpt-image-2`**（实测 `gemini-*-stb` 也可用，但常规推荐 gpt-image-2） | `/llmproxy/images/edits`（multipart） |
 | 多模态对话式生图；需要多轮迭代 | **`scripts/chat_image.py`** | **`gemini-3-pro-image-preview`**（gpt-image 在此端点被 Azure 拒） | `/llmproxy/chat/completions` |
 | 查询当前 key 实际可用的模型 | `scripts/list_models.py` | — | 探测式（支持 `--json` 输出机器可读格式） |
+| **批量并发生图（一次跑 N 张）** | **`scripts/batch_generate.py --tasks tasks.json`** | 各 task 独立指定 | 自动分发到对应端点 |
+| **生图 → PIL 后处理 → 落 game/assets 一站式** | **`scripts/pipeline.py --config pipe.json`** | 各 task 独立 | 自动 |
+| **离线后处理（不调 API）** | `scripts/postprocess.py {shrink\|atlas\|crop\|quantize\|remove-bg}` | — | 本地 PIL |
+| **查 / 清缓存** | `scripts/_cache.py [clear]` | — | 本地 |
 
 选型速查：
 - 需要**精确像素尺寸**或**quality 控制** → `image_edit.py`（唯一支持）
@@ -75,8 +79,103 @@ Step 5  生图 + 复盘     → 调脚本出图；出图后主动询问"是否�
 - **不知道 key 有哪些权限 / 新模型** → `list_models.py --json`
 - **传平台新增的模型参数** → 用 `--param key=value`（三个生图脚本均支持，数字/bool 自动解析）
 - **自动 fallback**：`text2image.py` / `image_edit.py` 默认开启（`--fallback auto`），主模型限流时自动切备用模型；对画风一致性敏感的任务用 `--fallback off`
+- **要生 ≥ 3 张资产** → 不要 N 次手跑 text2image，**直接 batch_generate**（并发 + 缓存命中跳过 + 失败重试），节省 5-10 分钟空转
+- **要生 sprite atlas 接入游戏** → 直接 `pipeline.py`（生图 + atlas 切片 + 降采样 + 落到 game/assets/ 一站式）
 
 > 脚本 stdout 输出 JSON，stderr 输出进度日志，两者完全分离。AI 直接解析 stdout 即可，不受 PowerShell 干扰。
+
+### 三·补 · 批量 / 缓存 / pipeline 详解（工作室新增）
+
+#### 缓存（`_cache.py`）
+
+所有调 API 的脚本（text2image / image_edit / chat_image / batch_generate / pipeline）都通过 `_cache.cache_key(prompt, model, size, quality, extra)` 计算 hash key（16 字符），自动落到 `.codebuddy/skills/timiai-image/.cache/<hash>.png`。
+
+- **同一 prompt 永远不重复生成**：第二次调用 = 0 秒命中
+- **断点续传**：batch / pipeline 跑到一半挂掉，重启后已生成的会全部跳过
+- **手动清理**：`python scripts/_cache.py clear`，或 `cache_clear()`
+- **已加 `.gitignore`**：缓存不进 git
+
+#### 批量（`batch_generate.py`）
+
+输入一份 JSON（`tasks` 数组 + `defaults` 默认值 + `concurrency` 并发数），用 ThreadPoolExecutor 并发跑。每个任务先查 cache，未命中才调 API；失败用 fallback 链 + exponential backoff 重试。
+
+最佳并发：**3**（gpt-image-2 限流容忍度，并发太高会触发 Azure 429）。
+
+#### 一站式 pipeline（`pipeline.py`）
+
+`batch_generate` + `postprocess` 拼起来。每个任务带 `post: [...]` 链式后处理：
+
+```json
+{
+  "post": [
+    {"op": "remove_bg", "threshold": 200},     // 去 checkered 假透明
+    {"op": "atlas", "grid": "4x2", "frame": "16x16"},   // N×M 网格切 + 降采样 + 拼 strip
+    {"op": "shrink", "size": "32x32"},          // 单图降采样
+    {"op": "quantize", "colors": 16},           // palette 量化
+    {"op": "crop", "alpha_threshold": 8}        // auto-crop 透明边
+  ],
+  "final_out": "projects/.../game/assets/foo.png"
+}
+```
+
+中间产物落到 `stage_dir`（配置中指定，默认 `_pipeline_stage`），方便 debug。
+
+#### 后处理单跑（`postprocess.py`）
+
+模型已经出过图但效果不对，可以单跑后处理：
+
+```bash
+python scripts/postprocess.py atlas --src raw.png --out strip.png --grid 4x2 --frame 16x16
+python scripts/postprocess.py shrink --src raw.png --out small.png --size 32x32
+python scripts/postprocess.py remove-bg --src raw.png --out clean.png
+```
+
+#### 工作室常用 pipeline 配置示范
+
+参见 `references/pipeline-bolt-1-1.json`（如果不存在则按需创建）。
+
+#### 异步后台（`daemon.py`）—— 提交后立即返回，agent 干别的事
+
+为什么需要：单张图 60-120s，整批 8-30 分钟，agent 同步等会完全空转。
+
+```bash
+# 提交（立即返回 job_id，子进程后台跑）
+python scripts/daemon.py submit --tasks tasks.json --kind batch
+→ {"job_id": "batch-abc123", "pid": 12345, "state": "running"}
+
+# Agent 去做别的工作 ...
+# （改代码 / 写文档 / 跑测试 / spawn 其他 agent）
+
+# 想看进度时 poll status（毫秒返回）
+python scripts/daemon.py status batch-abc123
+→ {"state": "running" | "done" | "fail",
+   "progress": {"ok": 3, "fail": 0, "total": 8},
+   "log_tail": [...最近 15 行 stderr...]}
+
+# 完成后取完整报告
+python scripts/daemon.py report batch-abc123
+
+# 列出所有历史 job
+python scripts/daemon.py list
+
+# 清理已完成的（保留 running）
+python scripts/daemon.py clean
+
+# 杀掉跑飞的
+python scripts/daemon.py kill <job_id>
+```
+
+子进程是真正脱离的（Windows 用 CREATE_NEW_PROCESS_GROUP），父 agent 会话结束也不影响子进程继续跑。
+
+**典型工作流（agent 视角）**：
+```
+1. 提交 8 张资产的 pipeline 任务 → 拿 job_id
+2. 立即转去修 P1 backlog 的代码
+3. 5-10 分钟后调 status → 看 ok/fail
+4. 大部分 OK + 少数 fail → 单独对 fail 的重跑（cache 命中其余成功的）
+```
+
+
 
 ## 四、必要信息检查清单（Step 2 用）
 

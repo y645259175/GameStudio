@@ -1,6 +1,4 @@
-# 永远不要提交 API Key 到 git
+.cache/
+.jobs/
 .timiai_key
-
-# Python 运行时缓存
-__pycache__/
-*.pyc
+scripts/_smoke_*.json

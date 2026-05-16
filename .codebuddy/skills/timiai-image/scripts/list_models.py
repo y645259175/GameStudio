@@ -26,7 +26,14 @@ import time
 import requests
 
 from _auth import (base_url as default_base_url, require_api_key_or_exit,
-                   load_models, GEN_ENDPOINT, HUNYUAN_ENDPOINT, EDIT_ENDPOINT, CHAT_ENDPOINT)
+                   load_models, ENDPOINT_LLMPROXY, ENDPOINT_HUNYUAN,
+                   ENDPOINT_EDITS, ENDPOINT_CHAT)
+
+# 兼容别名（脚本内部继续用旧名读起来更顺）
+GEN_ENDPOINT = ENDPOINT_LLMPROXY
+HUNYUAN_ENDPOINT = ENDPOINT_HUNYUAN
+EDIT_ENDPOINT = ENDPOINT_EDITS
+CHAT_ENDPOINT = ENDPOINT_CHAT
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
