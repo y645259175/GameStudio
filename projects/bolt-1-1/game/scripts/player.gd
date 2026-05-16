@@ -35,6 +35,9 @@ var iframes_remaining: int = 0
 @onready var sprite: ColorRect = $Sprite
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
+# M6 BL-012：真实贴图 sprite。如果资产存在，新建 Sprite2D 覆盖 ColorRect 占位。
+var _tex_sprite: Sprite2D = null
+
 
 var _cheat_invincible: bool = false
 
@@ -44,7 +47,22 @@ func _ready() -> void:
 	collision_mask = 1   # collide with world
 	add_to_group("player")
 	_load_config()
+	_init_texture_sprite()
 	_apply_state_size()
+
+
+## 在场景 ColorRect 之上额外创建一个 Sprite2D 用于贴图。
+## 如果贴图不存在，留空，依赖 ColorRect 占位。
+func _init_texture_sprite() -> void:
+	if not ResourceLoader.exists("res://assets/bolty_small.png"):
+		return  # 没有贴图 → 用 ColorRect 占位
+	_tex_sprite = Sprite2D.new()
+	_tex_sprite.name = "TexSprite"
+	_tex_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_tex_sprite)
+	# 占位 ColorRect 隐藏（保留作为 debug 备用）
+	if sprite:
+		sprite.visible = false
 
 
 ## DEBUG-only cheat. In release builds (OS.is_debug_build() == false) this is a no-op.
@@ -168,6 +186,8 @@ func _apply_state_size() -> void:
 	# small=Bolty 红 16x16；big=Bolty 红+银金属饰带 16x32；fire=银白 16x32（火力态）
 	if not sprite or not collision:
 		return
+	var target_size: Vector2 = Vector2(16, 16)
+	var tex_path: String = ""
 	match current_state:
 		State.SMALL:
 			sprite.color = Color("#E03030")  # Bolty 红（bolt 配色）
@@ -176,6 +196,8 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 16)
 				collision.position = Vector2(0, -8)
+			target_size = Vector2(16, 16)
+			tex_path = "res://assets/bolty_small.png"
 		State.BIG:
 			sprite.color = Color("#E03030")  # 大态保持 Bolty 红（视觉差异由身高表达）
 			sprite.size = Vector2(16, 32)
@@ -183,6 +205,8 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
+			target_size = Vector2(16, 32)
+			tex_path = "res://assets/bolty_big.png"
 		State.FIRE:
 			sprite.color = Color("#D8E0F0")  # 火力态：银白外壳 + 偏蓝调
 			sprite.size = Vector2(16, 32)
@@ -190,8 +214,22 @@ func _apply_state_size() -> void:
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
+			target_size = Vector2(16, 32)
+			tex_path = "res://assets/bolty_fire.png"
 		State.DEAD:
 			sprite.color = Color("#404040")
+			# 死亡时贴图保留最后状态，不切换
+
+	# 同步真实 sprite（如果存在）
+	if _tex_sprite and tex_path != "" and ResourceLoader.exists(tex_path):
+		var tex := load(tex_path) as Texture2D
+		if tex:
+			_tex_sprite.texture = tex
+			var src := tex.get_size()
+			if src.x > 0 and src.y > 0:
+				_tex_sprite.scale = Vector2(target_size.x / src.x, target_size.y / src.y)
+			# 锚点对齐：collision 中心在 (0, -target_size.y/2)，sprite center 也放这
+			_tex_sprite.position = Vector2(0, -target_size.y / 2.0)
 
 
 func transform_to(new_state: State) -> void:

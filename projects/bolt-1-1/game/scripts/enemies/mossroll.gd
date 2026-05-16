@@ -4,6 +4,8 @@ class_name Mossroll
 ## Mossroll · 长腿苔藓滚子，巡逻敌人
 ## 行为：恒定速度行走，碰墙反向；被踩压扁；从侧面伤害玩家
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 const SIZE := Vector2(28, 28)
 const FLAT_DURATION_FRAMES: int = 30
 
@@ -16,7 +18,7 @@ var _flat_timer: int = 0
 var _is_dead: bool = false
 var _score: int = 100
 
-var _sprite: ColorRect
+var _sprite: Node
 var _collision: CollisionShape2D
 
 
@@ -25,12 +27,11 @@ func _ready() -> void:
 	collision_mask = 1
 	add_to_group("enemy")
 
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#5C8030")  # 苔绿（bolt 配色，区别于 mario goomba 棕）
-	_sprite.size = SIZE
-	_sprite.position = -SIZE / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sprite.name = "_PLACEHOLDER_Sprite"
+	# 升级到真实 sprite（M6 BL-013 closed），fallback 到 ColorRect 占位
+	_sprite = _SpriteHelper.create_sprite(
+		"res://assets/mossroll.png", SIZE,
+		Color("#5C8030"), "Sprite"
+	)
 	add_child(_sprite)
 
 	_collision = CollisionShape2D.new()
@@ -123,8 +124,13 @@ func _on_hit_player(body: Node) -> void:
 func stomp(player: Node) -> void:
 	_is_flat = true
 	_flat_timer = 0
-	_sprite.size = Vector2(SIZE.x, SIZE.y / 2.0)
-	_sprite.position = Vector2(-SIZE.x / 2.0, 0)
+	# 压扁视觉：Sprite2D 用 scale.y / position；ColorRect fallback 用 size / position
+	if _sprite is Sprite2D:
+		(_sprite as Sprite2D).scale.y *= 0.5
+		(_sprite as Sprite2D).position.y = SIZE.y / 4.0  # 沉到底部
+	elif _sprite is ColorRect:
+		(_sprite as ColorRect).size = Vector2(SIZE.x, SIZE.y / 2.0)
+		(_sprite as ColorRect).position = Vector2(-SIZE.x / 2.0, 0)
 	if player.has_method("on_stomp_enemy"):
 		player.on_stomp_enemy()
 	GameManager.add_score(_score)

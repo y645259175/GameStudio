@@ -1,0 +1,26 @@
+{
+  "_comment": "重试 bolty-fire（之前因 gemini 不支持 quality 参数失败）。这次禁用 fallback，只用 gpt-image-2，多重试。",
+  "concurrency": 1,
+  "stage_dir": "projects/bolt-1-1/art/_pipeline_stage",
+  "defaults": {
+    "model": "gpt-image-2",
+    "size": "1024x1024",
+    "quality": "medium",
+    "fallback": "off",
+    "timeout": 240,
+    "max_retries": 4
+  },
+  "tasks": [
+    {
+      "id": "bolty-fire",
+      "_backlog": "BL-012",
+      "prompt": "Single 8-bit NES pixel art sprite, transparent background, ONE character centered, tall vertical proportion (16:32 ratio): Bolty in FIRE mode, a robot with same shape as the BIG mode but completely DIFFERENT colors. Outer body shell color: silver-white #D8E0F0 (NOT red). Body plating: light grey-blue #B8C0D0. SINGLE big glowing camera lens eye in center of round head: BLUE #3CC0FF (NOT yellow). Two small dark grey arms hanging at sides. Two short legs ending in metal feet. Strong 1px black outline, completely flat colors, NO anti-aliasing. Pure transparent background.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "16x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_fire.png"
+    }
+  ]
+}

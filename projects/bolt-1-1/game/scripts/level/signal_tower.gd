@@ -13,25 +13,41 @@ var _triggered: bool = false
 
 
 func _ready() -> void:
-	# 杆视觉
+	# M6 BL-015：用真实贴图（一张完整 signal tower），fallback 三段 ColorRect
+	if ResourceLoader.exists("res://assets/signal_tower.png"):
+		var tex := load("res://assets/signal_tower.png") as Texture2D
+		if tex:
+			var sprite := Sprite2D.new()
+			sprite.texture = tex
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			# 资产是 48×192，目标显示尺寸：宽 48、高 POLE_HEIGHT+16=192（含杆 + 顶球 + 旗）
+			var display_w: float = 48.0
+			var display_h: float = POLE_HEIGHT + 16.0
+			var src := tex.get_size()
+			if src.x > 0 and src.y > 0:
+				sprite.scale = Vector2(display_w / src.x, display_h / src.y)
+			# 锚点：贴图中心 = sprite 中心 → 放到杆中央（origin 是杆底，向上偏 display_h/2）
+			sprite.position = Vector2(0, -display_h / 2.0)
+			sprite.name = "Sprite"
+			add_child(sprite)
+			return
+	# fallback 三段 ColorRect 占位
 	var pole := ColorRect.new()
-	pole.color = Color("#A0A0A8")  # bolt 信号塔灰金属
+	pole.color = Color("#A0A0A8")
 	pole.size = Vector2(POLE_WIDTH, POLE_HEIGHT)
 	pole.position = Vector2(-POLE_WIDTH / 2.0, -POLE_HEIGHT)
 	pole.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pole.name = "_PLACEHOLDER_Pole"
 	add_child(pole)
 
-	# 顶部信号球
 	var ball := ColorRect.new()
-	ball.color = Color("#D04030")  # 信号红
+	ball.color = Color("#D04030")
 	ball.size = Vector2(16, 16)
 	ball.position = Vector2(-8, -POLE_HEIGHT - 16)
 	ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ball.name = "_PLACEHOLDER_Ball"
 	add_child(ball)
 
-	# 信号旗
 	var flag := ColorRect.new()
 	flag.color = Color("#D04030")
 	flag.size = Vector2(16, 12)

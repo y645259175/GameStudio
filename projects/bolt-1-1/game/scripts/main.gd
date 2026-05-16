@@ -2,8 +2,9 @@ extends Node2D
 
 ## Bolt: Sector 1-1 主场景
 ## 用 LevelLoader 程序化生成关卡 + 管理 Player + Camera + 死亡 / 重生 / 通关
-
-const LevelLoaderScript := preload("res://scripts/level_loader.gd")
+## 注意：故意不用 const preload(level_loader)，改成 _ready 时运行时 load。
+## 原因：const preload 会在 main.gd 编译期递归解析 level_loader.gd → 它再 preload mossroll/shellpod/cache_box/brick/signal_tower/outpost 各自又 preload sprite_helper。
+## 在 -s 模式（脚本启动 real_playtest）时这条链路偶发"Could not preload"。运行时 load 把解析推到调用点，避开此问题。
 
 @onready var player: CharacterBody2D = $Player
 @onready var camera: Camera2D = $Camera2D
@@ -20,6 +21,14 @@ func _ready() -> void:
 	GameManager.reset_game()
 	GameManager.current_state = "playing"
 
+	# M6 BL-015：背景层（视差感的远景）
+	_setup_background()
+
+	# 运行时 load（避开 const preload 链路 bug）
+	var LevelLoaderScript := load("res://scripts/level_loader.gd") as GDScript
+	if not LevelLoaderScript:
+		push_error("[Main] 无法加载 level_loader.gd")
+		return
 	level_loader = LevelLoaderScript.new()
 	level_loader.name = "LevelLoader"
 	level_loader.set("level_id", "1-1")
@@ -30,6 +39,26 @@ func _ready() -> void:
 	var old_ground := get_node_or_null("Ground")
 	if old_ground:
 		old_ground.queue_free()
+
+
+func _setup_background() -> void:
+	# 检查是否已有 ParallaxBackground / TextureRect 背景节点
+	if get_node_or_null("Background"):
+		return
+	if not ResourceLoader.exists("res://assets/background.png"):
+		return  # 没图就用工程默认 sky color，不强加
+	var bg_layer := CanvasLayer.new()
+	bg_layer.name = "Background"
+	bg_layer.layer = -10  # 在所有内容之下
+	add_child(bg_layer)
+	var bg := TextureRect.new()
+	bg.texture = load("res://assets/background.png") as Texture2D
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.size = Vector2(1280, 720)
+	bg.position = Vector2.ZERO
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg_layer.add_child(bg)
 
 
 func _physics_process(delta: float) -> void:

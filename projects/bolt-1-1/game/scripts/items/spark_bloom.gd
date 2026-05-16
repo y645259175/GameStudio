@@ -4,6 +4,8 @@ class_name SparkBloom
 ## SparkBloom · 白蓝电花（原 FireFlower）
 ## 原地不动，被拾取 → 任意态 → 火力态
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 const SIZE := Vector2(28, 28)
 
 var _gravity: float = 800.0
@@ -11,7 +13,7 @@ var _emerging: bool = true
 var _emerge_t: float = 0.0
 const EMERGE_DURATION: float = 0.4
 
-var _sprite: ColorRect
+var _sprite: Node
 
 
 func _ready() -> void:
@@ -19,12 +21,11 @@ func _ready() -> void:
 	collision_mask = 1
 	add_to_group("item")
 
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#FFFFFF")  # 白色花瓣（电弧由 sprite 表现）
-	_sprite.size = SIZE
-	_sprite.position = -SIZE / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sprite.name = "_PLACEHOLDER_Sprite"
+	# M6 BL-017：真实 sprite + fallback
+	_sprite = _SpriteHelper.create_sprite(
+		"res://assets/spark_bloom.png", SIZE,
+		Color("#FFFFFF"), "Sprite"
+	)
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()

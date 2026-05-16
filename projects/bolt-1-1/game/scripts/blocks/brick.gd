@@ -5,6 +5,8 @@ class_name Brick
 ## 小态顶 → 颠动；大态/火力顶 → 碎裂
 ## hidden_oneup=true → 顶撞后产出 1UP 蘑菇
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 const SIZE := Vector2(32, 32)
 
 var hidden_oneup: bool = false
@@ -15,20 +17,26 @@ const BUMP_DURATION: float = 0.2
 const BUMP_AMP: float = 6.0
 var _origin_y: float = 0.0
 
-var _sprite: ColorRect
+var _sprite: Node
 
 
 func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 0
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#D87050") if not hidden_oneup else Color("#5C94FC")
-	# 隐藏砖块用天蓝色（与背景同），玩家看不见
+	# M6 BL-014：真实 sprite + fallback。隐藏砖块仍走透明 ColorRect 以维持"看不见但可碰"
 	if hidden_oneup:
-		_sprite.color = Color(0.361, 0.580, 0.988, 0.0)  # 透明
-	_sprite.size = SIZE
-	_sprite.position = -SIZE / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var rect := ColorRect.new()
+		rect.color = Color(0.361, 0.580, 0.988, 0.0)  # 透明
+		rect.size = SIZE
+		rect.position = -SIZE / 2.0
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rect.name = "_HIDDEN_Sprite"
+		_sprite = rect
+	else:
+		_sprite = _SpriteHelper.create_sprite(
+			"res://assets/brick.png", SIZE,
+			Color("#D87050"), "Sprite"
+		)
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -92,8 +100,12 @@ func _break() -> void:
 
 
 func _to_used_visual() -> void:
-	_sprite.color = Color("#9C5C20")
-	_sprite.modulate = Color(1, 1, 1, 1)
+	# 已碎：用 used cache box 贴图复用，或 fallback 到暗色
+	if not _SpriteHelper.swap_texture(_sprite, "res://assets/cache_box_used.png", SIZE):
+		if _sprite is ColorRect:
+			(_sprite as ColorRect).color = Color("#9C5C20")
+	if _sprite:
+		_sprite.modulate = Color(1, 1, 1, 1)
 
 
 func _spawn_oneup() -> void:

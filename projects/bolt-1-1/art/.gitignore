@@ -1,0 +1,2 @@
+# pipeline 中间产物（每次跑都会重新生成 + 占空间，不需要 commit）
+_pipeline_stage/

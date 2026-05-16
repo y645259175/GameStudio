@@ -4,6 +4,8 @@ class_name PowerBerry
 ## PowerBerry · 红色发光浆果（原 SuperMushroom）
 ## 水平移动，碰墙反向，被玩家拾取 → small → big
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 const SIZE := Vector2(28, 28)
 
 var _walk_speed: float = 60.0
@@ -13,7 +15,7 @@ var _emerging: bool = true
 var _emerge_t: float = 0.0
 const EMERGE_DURATION: float = 0.4
 
-var _sprite: ColorRect
+var _sprite: Node
 
 
 func _ready() -> void:
@@ -21,12 +23,11 @@ func _ready() -> void:
 	collision_mask = 1
 	add_to_group("item")
 
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#C42040")  # 浆果红
-	_sprite.size = SIZE
-	_sprite.position = -SIZE / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sprite.name = "_PLACEHOLDER_Sprite"
+	# M6 BL-017：真实 sprite + fallback
+	_sprite = _SpriteHelper.create_sprite(
+		"res://assets/power_berry.png", SIZE,
+		Color("#C42040"), "Sprite"
+	)
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()

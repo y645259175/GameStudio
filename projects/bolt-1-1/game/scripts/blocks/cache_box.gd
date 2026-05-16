@@ -4,12 +4,14 @@ class_name CacheBox
 ## CacheBox · 原 ?-block，金黄金属箱体，正面 ? 字符闪烁
 ## 顶撞后产出对应物品（cog / power_berry / spark_bloom / blue_crystal / pulse_core）
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 const SIZE := Vector2(32, 32)
 
 var contains_type: String = "cog"  # cog / powerBerry / sparkBloom / blueCrystal / pulseCore
 var _used: bool = false
 
-var _sprite: ColorRect
+var _sprite: Node
 var _flicker_t: float = 0.0
 
 
@@ -17,12 +19,11 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 0
 
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#FAC000")
-	_sprite.size = SIZE
-	_sprite.position = -SIZE / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sprite.name = "_PLACEHOLDER_Sprite"
+	# M6 BL-014：真实 sprite (active) + fallback
+	_sprite = _SpriteHelper.create_sprite(
+		"res://assets/cache_box_active.png", SIZE,
+		Color("#FAC000"), "Sprite"
+	)
 	add_child(_sprite)
 
 	var col := CollisionShape2D.new()
@@ -46,14 +47,19 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if _used:
+	if _used or not _sprite:
 		return
 	_flicker_t += delta
 	var phase: float = fmod(_flicker_t, 0.4) / 0.4
-	if phase < 0.5:
-		_sprite.color = Color("#FAC000")
-	else:
-		_sprite.color = Color("#FFE060")
+	# 闪烁效果：Sprite2D 用 modulate 亮暗呼吸；ColorRect fallback 用 color 切换
+	if _sprite is Sprite2D:
+		var bright: float = 1.0 if phase < 0.5 else 1.18
+		(_sprite as Sprite2D).modulate = Color(bright, bright, bright, 1.0)
+	elif _sprite is ColorRect:
+		if phase < 0.5:
+			(_sprite as ColorRect).color = Color("#FAC000")
+		else:
+			(_sprite as ColorRect).color = Color("#FFE060")
 
 
 func _on_bumped(body: Node) -> void:
@@ -62,7 +68,12 @@ func _on_bumped(body: Node) -> void:
 	if "velocity" in body and body.velocity.y > 0:
 		return
 	_used = true
-	_sprite.color = Color("#9C5C20")
+	# 切换为 used 贴图
+	if not _SpriteHelper.swap_texture(_sprite, "res://assets/cache_box_used.png", SIZE):
+		if _sprite is ColorRect:
+			(_sprite as ColorRect).color = Color("#9C5C20")
+	if _sprite:
+		_sprite.modulate = Color(1, 1, 1, 1)
 	_spawn_content(body)
 
 
@@ -102,13 +113,13 @@ func _spawn_item(script_path: String, spawn_pos: Vector2) -> void:
 
 
 func _spawn_cog_anim() -> void:
-	var coin := ColorRect.new()
-	coin.color = Color("#E8A018")  # 黄铜齿轮色
-	coin.size = Vector2(8, 12)
-	coin.position = Vector2(-4, -SIZE.y - 4)
-	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	coin.name = "_PLACEHOLDER_CogAnim"
+	# Cog 弹出动画：用真实 cog sprite + fallback
+	var coin := _SpriteHelper.create_sprite(
+		"res://assets/cog.png", Vector2(12, 12),
+		Color("#E8A018"), "_CogAnim"
+	)
+	coin.position = Vector2(0, -SIZE.y - 10)
 	add_child(coin)
 	var tween := create_tween()
-	tween.tween_property(coin, "position:y", -SIZE.y - 28, 0.3)
+	tween.tween_property(coin, "position:y", -SIZE.y - 32, 0.3)
 	tween.tween_callback(coin.queue_free)

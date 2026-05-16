@@ -5,6 +5,8 @@ class_name Shellpod
 ## States: WALK / SHELL_STATIC / SHELL_SPIN
 ## 行为：被踩 → 缩进甲壳；再踩/碰 → 甲壳高速弹射，沿途清杀其他敌人
 
+const _SpriteHelper = preload("res://scripts/sprite_helper.gd")
+
 enum SState { WALK, SHELL_STATIC, SHELL_SPIN }
 
 const SIZE_WALK := Vector2(28, 40)
@@ -20,7 +22,7 @@ var _shell_timer: int = 0
 var _shell_static_max_frames: int = 300
 var _score: int = 100
 
-var _sprite: ColorRect
+var _sprite: Node
 var _collision: CollisionShape2D
 
 
@@ -29,12 +31,11 @@ func _ready() -> void:
 	collision_mask = 1
 	add_to_group("enemy")
 
-	_sprite = ColorRect.new()
-	_sprite.color = Color("#8B9090")  # 金属灰（bolt shellpod 主色）
-	_sprite.size = SIZE_WALK
-	_sprite.position = -SIZE_WALK / 2.0
-	_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_sprite.name = "_PLACEHOLDER_Sprite"
+	# M6 BL-013：用真实 sprite + fallback；初始 walk 形态
+	_sprite = _SpriteHelper.create_sprite(
+		"res://assets/shellpod_walk.png", SIZE_WALK,
+		Color("#8B9090"), "Sprite"
+	)
 	add_child(_sprite)
 
 	_collision = CollisionShape2D.new()
@@ -153,9 +154,13 @@ func _on_hit_player(body: Node) -> void:
 func _to_shell_static() -> void:
 	_state = SState.SHELL_STATIC
 	_shell_timer = 0
-	_sprite.color = Color("#3C9050")  # 铜绿甲壳
-	_sprite.size = SIZE_SHELL
-	_sprite.position = -SIZE_SHELL / 2.0
+	# 切换 sprite 到 shell
+	_SpriteHelper.swap_texture(_sprite, "res://assets/shellpod_shell.png", SIZE_SHELL)
+	# fallback ColorRect 也兼容
+	if _sprite is ColorRect:
+		(_sprite as ColorRect).color = Color("#3C9050")
+		(_sprite as ColorRect).size = SIZE_SHELL
+		(_sprite as ColorRect).position = -SIZE_SHELL / 2.0
 	if _collision.shape is RectangleShape2D:
 		(_collision.shape as RectangleShape2D).size = SIZE_SHELL
 	var hb := get_node_or_null("Hitbox") as Area2D
@@ -167,9 +172,12 @@ func _to_shell_static() -> void:
 
 func _to_walk() -> void:
 	_state = SState.WALK
-	_sprite.color = Color("#8B9090")
-	_sprite.size = SIZE_WALK
-	_sprite.position = -SIZE_WALK / 2.0
+	# 切回 walk sprite
+	_SpriteHelper.swap_texture(_sprite, "res://assets/shellpod_walk.png", SIZE_WALK)
+	if _sprite is ColorRect:
+		(_sprite as ColorRect).color = Color("#8B9090")
+		(_sprite as ColorRect).size = SIZE_WALK
+		(_sprite as ColorRect).position = -SIZE_WALK / 2.0
 	if _collision.shape is RectangleShape2D:
 		(_collision.shape as RectangleShape2D).size = SIZE_WALK
 
