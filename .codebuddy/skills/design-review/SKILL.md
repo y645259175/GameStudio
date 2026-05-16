@@ -37,7 +37,13 @@ description: GDD authoring and review facilitator that ensures the 8-section str
    - 落盘：`projects/<name>/art/key-visual.png`
    - 没有 key visual → design-review verdict 为 `GDD-CHANGES`，不允许进入开发期
    - 详见 `studio/docs/autonomous-mode-charter.md` 底线 4 + `art-director` AGENT.md "Key Visual 早期生成"
-8. **路由提示**：评审通过后建议调用 `create-epics` 或 `review-all-gdds`
+8. **角色 canonical key 评审 gate**（M6.2 新增，强制）：
+   - 当 §3 美术节涉及主角 / 主要敌人时，开发期开始前必须先有"canonical character key sprite"
+   - 流程：spawn `art-director` agent → art-director 用 `art-asset-pipeline` Step A 出 1 张 key → art-director 给 `AD-CHAR-KEY: APPROVE/CONCERNS/REJECT` verdict
+   - APPROVE 之前**禁止**生产任何派生帧（动画 / 多状态变体）
+   - 防止 4 帧动画跑完才发现角色不一致 → 浪费 4× API 调用 + 用户失望
+   - 详见 `art-asset-pipeline` SKILL.md § 角色多帧动画 SOP
+9. **路由提示**：评审通过后建议调用 `create-epics` 或 `review-all-gdds`
 
 ## 输出
 

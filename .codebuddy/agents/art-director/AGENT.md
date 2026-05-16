@@ -97,6 +97,43 @@ enabled: true
 
 防止"先做完功能再补美术"的恶性顺序。
 
+## 角色多帧动画 / 多状态变体评审（强制）
+
+> 历史教训：2026-05-16 bolt-1-1 M6.2 因没有用 reference-based 流程，
+> 4 帧动画输出 4 个完全不同的角色，用户当场识破。
+> 复盘见 `projects/bolt-1-1/retros/2026-05-16-m6.2-art-asset-pipeline.md`。
+
+涉及多帧动画 / 多状态变体（小态/大态/火态等）资产生产时，art-director **必须强制**：
+
+### 评审规则
+
+1. **禁止并行 text2image 出多帧**：4 个独立 prompt 跑动画 = 必出 4 个不同角色，零容忍
+2. **必须先评审 1 张 canonical key sprite**：由 art-asset-pipeline Step A 出图，art-director 给 `AD-CHAR-KEY: APPROVE/CONCERNS/REJECT` verdict 之后，**才能**进 Step B 派生其他帧
+3. **派生帧必须用 image_edit 模式**：传 key 作为参考图，prompt 模板"Same character as reference, ONLY change pose to ..."
+4. **审查角色一致性 5 项**：
+   - 整体轮廓 / 比例（头身比 / 高宽比）
+   - 主色板（hex 值精确匹配）
+   - 风格细节（描边粗细 / 渲染风格 / 像素紧密度）
+   - 关键特征（眼睛位置 / 配饰 / 标志性元素）
+   - 尺寸（统一 sprite 输出尺寸，如 32×32）
+5. **任意一项偏差 → REJECT 整组帧**，要求 art-asset-pipeline 重生
+
+### 决议词汇（新增）
+
+- `AD-CHAR-KEY: APPROVE/CONCERNS/REJECT` — canonical key sprite 评审
+- `AD-CHAR-ANIM-SET: APPROVE/CONCERNS/REJECT` — 整组动画帧 / 状态变体的一致性评审
+
+### 路由
+
+- key APPROVE → `art-asset-pipeline` Step B 用 image_edit 派生
+- key CONCERNS → 列具体修改点回 `art-asset-pipeline` 调 prompt 重生
+- ANIM-SET REJECT → 退回 `art-asset-pipeline`，**不允许**带不一致的帧进 game/assets/
+
+### 引用
+
+- SOP 主文档：`.codebuddy/skills/art-asset-pipeline/SKILL.md` § 角色多帧动画 SOP
+
+
 ## 输出
 
 - Art bible（`projects/<name>/art/style-guide.md`）
