@@ -156,48 +156,77 @@ def remove_checkered_bg(src: str | Path, out: str | Path,
                         threshold: int = 200) -> Path:
     """有些模型给的"透明背景"实际是浅灰白格子图。检测并强制透明化。
 
-    策略：检测 src 四角 16×16 区域，如果整体接近白/浅灰 + alpha=255，
-    则用 RGB 距离阈值把整张图中接近"格子色"的像素 alpha 置 0。
+    M6.2 升级：用 flood-fill 从图片边缘开始搜，把所有"颜色接近边缘背景色"
+    的像素 alpha 置 0。比之前的"距离 30 阈值"更鲁棒，能处理 checkered 图案
+    （两种交替颜色都能去掉）。
+
+    策略：
+      1. 采样四边各 16 像素，建立 background color buckets（粗粒度量化）
+      2. BFS 从边缘洪泛，遇到 "颜色接近任一 bg bucket（曼哈顿距离 < 80）" 的
+         像素就标透明
+      3. 不接近 bg 的像素被保留 = 角色像素
     """
+    from collections import deque
+
     src_p = Path(src)
     out_p = Path(out)
     out_p.parent.mkdir(parents=True, exist_ok=True)
     img = Image.open(src_p).convert("RGBA")
     w, h = img.size
-    # 取四角 corner 做样本
-    sample_size = min(16, w // 8, h // 8)
-    samples = []
-    for cx, cy in [(0, 0), (w - sample_size, 0), (0, h - sample_size), (w - sample_size, h - sample_size)]:
-        region = img.crop((cx, cy, cx + sample_size, cy + sample_size))
-        # 平均 RGB
-        pixels = list(region.getdata())
-        if not pixels:
-            continue
-        avg_r = sum(p[0] for p in pixels) / len(pixels)
-        avg_g = sum(p[1] for p in pixels) / len(pixels)
-        avg_b = sum(p[2] for p in pixels) / len(pixels)
-        samples.append((avg_r, avg_g, avg_b))
+    pixels = img.load()
 
-    if not samples or any(s[0] < threshold for s in samples):
-        # 没看到一致的浅色背景，直接复制
+    # 采样边缘颜色，量化到 8 位 bucket
+    bg_buckets = set()
+    for x in range(0, w, 4):
+        for y in [0, h - 1]:
+            p = pixels[x, y]
+            bg_buckets.add((p[0] // 16 * 16, p[1] // 16 * 16, p[2] // 16 * 16))
+    for y in range(0, h, 4):
+        for x in [0, w - 1]:
+            p = pixels[x, y]
+            bg_buckets.add((p[0] // 16 * 16, p[1] // 16 * 16, p[2] // 16 * 16))
+
+    # 如果边缘已经全透明，直接返回
+    edge_alpha = pixels[0, 0][3]
+    if edge_alpha == 0:
         img.save(out_p, "PNG", optimize=True)
         return out_p
 
-    # 用平均背景色作为参考
-    bg_r = sum(s[0] for s in samples) / len(samples)
-    bg_g = sum(s[1] for s in samples) / len(samples)
-    bg_b = sum(s[2] for s in samples) / len(samples)
+    # 距离阈值：曼哈顿距离 < dist_threshold 算 bg
+    dist_threshold: int = 80
 
-    # 距离阈值（RGB 空间欧氏距离）
-    dist_threshold = 30
+    def is_bg(p):
+        for bc in bg_buckets:
+            if abs(p[0] - bc[0]) + abs(p[1] - bc[1]) + abs(p[2] - bc[2]) < dist_threshold:
+                return True
+        return False
 
-    pixels = img.load()
+    visited = bytearray(w * h)
+    queue = deque()
+    for x in range(w):
+        queue.append((x, 0))
+        queue.append((x, h - 1))
     for y in range(h):
-        for x in range(w):
-            r, g, b, a = pixels[x, y]
-            d = ((r - bg_r) ** 2 + (g - bg_g) ** 2 + (b - bg_b) ** 2) ** 0.5
-            if d < dist_threshold:
-                pixels[x, y] = (r, g, b, 0)
+        queue.append((0, y))
+        queue.append((w - 1, y))
+
+    while queue:
+        x, y = queue.popleft()
+        if x < 0 or x >= w or y < 0 or y >= h:
+            continue
+        idx = y * w + x
+        if visited[idx]:
+            continue
+        p = pixels[x, y]
+        if not is_bg(p):
+            continue
+        visited[idx] = 1
+        pixels[x, y] = (p[0], p[1], p[2], 0)
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and not visited[ny * w + nx]:
+                queue.append((nx, ny))
+
     img.save(out_p, "PNG", optimize=True)
     return out_p
 

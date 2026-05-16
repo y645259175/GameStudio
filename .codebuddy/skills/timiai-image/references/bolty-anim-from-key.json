@@ -1,0 +1,64 @@
+{
+  "_comment": "Bolty 动画帧派生 · 用 image_edit 模式，基于 bolty_small_key_raw.png 作为参考，让模型保持角色完全一致只改姿态。这是 art-asset-pipeline SOP 的标准做法。",
+  "concurrency": 2,
+  "stage_dir": "projects/bolt-1-1/art/_pipeline_stage",
+  "defaults": {
+    "type": "image_edit",
+    "model": "gpt-image-2",
+    "size": "1024x1024",
+    "quality": "high",
+    "fallback": "off",
+    "timeout": 240,
+    "max_retries": 3
+  },
+  "tasks": [
+    {
+      "id": "bolty-small-walk1-v2",
+      "type": "image_edit",
+      "reference_images": ["projects/bolt-1-1/art/bolty_small_key_raw.png"],
+      "prompt": "Same exact character as the reference image: red metallic robot with round dome head, single yellow camera-lens eye, red torso with rivets, grey metal feet. KEEP IDENTICAL: body proportions, colors, outline thickness, art style, all character details. ONLY CHANGE: the pose. New pose: WALKING, RIGHT LEG lifted forward and bent at knee mid-step, LEFT LEG straight planted on ground. Right arm swung slightly back, left arm swung slightly forward. Same 1px black outline, flat colors, transparent background, character centered occupying 65 percent of canvas.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "32x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_walk1.png"
+    },
+    {
+      "id": "bolty-small-walk2-v2",
+      "type": "image_edit",
+      "reference_images": ["projects/bolt-1-1/art/bolty_small_key_raw.png"],
+      "prompt": "Same exact character as the reference image: red metallic robot with round dome head, single yellow camera-lens eye, red torso with rivets, grey metal feet. KEEP IDENTICAL: body proportions, colors, outline thickness, art style, all character details. ONLY CHANGE: the pose. New pose: WALKING opposite step from the other walk frame, LEFT LEG lifted forward and bent at knee, RIGHT LEG straight planted. Left arm swung back, right arm swung forward. Same 1px black outline, flat colors, transparent background, character centered occupying 65 percent of canvas.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "32x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_walk2.png"
+    },
+    {
+      "id": "bolty-small-jump-v2",
+      "type": "image_edit",
+      "reference_images": ["projects/bolt-1-1/art/bolty_small_key_raw.png"],
+      "prompt": "Same exact character as the reference image: red metallic robot with round dome head, single yellow camera-lens eye, red torso with rivets. KEEP IDENTICAL: body proportions, colors, outline thickness, art style, all character details. ONLY CHANGE: the pose. New pose: MID-AIR JUMP - both legs bent and tucked under the body, both arms raised slightly outward to the sides for balance, eye/expression looking forward determinedly. Same 1px black outline, flat colors, transparent background, character centered occupying 65 percent of canvas.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "32x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_jump.png"
+    },
+    {
+      "id": "bolty-small-idle-v2",
+      "type": "image_edit",
+      "reference_images": ["projects/bolt-1-1/art/bolty_small_key_raw.png"],
+      "prompt": "Same exact character as the reference image. KEEP IDENTICAL: body proportions, colors, outline thickness, art style, ALL character details, AND the standing pose. The output should be VIRTUALLY IDENTICAL to the input - just clean up the rendering, ensure transparent background outside character, character centered occupying 65 percent of canvas. This is the IDLE/STANDING frame of the walk animation cycle.",
+      "post": [
+        {"op": "remove_bg", "threshold": 200},
+        {"op": "crop", "alpha_threshold": 8},
+        {"op": "shrink", "size": "32x32"}
+      ],
+      "final_out": "projects/bolt-1-1/game/assets/bolty_small_idle.png"
+    }
+  ]
+}

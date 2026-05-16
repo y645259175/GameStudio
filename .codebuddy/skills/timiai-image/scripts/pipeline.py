@@ -66,13 +66,110 @@ except Exception:
 
 from _auth import (
     base_url as default_base_url, require_api_key_or_exit,
-    parse_fallback_arg,
+    parse_fallback_arg, ENDPOINT_EDITS,
 )
 from _cache import cache_key, cache_lookup, cache_save, cache_copy_to
 import postprocess
 
 # 复用 batch_generate 里的 _try_with_fallback
 from batch_generate import _try_with_fallback
+
+
+# ─── image_edit API 调用（reference-based 多帧动画用）─────────
+
+def _call_image_edit(api_key: str, base: str, model: str, prompt: str,
+                     reference_paths: list, size: str, quality: str,
+                     timeout: int) -> bytes:
+    """单次 image_edit 调用，传 1-4 张参考图 + prompt，返回 png bytes。
+    适合多帧动画 / 多状态变体场景，让模型基于已有角色基准帧编辑而非重生。
+    """
+    import urllib.request, urllib.error
+    import mimetypes
+    url = base.rstrip("/") + ENDPOINT_EDITS
+
+    if len(reference_paths) > 4 or len(reference_paths) < 1:
+        raise RuntimeError(f"reference_paths must be 1-4, got {len(reference_paths)}")
+
+    # multipart/form-data 手工组装（避免引入 requests 依赖）
+    boundary = "----timiAIBoundary7MA4YWxkTrZu0gW"
+    body_parts = []
+
+    def add_field(name, value):
+        body_parts.append(f"--{boundary}\r\n".encode("utf-8"))
+        body_parts.append(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode("utf-8"))
+        body_parts.append(str(value).encode("utf-8"))
+        body_parts.append(b"\r\n")
+
+    def add_file(name, filepath):
+        from pathlib import Path as _P
+        p = _P(filepath)
+        if not p.exists():
+            raise RuntimeError(f"reference image not found: {filepath}")
+        mime = "image/png"
+        suf = p.suffix.lower()
+        if suf in (".jpg", ".jpeg"):
+            mime = "image/jpeg"
+        elif suf == ".webp":
+            mime = "image/webp"
+        body_parts.append(f"--{boundary}\r\n".encode("utf-8"))
+        body_parts.append(
+            f'Content-Disposition: form-data; name="{name}"; filename="{p.name}"\r\n'.encode("utf-8")
+        )
+        body_parts.append(f"Content-Type: {mime}\r\n\r\n".encode("utf-8"))
+        body_parts.append(p.read_bytes())
+        body_parts.append(b"\r\n")
+
+    add_field("model", model)
+    add_field("prompt", prompt)
+    add_field("size", size)
+    add_field("n", 1)
+    if quality and quality != "auto":
+        add_field("quality", quality)
+    for ref in reference_paths:
+        add_file("image[]", ref)
+
+    body_parts.append(f"--{boundary}--\r\n".encode("utf-8"))
+    body = b"".join(body_parts)
+
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "Authorization": api_key,
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = resp.read()
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"HTTP {e.code}: {body_text[:300]}")
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise RuntimeError(f"network: {e}")
+
+    import base64
+    try:
+        payload = json.loads(data.decode("utf-8", errors="replace"))
+    except Exception:
+        raise RuntimeError(f"non-JSON response: {data[:200]!r}")
+
+    if "error" in payload:
+        raise RuntimeError(f"业务错误: {json.dumps(payload['error'], ensure_ascii=False)[:300]}")
+
+    items = payload.get("data") or []
+    if not items:
+        raise RuntimeError(f"empty data: {json.dumps(payload, ensure_ascii=False)[:300]}")
+
+    item = items[0]
+    if "b64_json" in item:
+        return base64.b64decode(item["b64_json"])
+    if "url" in item:
+        import urllib.request as _r
+        with _r.urlopen(item["url"], timeout=timeout) as r2:
+            return r2.read()
+    raise RuntimeError(f"item missing b64/url: {item}")
 
 
 _PRINT_LOCK = Lock()
@@ -111,6 +208,8 @@ def _run_task(api_key: str, base: str, task: Dict[str, Any],
               dry_run: bool = False) -> Dict[str, Any]:
     tid = task.get("id") or "anon"
     prompt = task.get("prompt") or ""
+    task_type: str = task.get("type") or defaults.get("type") or "text2image"
+    reference_images: list = task.get("reference_images") or []
     model = task.get("model") or defaults.get("model", "gpt-image-2")
     size = task.get("size") or defaults.get("size", "1024x1024")
     quality = task.get("quality") if "quality" in task else defaults.get("quality", "medium")
@@ -123,6 +222,7 @@ def _run_task(api_key: str, base: str, task: Dict[str, Any],
 
     result = {
         "id": tid,
+        "type": task_type,
         "status": "pending",
         "raw_cached": False,
         "model_used": None,
@@ -141,13 +241,29 @@ def _run_task(api_key: str, base: str, task: Dict[str, Any],
         result["status"] = "FAIL"
         result["error"] = "missing 'final_out' path"
         return result
+    if task_type == "image_edit" and not reference_images:
+        result["status"] = "FAIL"
+        result["error"] = "image_edit type requires 'reference_images' (1-4 paths)"
+        return result
 
     stage_dir.mkdir(parents=True, exist_ok=True)
     raw_path = stage_dir / f"{tid}_raw.png"
 
-    # 1. 查 cache（基于 prompt + model + size + quality + extra）
-    key_extra = {"params": json.dumps(extra_params, sort_keys=True, ensure_ascii=False)} if extra_params else None
-    ckey = cache_key(prompt, model, size, quality or "", key_extra)
+    # 1. 查 cache（image_edit 把参考图 hash 也算进 key）
+    key_extra: Dict[str, Any] = {}
+    if extra_params:
+        key_extra["params"] = json.dumps(extra_params, sort_keys=True, ensure_ascii=False)
+    if task_type == "image_edit":
+        key_extra["type"] = "image_edit"
+        # 参考图内容 hash（防止用户改了参考图但 prompt 没变 → cache 误命中）
+        import hashlib
+        ref_hashes = []
+        for rp in reference_images:
+            rpp = Path(rp)
+            if rpp.exists():
+                ref_hashes.append(hashlib.sha256(rpp.read_bytes()).hexdigest()[:16])
+        key_extra["refs"] = ",".join(ref_hashes)
+    ckey = cache_key(prompt, model, size, quality or "", key_extra if key_extra else None)
     cached = cache_lookup(ckey)
 
     t0 = time.time()
@@ -165,17 +281,45 @@ def _run_task(api_key: str, base: str, task: Dict[str, Any],
             if dry_run:
                 result["status"] = "SKIP_DRY"
                 return result
-            fallback_chain = parse_fallback_arg(fallback_arg, model) if fallback_arg else []
-            data, model_used = _try_with_fallback(
-                api_key, base, model, fallback_chain, prompt, size, quality,
-                extra_params, timeout, max_retries, tid,
-            )
+
+            # 路由到不同 API
+            if task_type == "image_edit":
+                _log(tid, f"调 image_edit, model={model}, refs={len(reference_images)}")
+                # image_edit 没有 fallback（gemini 不支持本端点）
+                last_err = ""
+                data: Optional[bytes] = None
+                model_used = model
+                for attempt in range(max_retries + 1):
+                    try:
+                        data = _call_image_edit(
+                            api_key, base, model, prompt, reference_images,
+                            size, quality, timeout,
+                        )
+                        _log(tid, f"  ✅ image_edit 成功 (attempt {attempt+1})")
+                        break
+                    except Exception as e:
+                        last_err = str(e)
+                        _log(tid, f"  ❌ attempt {attempt+1}: {last_err[:150]}")
+                        if attempt < max_retries:
+                            time.sleep(2 ** attempt)
+                if data is None:
+                    raise RuntimeError(f"image_edit failed after {max_retries+1} attempts: {last_err}")
+            else:
+                # 默认 text2image 走 _try_with_fallback
+                fallback_chain = parse_fallback_arg(fallback_arg, model) if fallback_arg else []
+                data, model_used = _try_with_fallback(
+                    api_key, base, model, fallback_chain, prompt, size, quality,
+                    extra_params, timeout, max_retries, tid,
+                )
+
             cache_save(ckey, data, meta={
                 "prompt": prompt[:200],
                 "model_requested": model,
                 "model_used": model_used,
                 "size": size,
                 "quality": quality,
+                "type": task_type,
+                "reference_images": reference_images,
             })
             raw_path.write_bytes(data)
             result["model_used"] = model_used

@@ -203,17 +203,20 @@ func _update_animation(delta: float) -> void:
 
 
 ## 设置 _tex_sprite 的 scale 和 position 基于当前 state 的目标显示尺寸
+## M6.2 尺寸：small=32×32, big/fire=32×56（与 _apply_state_size 一致）
 func _apply_tex_sprite_size() -> void:
 	if not _tex_sprite or not _tex_sprite.texture:
 		return
 	var target_size: Vector2
 	match current_state:
-		State.SMALL: target_size = Vector2(16, 16)
-		State.BIG, State.FIRE: target_size = Vector2(16, 32)
-		_: target_size = Vector2(16, 16)
+		State.SMALL: target_size = Vector2(32, 32)
+		State.BIG, State.FIRE: target_size = Vector2(32, 56)
+		_: target_size = Vector2(32, 32)
 	var src := _tex_sprite.texture.get_size()
 	if src.x > 0 and src.y > 0:
 		_tex_sprite.scale = Vector2(target_size.x / src.x, target_size.y / src.y)
+	# 锚点：character body 中心放在 collision 中心位置，
+	# 即 (0, -target_size.y/2)，让 sprite 底部对齐物体 origin（脚立地面）
 	_tex_sprite.position = Vector2(0, -target_size.y / 2.0)
 
 
@@ -279,34 +282,34 @@ func _update_facing() -> void:
 
 func _apply_state_size() -> void:
 	# 占位视觉（ColorRect / [VISUAL_DEBT BL-012]，待 sprite atlas 接入后替换）
-	# small=Bolty 红 16x16；big=Bolty 红+银金属饰带 16x32；fire=银白 16x32（火力态）
+	# M6.2 角色尺寸放大：small=32×32, big/fire=32×56（约 1.75x 高），与 art-asset-pipeline SOP 对齐
+	# 注意：collision shape 保持原物理尺寸（14×16, 14×30），只是视觉显示更大
 	if not sprite or not collision:
 		return
 	match current_state:
 		State.SMALL:
 			sprite.color = Color("#E03030")  # Bolty 红（bolt 配色）
-			sprite.size = Vector2(16, 16)
-			sprite.position = Vector2(-8, -16)
+			sprite.size = Vector2(32, 32)
+			sprite.position = Vector2(-16, -32)
 			if collision.shape:
-				(collision.shape as RectangleShape2D).size = Vector2(14, 16)
-				collision.position = Vector2(0, -8)
+				(collision.shape as RectangleShape2D).size = Vector2(14, 28)  # 物理 hitbox 跟视觉同高一点
+				collision.position = Vector2(0, -14)
 		State.BIG:
-			sprite.color = Color("#E03030")  # 大态保持 Bolty 红（视觉差异由身高表达）
-			sprite.size = Vector2(16, 32)
-			sprite.position = Vector2(-8, -32)
+			sprite.color = Color("#E03030")
+			sprite.size = Vector2(32, 56)
+			sprite.position = Vector2(-16, -56)
 			if collision.shape:
-				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
-				collision.position = Vector2(0, -16)
+				(collision.shape as RectangleShape2D).size = Vector2(14, 50)
+				collision.position = Vector2(0, -25)
 		State.FIRE:
-			sprite.color = Color("#D8E0F0")  # 火力态：银白外壳 + 偏蓝调
-			sprite.size = Vector2(16, 32)
-			sprite.position = Vector2(-8, -32)
+			sprite.color = Color("#D8E0F0")
+			sprite.size = Vector2(32, 56)
+			sprite.position = Vector2(-16, -56)
 			if collision.shape:
-				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
-				collision.position = Vector2(0, -16)
+				(collision.shape as RectangleShape2D).size = Vector2(14, 50)
+				collision.position = Vector2(0, -25)
 		State.DEAD:
 			sprite.color = Color("#404040")
-			# 死亡时贴图保留最后状态，不切换
 
 	# 状态切换时给 _tex_sprite 设置初始贴图（idle 帧）
 	if _tex_sprite:
