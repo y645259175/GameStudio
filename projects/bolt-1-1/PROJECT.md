@@ -3,7 +3,7 @@ project_name: bolt-1-1
 engine: godot
 engine_version: 4.6.2
 phase: dev
-status: pivot-from-mario-1-1
+status: M5.5-conditional-pass
 created_at: 2026-05-15
 last_updated: 2026-05-15
 lead: ZStodio
@@ -58,8 +58,8 @@ ip_disclosure: "Original work. No third-party IP, no resemblance to Nintendo Mar
 | M3 | epic / story 拆分 + 数据表 | 可执行任务清单 | partial（task-list 替代）|
 | M4 | 核心玩法可玩（移动+跳+踩敌） | Sprint 1 done | ✅ done |
 | M5 | 完整 Sector 1-1 可通关 | Sprint 2 done | ⚠️ cheat-only PASS, real PASS pending |
-| **M5.5** | **IP pivot + 原创资产 + 14 backlog 修复** | bolt 原创化 + 真实通关 + 视觉一致 | 🔄 in progress |
-| M6 | 视觉打磨 + 完整过场 | Sprint 3 done | 🔲 待启动 |
+| **M5.5** | **IP pivot + 原创资产 + 14 backlog 修复** | bolt 原创化 + 真实通关 + 视觉一致 | ✅ **CONDITIONAL_PASS**（real_playtest PASS in 37.4s；视觉债 6 项需 M6 closed；qa-gate-M5.5-2026-05-15.md）|
+| M6 | 视觉打磨 + 完整过场 | Sprint 3 done | 🔲 待启动（首要任务：接入资产 + 关闭 BL-012/013/014/015）|
 
 ## 范围约束
 
