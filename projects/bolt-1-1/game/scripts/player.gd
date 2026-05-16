@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-## Player · 马里奥角色控制
+## Player · Bolty 角色控制
 ## 实现 walk/run/jump/turnaround/可变高度跳/状态机
 ## 数值全部从 ConfigLoader 读取
 
@@ -47,7 +47,13 @@ func _ready() -> void:
 	_apply_state_size()
 
 
+## DEBUG-only cheat. In release builds (OS.is_debug_build() == false) this is a no-op.
+## Tests that rely on this are forbidden by test-standards red line; real_playtest must use
+## Input.action_press() only. See studio/docs/autonomous-mode-charter.md discipline 2.
 func set_cheat_invincible(v: bool) -> void:
+	if not OS.is_debug_build():
+		push_warning("[Player] set_cheat_invincible ignored in release build")
+		return
 	_cheat_invincible = v
 
 
@@ -158,26 +164,27 @@ func _update_facing() -> void:
 
 
 func _apply_state_size() -> void:
-	# Sprint 1 占位：small=红 16x16，big=红+蓝 16x32，fire=橙 16x32
+	# 占位视觉（ColorRect / [VISUAL_DEBT BL-012]，待 sprite atlas 接入后替换）
+	# small=Bolty 红 16x16；big=Bolty 红+银金属饰带 16x32；fire=银白 16x32（火力态）
 	if not sprite or not collision:
 		return
 	match current_state:
 		State.SMALL:
-			sprite.color = Color("#E40058")
+			sprite.color = Color("#E03030")  # Bolty 红（bolt 配色）
 			sprite.size = Vector2(16, 16)
 			sprite.position = Vector2(-8, -16)
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 16)
 				collision.position = Vector2(0, -8)
 		State.BIG:
-			sprite.color = Color("#0058F8")  # 蓝裤子（突出大态）
+			sprite.color = Color("#E03030")  # 大态保持 Bolty 红（视觉差异由身高表达）
 			sprite.size = Vector2(16, 32)
 			sprite.position = Vector2(-8, -32)
 			if collision.shape:
 				(collision.shape as RectangleShape2D).size = Vector2(14, 30)
 				collision.position = Vector2(0, -16)
 		State.FIRE:
-			sprite.color = Color("#FCFCFC")  # 火力态白色
+			sprite.color = Color("#D8E0F0")  # 火力态：银白外壳 + 偏蓝调
 			sprite.size = Vector2(16, 32)
 			sprite.position = Vector2(-8, -32)
 			if collision.shape:

@@ -106,12 +106,15 @@ func _on_hit_player(body: Node) -> void:
 		return
 	if not body.has_method("take_damage"):
 		return
-	# 修复 BL-001: stomp 阈值从 4 -> 8（玩家正常走路不再被误判侧面）
-	# 改用底部 Y 比较，更精确
+	# 修复 BL-001 + BL-002: stomp 判定改为"玩家正在下落 + 玩家底部接近敌人顶部"
+	# - dy = 玩家底部 Y - 敌人顶部 Y；玩家在敌人正上方时 dy=0，落进去时 dy>0
+	# - 允许 dy ∈ [-4, 20]：负值是"刚接触"，正值是"已落进敌人 hitbox 内"
+	# - 配合 vy >= 50（明确在下落）才算 stomp，避免上升中误判
 	var player_bottom: float = body.global_position.y
 	var enemy_top: float = global_position.y - SIZE.y / 2.0
-	if player_bottom < enemy_top + 8:
-		# 玩家底部明显在敌人顶部之上 → 踩
+	var dy: float = player_bottom - enemy_top
+	# stomp：玩家正在下落 + 底部已接近或刚穿过敌人顶部
+	if body.velocity.y >= 50.0 and dy >= -4.0 and dy <= 20.0:
 		stomp(body)
 	else:
 		body.take_damage()

@@ -172,11 +172,28 @@ func _spawn_brick(e: Dictionary) -> void:
 func _spawn_conduit(e: Dictionary) -> void:
 	var length_str: String = String(e.get("length", "short"))
 	var conduit_h: float = 64.0
-	match length_str:
-		"short": conduit_h = 48.0
-		"medium": conduit_h = 64.0
-		"long": conduit_h = 96.0
-		_: conduit_h = 64.0
+	# 优先从 ConfigLoader 读 level-elements.conduit.lengths（数据驱动，与 GDD 对齐）
+	var cl := _get_cl()
+	if cl:
+		var key := "level-elements.conduit.lengths." + length_str
+		var v = cl.get_value(key, null)
+		if v != null:
+			conduit_h = float(v)
+		else:
+			# fallback 默认值（与 GDD §3.5 一致：short=32 / medium=48 / long=64 / extraLong=80）
+			match length_str:
+				"short": conduit_h = 32.0
+				"medium": conduit_h = 48.0
+				"long": conduit_h = 64.0
+				"extraLong": conduit_h = 80.0
+				_: conduit_h = 48.0
+	else:
+		match length_str:
+			"short": conduit_h = 32.0
+			"medium": conduit_h = 48.0
+			"long": conduit_h = 64.0
+			"extraLong": conduit_h = 80.0
+			_: conduit_h = 48.0
 	var conduit_w: float = 64.0
 	var x: float = float(e.x)
 	var y: float = float(e.y)
@@ -185,8 +202,16 @@ func _spawn_conduit(e: Dictionary) -> void:
 	var actual_h: float = 672.0 - y
 	if actual_h < 32.0:
 		actual_h = 32.0
+	# 用 conduit_h 作为参考但不强制（json 已用 y 表达高度差）
 	center.y = y + actual_h / 2.0
 	_make_static_box(ground_root, center, Vector2(conduit_w, actual_h), COLOR_CONDUIT, "Conduit")
+
+
+func _get_cl() -> Node:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree and tree.root.has_node("ConfigLoader"):
+		return tree.root.get_node("ConfigLoader")
+	return null
 
 
 func _spawn_signal_tower(e: Dictionary) -> void:

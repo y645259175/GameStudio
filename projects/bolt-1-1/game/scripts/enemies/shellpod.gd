@@ -122,11 +122,12 @@ func _check_kill_enemies_in_path() -> void:
 func _on_hit_player(body: Node) -> void:
 	if not body.has_method("take_damage"):
 		return
-	# 修复 BL-001: 用底部 Y 比较代替中心 Y 比较
+	# 修复 BL-001 + BL-002: stomp 判定 = 玩家正在下落 + 底部接近/刚穿过敌人顶部
 	var player_bottom: float = body.global_position.y
 	var current_size: Vector2 = SIZE_WALK if _state == SState.WALK else SIZE_SHELL
 	var enemy_top: float = global_position.y - current_size.y / 2.0
-	var stomped: bool = (player_bottom < enemy_top + 8)
+	var dy: float = player_bottom - enemy_top
+	var stomped: bool = (body.velocity.y >= 50.0 and dy >= -4.0 and dy <= 20.0)
 
 	match _state:
 		SState.WALK:

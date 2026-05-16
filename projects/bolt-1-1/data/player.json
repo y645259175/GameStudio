@@ -4,11 +4,11 @@
   "run": { "maxSpeed": 150, "accel": 300 },
   "turnAround": { "decel": 400 },
   "jump": {
-    "initialV": -340,
-    "holdGravity": 600,
-    "releaseGravity": 1500,
+    "initialV": -380,
+    "holdGravity": 500,
+    "releaseGravity": 1400,
     "minHoldFrames": 4,
-    "maxHoldFrames": 18
+    "maxHoldFrames": 24
   },
   "air": { "accelMultiplier": 0.6 },
   "crouch": { "enabled": true },
