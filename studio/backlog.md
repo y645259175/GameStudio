@@ -20,19 +20,19 @@
 
 | ID | 类型 | 标题 | priority | 来源 | 状态 |
 |---|---|---|---|---|---|
-| BL-S001 | sop-doc | 写 `studio/docs/anti-patterns.md`，沉淀 8 条通用反模式 + 检测信号 + 修法 | P0 | retro-bolt-1-1-experience | open |
-| BL-S002 | agent-improve | 修 `agent-spawn-contract` rule，加 5 个高频 spawn 模板示例 + 完整 task prompt | P0 | retro-bolt-1-1-experience | open |
+| BL-S001 | sop-doc | 写 `studio/docs/anti-patterns.md`，沉淀 8 条通用反模式 + 检测信号 + 修法 | P0 | retro-bolt-1-1-experience | **done**（2026-05-20 · 实际沉淀 11 条 · digest 36 行 + manual 258 行 + archive 150 行 三层结构）|
+| BL-S002 | agent-improve | 修 `agent-spawn-contract` rule，加 5 个高频 spawn 模板示例 + 完整 task prompt | P0 | retro-bolt-1-1-experience | **done**（2026-05-20 · MANUAL.md 共 9 个 TPL · TPL-01~09 含 implementer/designer/reviewer/qa/architect/debugger/refactor/art-director-review/vertical-slice）|
 | BL-S003 | migration | v4 Phase 1 批 12 收尾扫：cross-reference 验证 + 修复断链 | P0 | v4-tasks.md 遗留 | open |
 | BL-S004 | rule-enforce | commit-discipline rule 加 pre-commit hook 强制 [story]/[fix]/[chore]/[hotfix] tag | P0 | retro-bolt-1-1-experience | **done**（2026-05-19 · pre-commit-discipline.py + .git/hooks/commit-msg 挂载 + 3 case 测试通过）|
 | BL-S005 | skill-improve | `milestone-review` skill 端到端化（spawn 三方 agent + 自动写报告 + 落 backlog） | P1 | retro-bolt-1-1-experience | open |
 | BL-S006 | tooling | timiai-image：image_edit 限流自动切 chat_image fallback | P1 | retro-bolt-1-1-experience | open |
-| BL-S007 | tooling | godot 项目模板抽离到 `studio/templates/godot-project/`（player.gd / sprite_helper.gd / camera_follow.gd 等通用脚手架） | P1 | retro-bolt-1-1-experience | open |
-| BL-S008 | tooling | session-start hook 注入 anti-patterns + 上次 session agent/skill 调用记录 | P1 | retro-bolt-1-1-experience | open |
+| ~~BL-S007~~ | ~~tooling~~ | ~~godot 项目模板抽离~~ | ~~P1~~ | ~~retro-bolt-1-1-experience~~ | **cancelled**（2026-05-21 · 用户决策：等有更稳定成熟的项目再做，目前模板会过早抽象）|
+| BL-S008 | tooling | session-start hook 注入 anti-patterns + 上次 session agent/skill 调用记录 | P1 | retro-bolt-1-1-experience | **done**（2026-05-20 · session-start.py 已含 digest 路径指引 + 三层结构提示 · agent/skill 利用率统计仍待 BL-S014 完成）|
 | BL-S009 | migration | v4 Phase 1 批 7/8 抽查 5 个高频 agent（engineer/reviewer/qa/art-director/debugger）质量 | P1 | v4-tasks.md 遗留 | **done**（2026-05-19 · architect 体检 5 agent · ARCH-MINOR_GAPS · designer/reviewer FAIR 已修补 · 报告 studio/reports/agent-audit-5core-2026-05-19.md）|
 | BL-S010 | rule-enforce | 9 个 rule 每个配 `validate.sh`，PreToolUse / pre-commit 跑 | P1 | retro-bolt-1-1-experience | open |
 | BL-S011 | tooling | screenshot_tool 自动化：sprint 收尾 hook 自动跑 + spawn art-director 评审 | P2 | retro-bolt-1-1-experience | open |
 | BL-S012 | tooling | settings.json 权限配置 helper：`add-bash-cmd <name>` 命令式工具 | P2 | retro-bolt-1-1-experience | open |
-| BL-S013 | sop-doc | `studio/docs/codebuddy-environment-quirks.md`（IDE 插件 vs CLI / 复合命令审批 / .import 元数据等客户端行为） | P2 | retro-bolt-1-1-experience | open |
+| BL-S013 | sop-doc | `studio/docs/codebuddy-environment-quirks.md`（IDE 插件 vs CLI / 复合命令审批 / .import 元数据等客户端行为） | P2 | retro-bolt-1-1-experience | **done**（2026-05-19 · studio/docs/codebuddy-environment-quirks.md 已建 · 8KB）|
 | BL-S014 | tooling | `daily-check` skill 加自动汇总 "今天 spawn 了哪些 agent / skill 利用率" | P2 | retro-bolt-1-1-experience | open |
 | BL-S015 | sop-doc | 可访问性 SOP 模板（高对比 / 色弱 / 输入重映射 / 字幕系统）作为 GDD §6 UX 节常驻清单 | P2 | bolt-1-1 GDD 引出 | open |
 | BL-S016 | tooling | image_edit 多次 429 → 自动写"限流冷却时间"到 cache，下次提交前先查 | P2 | M6.2 实战 | open |
