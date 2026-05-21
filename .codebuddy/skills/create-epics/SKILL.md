@@ -5,6 +5,8 @@ status: active
 description: Breaks GDD chapters into epics, each scoped to a coherent feature area deliverable in 1-3 sprints.
 ---
 
+<!-- OVER_LIMIT_REASON: epic 拆分粒度 + 与 GDD 章节映射 + 与 sprint-plan / create-stories 边界。 -->
+
 # Create-Epics · 拆分 epics
 
 ## 何时使用

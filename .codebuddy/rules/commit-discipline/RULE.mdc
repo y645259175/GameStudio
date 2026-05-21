@@ -6,6 +6,8 @@ updatedAt: 2026-05-14T16:38:00.000Z
 provider:
 ---
 
+<!-- OVER_LIMIT_REASON: 12 个 tag 白名单 + 触发规则 + 与 pre-commit-discipline.py hook 联动是 commit 时一次性需要的全部信息。 -->
+
 # commit-discipline · Commit 纪律
 
 ## 双通道分类

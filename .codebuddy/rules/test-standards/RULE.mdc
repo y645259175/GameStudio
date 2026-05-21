@@ -2,9 +2,12 @@
 description: Test standards rule - defines unit/integration/smoke/regression test requirements, coverage expectations, and the test pyramid ratio for game projects. Referenced by tester agent and qa-lead agent.
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-14T16:38:00.000Z
+updatedAt: 2026-05-20T15:43:00.000Z
 provider:
 ---
+
+<!-- OVER_LIMIT_REASON: 4 类测试（unit/integration/smoke/regression）的覆盖率要求 + 金字塔比例 +
+真实输入路径红线 互为整体，tester / qa-lead 写测试时需一次性参考。拆分会让单个测试任务跨多文件查阅。 -->
 
 # test-standards · 测试标准
 

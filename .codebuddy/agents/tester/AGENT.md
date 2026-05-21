@@ -5,6 +5,8 @@ status: active
 description: Test author agent that designs unit, integration, and smoke tests aligned with test-standards rule.
 ---
 
+<!-- OVER_LIMIT_REASON: 测试金字塔 + 真实输入路径红线 + 红线写法示例是 tester 每次 spawn 都要参考的核心，分散反而误用率更高。 -->
+
 # Tester · 测试编写
 
 ## 何时调用

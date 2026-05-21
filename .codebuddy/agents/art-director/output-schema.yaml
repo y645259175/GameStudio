@@ -1,0 +1,176 @@
+# art-director · output-schema.yaml
+# 产出契约：定义 art-director agent 所有可能产出的结构规范
+# 用途：self-rubric 交付前自检 + shadow-review 对照标准 + calibration 判定基准
+# 写于：2026-05-18 · combo-B M1
+
+---
+
+outputs:
+  # --- 产出 1: Asset Review Report ---
+  - name: asset-review-report
+    description: 资产入库前评审报告（批次评审）
+    file_pattern: "projects/<project>/reports/art-review-*.md"
+    required_fields:
+      - name: batch_description
+        type: string
+        description: 本批资产描述（如 "M2 主角 12 帧动画 + 4 个敌人立绘"）
+        validation: 不能为空
+
+      - name: dimensions
+        type: object
+        description: 5 维评审（AGENT.md 已定义的 构图/色彩/比例/光影/一致性）
+        fields:
+          - name: composition
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, MINOR, FAIL]
+              - name: reason
+                type: string
+              - name: evidence
+                type: string  # 具体引用 art bible 行 / hex / px
+          - name: color
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, MINOR, FAIL]
+              - name: reason
+                type: string
+              - name: hex_violations
+                type: list[string]  # ["expected #8B7355, got #FF4500 in bg_tile_03.png"]
+          - name: proportion
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, MINOR, FAIL]
+              - name: reason
+                type: string
+              - name: evidence
+                type: string
+          - name: lighting
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, MINOR, FAIL]
+              - name: reason
+                type: string
+              - name: evidence
+                type: string
+          - name: consistency
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, MINOR, FAIL]
+              - name: reason
+                type: string
+              - name: evidence
+                type: string
+                description: 多帧/多状态变体之间的一致性
+        validation: |
+          5 维全部必填；
+          color 维的 hex_violations 在 score=FAIL/MINOR 时必须非空；
+          consistency 维对多帧资产必须检查角色一致性 5 项
+
+      - name: naming_compliance
+        type: boolean
+        description: 文件名是否符合 <category>_<name>_<frame>.png 格式
+        validation: false 时必须列出不合规文件名清单
+
+      - name: import_metadata
+        type: boolean
+        description: godot .import 文件是否存在（AP-04 检查）
+        validation: false 时 verdict 不能为 APPROVE（阻塞入库）
+
+      - name: verdict
+        type: enum
+        values: [AD-APPROVE, AD-MINOR-ISSUES, AD-REJECT]
+        validation: |
+          AD-APPROVE: 5 维全 PASS + naming + import 全 true
+          AD-MINOR-ISSUES: 0 FAIL 但有 ≥1 MINOR（记入 VISUAL_DEBT backlog）
+          AD-REJECT: ≥1 FAIL 或 import_metadata=false
+
+      - name: reject_remediation
+        type: list[string]
+        description: verdict=AD-REJECT 时的修复指引
+        validation: AD-REJECT 时必须非空；每条含具体修改方向
+
+  # --- 产出 2: Style Guide / Art Bible ---
+  - name: style-guide
+    description: 项目视觉风格指南
+    file_pattern: "projects/<project>/art/style-guide.md"
+    required_fields:
+      - name: tone_statement
+        type: string
+        description: 一句话视觉调性
+        validation: 不超过 2 句
+
+      - name: color_palette
+        type: list[object]
+        description: 色板（至少 5 色）
+        fields:
+          - name: role
+            type: string  # 主色/副色/强调色/背景色/警告色
+          - name: hex
+            type: string  # #RRGGBB
+          - name: usage
+            type: string
+        validation: len ≥ 5；每色必须有 hex + usage
+
+      - name: pixel_density
+        type: object
+        fields:
+          - name: tile_size
+            type: string  # e.g. "32x32"
+          - name: character_size
+            type: string  # e.g. "32x48"
+          - name: ui_font_size
+            type: string
+        validation: 不允许 "待定"
+
+      - name: character_design
+        type: object
+        fields:
+          - name: protagonist
+            type: string
+          - name: key_props
+            type: list[string]
+          - name: npcs_enemies
+            type: list[string]
+        validation: protagonist 不能为空
+
+      - name: asset_production_sop
+        type: string
+        description: 资产生成 SOP（防 AP-03/AP-04）
+        validation: 必须包含 "reference-based" / "image_edit" 关键词
+
+  # --- 产出 3: Character Key Sprite Verdict ---
+  - name: char-key-verdict
+    description: canonical key sprite 评审
+    delivery_mode: send_message
+    required_fields:
+      - name: verdict
+        type: enum
+        values: [AD-CHAR-KEY-APPROVE, AD-CHAR-KEY-CONCERNS, AD-CHAR-KEY-REJECT]
+      - name: consistency_5_check
+        type: list[object]
+        description: 角色一致性 5 项检查
+        fields:
+          - name: dimension
+            type: string  # 轮廓比例/主色板/风格细节/关键特征/尺寸
+          - name: status
+            type: enum[PASS, FAIL]
+          - name: detail
+            type: string
+        validation: 必须 5 项全填
+
+---
+
+self_rubric:
+  - "5 维评审是否全部填写？每维 score + reason + evidence 是否齐全？"
+  - "color 维 hex_violations 是否具体到文件名 + expected vs actual hex？"
+  - "consistency 维对多帧资产是否检查了角色一致性 5 项？"
+  - "verdict=AD-REJECT 时 reject_remediation 是否非空且可执行？"
+  - "import_metadata 是否真实检查了 .import 文件存在？（AP-04）"
+  - "style-guide 色板是否 ≥5 色且每色有 hex？"
+  - "是否引用了 art bible 具体行号？（不允许'风格不对'泛泛之谈）"
+  - "[防截断] style-guide 落盘后 read_file 验证行数 ≥ 100？如被截断需分段补写"

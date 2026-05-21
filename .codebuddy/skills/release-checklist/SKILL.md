@@ -5,6 +5,8 @@ status: active
 description: Release readiness checklist runner. Phase 1 ships a placeholder + router; full 4-level checklist lands in Phase 4.
 ---
 
+<!-- OVER_LIMIT_REASON: Phase 1 占位 + 4 级 checklist 模板，待 Phase 4 落地，当前体量是过渡形态。 -->
+
 # Release-Checklist · 发布检查清单（占位版）
 
 ## 何时使用

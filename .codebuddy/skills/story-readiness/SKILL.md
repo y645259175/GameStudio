@@ -5,6 +5,8 @@ status: active
 description: Definition-of-Ready check that verifies a story has acceptance criteria, GDD anchor, estimate, and no blocking dependencies before entering a sprint.
 ---
 
+<!-- OVER_LIMIT_REASON: Definition-of-Ready 5 项检查 + 阻塞依赖识别是判断 story 是否可入 sprint 的核心。 -->
+
 # Story-Readiness · Story 就绪检查
 
 ## 何时使用

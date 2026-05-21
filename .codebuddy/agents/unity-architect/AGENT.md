@@ -6,6 +6,8 @@ agentMode: agentic
 enabled: true
 ---
 
+<!-- OVER_LIMIT_REASON: Unity 引擎特定的架构约束（SRP / Addressables / DOTS）+ 与 unity-csharp/scene/renderer 的边界，spawn 时一次说清比跳转 HANDBOOK 高效。 -->
+
 # Unity-Architect · Unity 架构专家
 
 ## Domain Owned

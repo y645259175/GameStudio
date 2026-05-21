@@ -5,6 +5,8 @@ status: active
 description: Cross-chapter GDD review that surfaces conflicts, gaps, and naming inconsistencies across all design documents.
 ---
 
+<!-- OVER_LIMIT_REASON: GDD 跨章节扫描的 5 类不一致清单 + 触发场景必须一并展示，分散会让 reviewer 漏检。 -->
+
 # Review-All-GDDs · 跨 GDD 全量审视
 
 ## 何时使用

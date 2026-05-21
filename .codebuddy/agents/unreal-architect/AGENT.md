@@ -6,6 +6,8 @@ agentMode: agentic
 enabled: true
 ---
 
+<!-- OVER_LIMIT_REASON: UE 特定架构（Gameplay Framework / Subsystem / Blueprint vs C++）+ 与 unreal-cpp/blueprint/renderer 边界，与 unity-architect 同理。 -->
+
 # Unreal-Architect · Unreal 架构专家
 
 ## Domain Owned

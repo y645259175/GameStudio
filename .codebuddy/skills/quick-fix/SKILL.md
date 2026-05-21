@@ -5,6 +5,8 @@ status: active
 description: Light-channel quick-fix workflow for bugs, refactors, and small changes that don't justify a full story.
 ---
 
+<!-- OVER_LIMIT_REASON: 轻通道 vs dev-story 重通道边界 + commit tag 约定，是日常最高频使用的 skill。 -->
+
 # Quick-Fix · 快速修复（轻通道）
 
 ## 何时使用

@@ -5,6 +5,8 @@ status: active
 description: Engine initialization router that scaffolds engine-specific project files based on PROJECT.md engine field.
 ---
 
+<!-- OVER_LIMIT_REASON: 5 个引擎子路由 + 路由判断逻辑 + Phase 1.5+ 启用条件必须一并交代，避免选错引擎。 -->
+
 # Setup-Engine · 引擎初始化路由
 
 ## 何时使用

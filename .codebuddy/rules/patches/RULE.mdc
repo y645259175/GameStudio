@@ -1,163 +1,26 @@
 ---
-description: PATCHES self-iteration rule. When skill/agent/rule has issues found in real projects, write a PATCH file instead of editing the original. Patches accumulate; merge to main when reaching threshold.
+description: 工作室能力（skill/agent/rule）暴露问题时的迭代机制——写 PATCH 文件累积，达阈值再合并主文件。详细见 MANUAL.md。
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-15T13:30:00.000Z
-provider:
+updatedAt: 2026-05-20T15:40:00.000Z
 ---
 
-# patches · 工作室能力自我迭代机制
+# patches · CORE
 
-## 用途
+## 红线
 
-工作室能力（skill / agent / rule / template / hook）会在实战中暴露问题。直接改主文件有两个问题：
+- **不直接改主文件**：发现问题写 `<能力>/patches/PATCH-NNN.md`
+- **PATCH 写完不立即合并**：按优先级累积（P0 立即 / P1 当 sprint / P2 ≥3 批量 / P3 ≥5 批量）
+- **合并必先归档**：旧主文件复制到 `<能力>/archive/<NAME>.<ext>.v<N>`
 
-1. **diff 噪音大**：小修小补都改主文件，commit 历史看不出"演进逻辑"
-2. **失去演化轨迹**：哪些改动是为了解决哪个问题？什么时候、为什么改？
+## 何时升级到 MANUAL
 
-**PATCHES 机制**：把"问题反馈 + 建议改动"写成 PATCH 文件累积，达到阈值再合并。
+- PATCH 文件格式 + frontmatter 字段 → §format
+- 合并工作流 5 步 → §merge-flow
+- 与 ADR / retro / consistency-check 的边界 → §relations
 
-## 目录结构
+详见 `MANUAL.md`。
 
-```
-.codebuddy/
-├── skills/<name>/
-│   ├── SKILL.md              ← 主文件
-│   └── patches/              ← 该 skill 的 PATCH 累积区
-│       ├── PATCH-001-...md
-│       └── PATCH-002-...md
-├── agents/<name>/
-│   ├── AGENT.md
-│   └── patches/
-└── rules/<name>/
-    ├── RULE.mdc
-    └── patches/
-```
+## 历史
 
-每个 patches 同级建立 `archive/`（旧版本归档）：
-
-```
-.codebuddy/skills/<name>/
-├── SKILL.md                  ← v3.0
-├── patches/                  ← 待合并
-└── archive/
-    ├── SKILL.md.v1
-    └── SKILL.md.v2
-```
-
-## PATCH 文件格式
-
-```yaml
----
-patch_id: PATCH-NNN
-target: skills/dev-story/SKILL.md   # 相对 .codebuddy/ 的路径
-priority: P0|P1|P2|P3
-status: open|merged|rejected|stale
-discovered_in: <项目名> sprint-N
-discovered_at: 2026-05-15
-discovered_by: <agent 名 / 用户>
-merged_at: null
----
-
-# PATCH-NNN: <一句话标题>
-
-## 问题
-
-实战中遇到的具体问题（描述场景 + 触发条件 + 影响）。
-
-## 当前行为
-
-主文件中相关段落是怎么写的（引用原文片段）。
-
-## 建议改动
-
-具体改成什么样（伪 diff 或描述）。
-
-## 验证
-
-如何确认改动后问题解决（测试用例 / 预期效果）。
-```
-
-## P0-P3 分级
-
-| 优先级 | 含义 | 处理时机 |
-|---|---|---|
-| **P0** | 阻塞 / 错误 / 严重不一致 | 立即合并主文件 |
-| **P1** | 影响体验 / 缺关键能力 | 1 个 sprint 内合并 |
-| **P2** | 改进项 / 边界澄清 | 累积 ≥3 个再合并（批量改 diff 更清晰）|
-| **P3** | nice-to-have / 风格偏好 | 累积 ≥5 个或单独评审周期合并 |
-
-## 工作流
-
-### 发现问题（任何 agent 或用户）
-
-```
-触发条件：
-- reviewer / qa-lead / consistency-check 发现 skill 描述有问题
-- 用户实战反馈"这个 skill 不好用"
-- AI 自己执行时发现 verdict 词汇不一致
-```
-
-→ 在对应 `patches/` 目录写 PATCH-NNN 文件（NNN 自增）
-
-### 累积阶段
-
-PATCH 文件存在 `patches/` 中，**不直接改主文件**。
-
-主文件中可加一条小提示：
-
-```markdown
-> ⚠️ 已知改进项：见 [`patches/`](./patches/) 中 N 个待合并 PATCH
-```
-
-### 合并阶段
-
-当某个 skill 满足以下任一条件，触发"合并周期"：
-
-1. P0 PATCH 出现 → 立即合并
-2. P1 PATCH 出现 → 当 sprint 内合并
-3. P2 累积 ≥ 3 → 批量合并
-4. P3 累积 ≥ 5 → 评审后合并
-5. 用户主动要求
-
-合并步骤：
-
-1. 把当前主文件复制到 `archive/<NAME>.<ext>.v<N>`
-2. 按 PATCH 描述修改主文件
-3. PATCH 文件 frontmatter 改 `status: merged` / `merged_at: <date>`
-4. PATCH 文件保留在 `patches/`（不删，作为变更日志）
-5. commit message：`[refactor] <name>: merge N patches (PATCH-001..00N)`
-
-### 拒绝 / 过期
-
-PATCH 评审后认为不该改，标 `status: rejected` + 写理由。
-PATCH 长期未处理且场景已变，标 `status: stale`。
-
-## 与其他机制的关系
-
-| 机制 | 区别 |
-|---|---|
-| ADR | ADR 是**项目内**的架构决策；PATCH 是**工作室能力**的迭代 |
-| Retro action items | retro 关注 sprint 流程；PATCH 关注具体能力文件 |
-| consistency-check | consistency-check 找代码 ↔ 文档不一致；PATCH 是这种不一致的修复入口 |
-
-## 触发 PATCH 写入的常见场景
-
-| 场景 | 谁写 |
-|---|---|
-| reviewer 评审 skill 输出时发现 verdict 词汇不规范 | reviewer 自动写 PATCH |
-| 用户说"这个 skill 描述太模糊" | 用户口述 + AI 写 PATCH |
-| consistency-check 发现 skill 引用的路径不存在 | 主 agent 写 PATCH |
-| 实战中发现 agent 越权 / 边界不清 | reviewer / producer 写 PATCH |
-| 新发现的 CodeBuddy 能力（如本次 hook / Team Mode）颠覆了之前判断 | 主 agent 写 PATCH 修正旧描述 |
-
-## 加载的 skill / agent
-
-- `consistency-check` skill 在发现不一致时建议写 PATCH
-- `reviewer` agent 评审后产出 PATCH 草稿
-- `pm` agent 在 sprint plan 中决定是否合并 P2/P3 PATCH
-
-## Known Limitations
-
-- 当前为初版，未集成自动化（如 PATCH 数量监控、合并提醒）
-- 跨能力的复合 PATCH（同时改 skill + rule）暂不支持，需拆为两个独立 PATCH
+判例与机制演化 → `ARCHIVE.md`

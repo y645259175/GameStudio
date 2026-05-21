@@ -1,115 +1,38 @@
 ---
-description: Project structure rule - four-layer architecture (.codebuddy/ capability / studio/ workspace / engine/ binaries / projects/ projects) with path constraints and engine/ gitignored.
+description: Project structure rule (lite) - four-layer architecture overview with key constraints. For full directory specs see studio/docs/project-structure-full.md.
 alwaysApply: true
 enabled: true
-updatedAt: 2026-05-14T21:08:00.000Z
+updatedAt: 2026-05-19T10:59:00.000Z
 provider:
 ---
 
-# project-structure · 项目结构规范
-
-## 四层架构
+# project-structure · 四层架构（精简版）
 
 ```
 <workspace-root>/
 ├── .codebuddy/       ← 能力层（skill / agent / hook / rule / template）
 ├── studio/           ← 工作室层（docs / reference / config）
-├── engine/           ← 引擎层（引擎二进制，gitignored，不进版本控制）
-│   └── Godot/        ← Godot_v4.6.2-stable_win64.exe
-└── projects/         ← 项目层（<project-name>/ gdd/ stories/ adr/ ...）
+├── engine/           ← 引擎层（Godot 二进制，gitignored）
+└── projects/         ← 项目层（每个项目一个子目录）
 ```
 
-### `.codebuddy/` 能力层
+## 关键约束
 
-| 子目录 | 内容 |
-|---|---|
-| `skills/<name>/SKILL.md` | 技能定义 + 资源 |
-| `agents/<name>/AGENT.md` | Agent 定义 |
-| `hooks/<name>.sh` | Hook 脚本 |
-| `rules/<name>/RULE.mdc` | 规则定义 |
-| `templates/<name>.tpl` | 模板文件 |
-| `plans/` | 迁移规划 + 日志 |
+1. **代码 / 游戏资产只放 `projects/<name>/game/`**（自包含交付目录）
+2. **设计文档放 `projects/<name>/gdd/`**，story 放 `stories/`
+3. **不要在 workspace 根目录创建文件**（除 README.md）
+4. **`engine/` 不进 git**
+5. **路径里不得引用 `analysis-report/` 或 `my-game/`**（历史遗留，已迁走）
 
-### `studio/` 工作室层
+## 强制前置读取
 
-| 子目录 | 内容 |
-|---|---|
-| `docs/` | 工作室级文档（language-policy 等）|
-| `docs/engine-reference/<engine>/` | 引擎参考（Phase 1 占位）|
-| `reference/` | 只读参考区（Phase 1.5 归位 analysis-report/ my-game/）|
+**以下操作执行前，必须先 `read_file studio/docs/project-structure-full.md`，读完再操作，否则禁止执行：**
 
-### `projects/` 项目层
+- 新建项目（`new-project` skill 或手动创建 `projects/<name>/`）
+- 在 `projects/` 下新建任何子目录
+- 创建或移动文件到一个之前不存在的路径
+- 调用 `setup-engine` skill
+- 修改项目骨架结构（增删顶层目录）
+- 编写 backlog 条目（需要知道格式约定）
 
-每个项目 `projects/<name>/` 包含以下标准子目录（由 `new-project` skill 创建）：
-
-| 子目录 | 内容 |
-|---|---|
-| `PROJECT.md` | 项目元数据（引擎/phase/里程碑）|
-| `README.md` | 项目级快速开始 + smoke checklist |
-| `gdd/` | GDD 文档（8 节结构）|
-| `stories/` | User stories（含 `backlog.md` 集中登记 issue / 视觉债 / 绕过项）|
-| `epics/` | Epics |
-| `adr/` | Architecture Decision Records |
-| `sprints/` | Sprint plan / smoke / retro（统一目录）|
-| `data/` | 数值表（JSON，策划主本）|
-| `reports/` | 一致性检查 / daily report |
-| `retros/` | Retro 归档索引 |
-| `releases/` | Release notes / checklist |
-| `qa/` | 测试策略 / 回归矩阵 / run-tests.ps1 |
-| `art/` | 参考图 / style guide / prompt 文件 |
-| `assets/` | 美术资产（art-asset-pipeline 产出）|
-| `docs/` | 项目级文档（README 之外的）|
-| `game/` | **交付物**（复制出来即可独立运行）|
-
-> `game/` 是自包含交付目录，不引用 `game/` 外面的文件。`data/` 是策划主本，`game/data/` 是程序副本（通过 `sync-data.ps1` 同步）。
-
-## 路径约束（Phase 1 期间强制）
-
-### 约束 1：不引用原路径
-
-skill / agent / hook / rule / template 的正文**不得**引用 `analysis-report/` 或 `my-game/` 的原始路径。
-
-### 约束 2：使用未来位置
-
-需要引用上游内容时，使用 Phase 1.5 归位后的路径 `studio/reference/<name>/` 并标注 `[Phase 1.5+ TODO]`。
-
-### 约束 3：占位显式标注
-
-占位内容必须以 `[Phase 1.5+ TODO]` 或 `[Phase 2 TODO]` 显式标注，不得留空无说明。
-
-## backlog 格式约定（新增）
-
-`projects/<name>/stories/backlog.md` 是项目所有"未排期 issue / 视觉债 / 绕过项 / 风险点"的唯一登记处。
-
-格式：
-
-```markdown
-# <project> · Backlog
-
-## 未排期
-
-| ID | 类型 | 标题 | priority | due milestone | 来源 | 状态 |
-|---|---|---|---|---|---|---|
-| BL-001 | bug | 描述 | P0/P1/P2/P3 | M5 | retro 2026-05-15 | open / in-progress / done |
-| BL-002 | VISUAL_DEBT | 描述 | P1 | M6 | dev-story story-XX | open |
-| BL-003 | bypass | 描述 | P2 | M5 | engineer 决定 | open |
-```
-
-类型枚举：
-- `bug` — 已知 bug
-- `VISUAL_DEBT` — 视觉占位债务
-- `bypass` — 绕过决策（dev-story SOP 产生）
-- `risk` — 已识别风险但未触发
-- `improvement` — 流程 / 体验改进点
-
-约束：
-- retro 中的 action items **必须**每条对应一条 backlog 条目（由 postmortem-keeper 把关）
-- 不允许只把 issue 写进 retro 而不进 backlog
-- milestone gate 时检查 backlog 中 due ≤ 当前 milestone 的项是否已 done
-
-## 关联 skill / agent
-
-- `new-project` → 在 `projects/` 下创建项目骨架
-- `setup-engine` → 创建引擎相关目录
-- `consistency-check` → 验证路径约束
-- `architect` agent → 架构决策影响目录结构时参考
+**不需要读取的场景**：在已有目录下编辑/新

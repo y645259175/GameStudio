@@ -1,0 +1,116 @@
+# designer · output-schema.yaml
+# 产出契约：定义 designer agent 所有可能产出的结构规范
+# 用途：self-rubric 交付前自检 + shadow-review 对照标准 + calibration 判定基准
+# 写于：2026-05-18 · combo-B M1
+
+---
+
+outputs:
+  # --- 产出 1: GDD Chapter (Design Document) ---
+  - name: gdd-chapter
+    description: 游戏设计文档章节（8 节硬性结构）
+    file_pattern: "projects/<project>/gdd/gdd-<N>-<topic>.md"
+    required_fields:
+      - name: chapter_number
+        type: integer  # 1-8
+        validation: 对应 GDD 标准 8 章编号
+
+      - name: chapter_title
+        type: string
+        validation: 必须与 design-authoring rule 中定义的标准标题一致
+
+      - name: sections
+        type: object
+        description: 8 节硬性结构（每节必须存在，不允许跳过）
+        fields:
+          - name: chapter_goal
+            type: string
+            description: "§1 章节目标 — 解决什么 design 问题"
+            validation: 不超过 3 句话；必须是问题描述不是解决方案
+          - name: core_loop
+            type: string
+            description: "§2 核心循环/系统逻辑"
+            validation: 必须含玩家视角 loop 描述 + 数据视角 system 描述
+          - name: numeric_spec
+            type: object
+            description: "§3 数值规范"
+            validation: |
+              不允许 [TBD] / "待定" / "后续决定"；
+              每个数值必须给一个起始值（可标注 [calibration needed]）;
+              数值必须可追溯到 data/ 配置文件（data-driven rule）
+          - name: ux_input_feedback
+            type: string
+            description: "§4 UX/输入/反馈"
+            validation: 必须含输入映射表（action name → key）+ 反馈时序
+          - name: boundary_failure
+            type: string
+            description: "§5 边界/失败处理"
+            validation: 不允许 N/A；至少列 3 个边界场景
+          - name: performance_constraints
+            type: string
+            description: "§6 性能/平台约束"
+            validation: 必须含目标帧率 + 内存预算 + 最低硬件
+          - name: system_interfaces
+            type: string
+            description: "§7 与其他系统接口"
+            validation: 必须引用其他 GDD 章节的具体段落（不允许"见§X"不给具体标题）
+          - name: delivery_acceptance
+            type: string
+            description: "§8 交付与验收"
+            validation: 必须有可勾选的 checklist（- [ ] 格式）；至少 3 项
+
+      - name: line_count
+        type: integer
+        validation: 200-400 行为正常范围；<150 说明内容不足；>500 说明应拆分
+
+      - name: numeric_values_count
+        type: integer
+        description: §3 中给出的具体数值个数
+        validation: ≥5 个具体值（不算 [TBD]）
+
+  # --- 产出 2: Quick Design Decision ---
+  - name: quick-design-decision
+    description: 轻量设计决策（不走完整 GDD 8 节）
+    delivery_mode: send_message
+    required_fields:
+      - name: question
+        type: string
+        description: 待决策的设计问题
+      - name: options
+        type: list[object]
+        fields:
+          - name: option
+            type: string
+          - name: pros
+            type: list[string]
+          - name: cons
+            type: list[string]
+      - name: recommendation
+        type: string
+        description: 推荐选项 + 理由
+      - name: numeric_impact
+        type: string
+        description: 对现有数值的影响（如有）
+
+---
+
+# 决议词汇（designer 原缺，combo-B M1 新增）
+verdict_vocabulary:
+  - name: DESIGN-COMPLETE
+    meaning: GDD 章节 8 节齐全，数值具体，无 [TBD]
+  - name: DESIGN-DRAFT
+    meaning: 8 节结构齐全但部分数值标 [calibration needed]，需后续迭代
+  - name: DESIGN-BLOCKED
+    meaning: 缺少前置信息无法完成设计（标注需要什么信息）
+
+---
+
+self_rubric:
+  - "8 节结构是否全部存在？（grep '## §' 应命中 8 个）"
+  - "§3 数值规范是否有 ≥5 个具体数值？是否有 [TBD]？"
+  - "§5 边界处理是否列了 ≥3 个边界场景？"
+  - "§7 系统接口引用是否具体到其他章节的段落标题（而非笼统的'见§X'）？"
+  - "§8 交付验收是否有 ≥3 个可勾选 checklist 项？"
+  - "行数是否在 200-400 范围？过短/过长是否有合理原因？"
+  - "是否从零创作了项目无关内容？（必须基于 PROJECT.md pillars）"
+  - "[防截断] 落盘后 read_file 验证文件行数 ≥ 200？如 <200 且内容明显不完整则需分段补写"

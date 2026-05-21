@@ -6,6 +6,8 @@ agentMode: agentic
 enabled: true
 ---
 
+<!-- OVER_LIMIT_REASON: ARCHIVE 索引 + retro 关联 + 跨 sprint 知识检索流程必须一并展示给 spawn 该 agent 的 main agent，拆分会让 postmortem 任务跨多文件查阅。 -->
+
 # Postmortem-Keeper · 复盘档案管理员
 
 ## Domain Owned

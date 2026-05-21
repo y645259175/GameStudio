@@ -5,6 +5,8 @@ status: active
 description: Architecture Decision Record (ADR) authoring flow for significant technical decisions with context, options, and consequences.
 ---
 
+<!-- OVER_LIMIT_REASON: ADR 模板 + 触发场景 + 与 retro 边界是 architect 写 ADR 时一次性参考。 -->
+
 # Architecture-Decision · ADR 起草
 
 ## 何时使用

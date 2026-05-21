@@ -5,6 +5,8 @@ status: active
 description: Sprint planning facilitator that selects stories from backlog into the upcoming sprint based on velocity and priority.
 ---
 
+<!-- OVER_LIMIT_REASON: 选 story 入 sprint 的 5 项判断 + 与 story-readiness/scope-check 边界，PM 一次性需要参考。 -->
+
 # Sprint-Plan · Sprint 规划
 
 ## 何时使用

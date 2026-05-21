@@ -5,6 +5,8 @@ status: active
 description: Entry point skill that identifies user intent and routes to the appropriate workshop or project-level skill.
 ---
 
+<!-- OVER_LIMIT_REASON: 意图识别路由表 + 14 个常见 trigger phrase，作为入口必须一次性可见。 -->
+
 # Start · 工作室入口 skill
 
 ## 何时使用

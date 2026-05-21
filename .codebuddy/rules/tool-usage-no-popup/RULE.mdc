@@ -1,0 +1,44 @@
+---
+description: agent 执行文件操作 / shell 命令时的工具选择速查。详细 SOP（long session 卫生 / 流程逃逸禁令 / 数值一致性回路 / shadow team mode）见 MANUAL.md。
+alwaysApply: true
+enabled: true
+updatedAt: 2026-05-20T15:35:00.000Z
+---
+
+# tool-usage-no-popup · CORE
+
+**文件操作必须用 IDE 工具，不要用 shell 命令。**
+
+## 强制自检（每次 execute_command 前必跑）
+
+写 execute_command 参数前，检查命令字符串是否含：
+`Remove-Item` / `rm` / `del` / `Set-Content` / `Out-File` / `Get-Content`
+
+含有 → **停下，换成对应 IDE 工具**。无例外（包括 temp 目录）。
+
+## 速查表
+
+| 想做 | 用这个 | 不要用 |
+|---|---|---|
+| 删文件 | `delete_file` 工具 / `cmd /c "del /f path"` | `Remove-Item` |
+| 读文件 | `read_file` | `Get-Content` / `cat` / `type` |
+| 写/覆盖 | `write_to_file` | `Set-Content` / `Out-File` / `echo >` |
+| 局部编辑 | `replace_in_file` | `sed` |
+| 撤销 git | `git restore <file>` | `git reset --hard` |
+| 推送 | `git push` | `git push --force` |
+
+**可以直接用 execute_command**：`python` / `node` / `npm` / `git commit/add/push/status/diff` / `godot --headless` / `New-Item` / `Move-Item` / `Copy-Item` / `Test-Path`
+
+## 何时升级到 MANUAL
+
+- long session 卫生（`replace_in_file` 频繁失败时）→ §long-session
+- 流程逃逸禁令（sub-agent 跨 story 改已交付代码）→ §flow-discipline
+- 数值一致性回路（GDD/story/code 数值不一致时）→ §value-consistency
+- shadow review 必须 team mode → §shadow-team-mode
+- Godot headless 测试限制 → §godot-headless
+
+## 历史教训
+
+具体判例（platformer-2 实战）→ 见 `ARCHIVE.md`
+
+> 弹窗/报错无法解决、需了解原理和绕过 → `read_file .codebuddy/PERMISSIONS.md`

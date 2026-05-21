@@ -2,9 +2,11 @@
 description: Data-driven design rule - game values must live in external data files (JSON/TOML/CSV/DataTable/SO), never hardcoded. Covers numeric tables, balance formulas, configuration, and the separation of data from behavior.
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-14T16:38:00.000Z
+updatedAt: 2026-05-20T15:43:00.000Z
 provider:
 ---
+
+<!-- OVER_LIMIT_REASON: 数据驱动原则 + 命名规范 + 引擎特定实现（Godot @export / Unity SO / Unreal DataTable）一并出现，engineer 实现时按引擎只看一段，但全文集中阅读成本低于多文件查找。 -->
 
 # data-driven · 数据驱动原则
 

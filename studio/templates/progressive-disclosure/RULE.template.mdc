@@ -1,0 +1,30 @@
+---
+description: <一句话说明此 rule 解决什么问题、何时触发>
+alwaysApply: false  # 只有最核心的红线才设 true（如 project-structure / tool-usage）
+enabled: true
+updatedAt: 2026-XX-XXTXX:XX:XX.000Z
+---
+
+# <rule-name> · <一句话目的>
+
+## 红线（必须遵守）
+
+- **[1]** <第一条强制约束，一行说清>
+- **[2]** <第二条强制约束>
+- **[3]** <第三条强制约束>
+
+## 何时升级到 MANUAL
+
+遇到以下场景时 read_file `MANUAL.md` 查详细 SOP：
+- <场景 A>：见 §<锚点>
+- <场景 B>：见 §<锚点>
+
+## 历史教训溯源
+
+详细判例见 `ARCHIVE.md`（仅 RCA / debug 时查）
+
+<!-- 写作要点：
+- CORE 只放红线 + 触发指引，不放具体步骤
+- 每条红线 1 行，不展开理由（理由放 MANUAL）
+- 避免重复定义其他 rule 已有的概念
+-->

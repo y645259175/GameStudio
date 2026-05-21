@@ -1,0 +1,105 @@
+# qa-lead · output-schema.yaml
+# 产出契约：定义 qa-lead agent 所有可能产出的结构规范
+# 用途：self-rubric 交付前自检 + shadow-review 对照标准 + calibration 判定基准
+# 写于：2026-05-18 · combo-B M1
+
+---
+
+# qa-lead 有 2 类核心产出
+
+outputs:
+  # --- 产出 1: QA Gate Verdict Report ---
+  - name: qa-gate-verdict-report
+    description: 发版 / milestone gate 质量评估报告
+    file_pattern: "projects/<project>/reports/qa-gate-*.md"
+    required_fields:
+      - name: scope
+        type: string
+        description: 评估范围（sprint / milestone / release）
+        example: "milestone M6 production→polish"
+        validation: 不能为空；必须标明 from→to 阶段
+
+      - name: metrics
+        type: object
+        description: 7 项指标采集结果（与 qa-gate/run.py 对齐）
+        fields:
+          - name: test_pass_rate
+            type: string  # PASS / FAIL / N/A
+            validation: 有 run-tests.ps1 时必须跑出真实 %; 无测试入口时标 N/A + 原因
+          - name: engine_check
+            type: string  # PASS(EXIT 0) / FAIL(EXIT N + stderr) / N/A
+            validation: godot --headless --check-only 真实执行结果，不允许假设
+          - name: real_playtest
+            type: string  # PASS / FAIL / N/A
+            validation: 必须有 action_press/action_release 的测试存在才能 PASS
+          - name: consistency_check
+            type: string  # CLEAN / MINOR / MAJOR / N/A
+            validation: 引用 consistency-*.md 最近一份
+          - name: p0_bug_count
+            type: integer
+            validation: 必须为 0 才能 GATE_PASSED；>0 必须列出每个 bug ID
+          - name: visual_debt_count
+            type: integer
+            validation: ≤2 为 PASS 阈值；>2 时必须列出每个 VISUAL_DEBT story ID
+          - name: gdd_acceptance
+            type: string  # PASS / PARTIAL / N/A
+            validation: GDD §8 交付与验收的复选框 checked 比例
+
+      - name: verdict
+        type: enum
+        values: [QA-PASS, QA-CONDITIONAL, QA-BLOCK]
+        validation: |
+          QA-PASS: 7 项全 PASS 或 N/A（无 FAIL）
+          QA-CONDITIONAL: 0 项 FAIL 但有 ≥1 N/A 或 MINOR
+          QA-BLOCK: ≥1 项 FAIL 或 p0_bug_count > 0
+
+      - name: evidence
+        type: list[string]
+        description: 每项 verdict 必须有 ≥2 条具体证据（行号/文件/命令输出）
+        validation: 不允许 "看起来没问题" / "应该是通过的"
+
+      - name: blockers
+        type: list[object]
+        description: verdict=QA-BLOCK 时必填；每项含 id/title/severity/fix_suggestion
+        validation: QA-BLOCK 时 len(blockers) ≥ 1；QA-PASS 时必须为空列表
+
+      - name: recommendations
+        type: list[string]
+        description: 建议项（不阻塞但建议修）
+        validation: 可为空；每条必须可执行（不允许 "加强测试覆盖" 这种空话）
+
+  # --- 产出 2: Test Strategy Document ---
+  - name: test-strategy
+    description: 测试策略文档（sprint/项目级）
+    file_pattern: "projects/<project>/qa/test-strategy.md"
+    required_fields:
+      - name: scope
+        type: string
+        description: 覆盖范围
+      - name: test_pyramid
+        type: object
+        fields:
+          - name: unit_ratio
+            type: string  # e.g. "80%"
+          - name: integration_ratio
+            type: string  # e.g. "15%"
+          - name: smoke_ratio
+            type: string  # e.g. "5%"
+      - name: regression_matrix_ref
+        type: string
+        description: 引用 regression-matrix.md 路径
+      - name: risk_areas
+        type: list[string]
+        description: 高风险区域列表
+
+---
+
+# self-rubric 自检清单（交付前 agent 必须自查）
+self_rubric:
+  - "verdict 是否在 [QA-PASS, QA-CONDITIONAL, QA-BLOCK] 三选一？"
+  - "evidence 列表是否 ≥ 2 条？每条是否有具体文件/行号/命令输出？"
+  - "verdict=QA-BLOCK 时 blockers 是否非空？每个 blocker 是否有 fix_suggestion？"
+  - "7 项 metrics 是否全部填写？N/A 是否注明原因？"
+  - "是否引用了最新的 run-tests / consistency-check 结果（而非历史数据）？"
+  - "recommendations 每条是否可执行（有主语+动词+对象）？"
+  - "[防截断] 评估对象文件是否完整？如发现代码文件行数异常少（如 <20 行但 engineer 声称 >100 行）→ 标注 FAIL + blocker"

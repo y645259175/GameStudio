@@ -1,116 +1,28 @@
 ---
-description: Agent spawn contract - mandatory pre-spawn briefing, explicit task mode (DRAFT/REFINE/PATCH), delivery-before-shutdown protocol. Prevents parallel agents from producing conflicting drafts due to missing context.
+description: 任何 agent spawn sub-agent 时必须遵守的契约。包含 5 条硬性契约 + spawn 模板入口。详细见 MANUAL.md。
 alwaysApply: false
 enabled: true
-updatedAt: 2026-05-15T17:50:00.000Z
-provider:
+updatedAt: 2026-05-20T15:30:00.000Z
 ---
 
-# agent-spawn-contract · Agent 派发契约
+# Agent Spawn Contract · CORE
 
-## 为什么要这条 rule
+## 5 条硬性契约（spawn 前必检）
 
-历史教训（项目 A 的 GDD detail 阶段，2026-05-15）：
+1. **现状注入**：spawn prompt 必须含 read_file 指令读 PROJECT.md + 当前 backlog + 自身 AGENT.md
+2. **任务模式声明**：DRAFT / REFINE / PATCH / REVIEW 四选一，明确写在 prompt 头
+3. **交付-关闭顺序**：sub-agent 必须先 send_message 交付内容，再 shutdown_response
+4. **落盘强制**：产出 ≥ 50 行的内容必须落盘到指定路径，不能只 inline 返回
+5. **文件操作必须用 IDE 工具**：禁止 Remove-Item / rm / del 命令行
 
-- 现状：项目 GDD 已存在 999 行 reviewed 版本
-- 错误：main agent spawn `designer-1` 时只说"填 §1/§2/§4/§6/§8"，**没注入现有内容**，也没声明任务模式
-- 后果：designer-1 从零起草了一份独立版本，与现状结构不同（6 beat → 5 beat、5 状态 → 3 状态），形成"两份互有详略的设计"
-- 同时 `art-director-1` 也独立写了 `section-3-visual.md`，与已有 §3 内容冲突
-- 同时 `ux-designer-1` 在 shutdown_response 的 reason 里声称"提交 §3.6 + §7"，但 shutdown_response 没有 content 通道，实际产出从未送达
+## 何时升级到 MANUAL
 
-## 三条硬性契约
+需详细 SOP / 模板 / 自检清单时 read_file `MANUAL.md`：
+- spawn 9 个 TPL 模板（实现 / milestone gate / GDD 起草 / bug 排查 / 资产评审 / 一致性审 / 测试编写 / commit review / vertical slice 5 项清单）→ §TPL-XX
+- 知识注入协议（产出契约 + self_rubric）→ §知识注入
+- 并行模式选择（task batch vs team mode）→ §并行模式
+- 防截断协议 / shadow spawn 参数 / 项目上下文自动注入 → §专项协议
 
-### 契约 1 · 现状注入（Pre-spawn Briefing）
+## 历史溯源
 
-spawn agent 前，main agent **必须**：
-
-1. **read 相关现状文档**（GDD / story / ADR / 数值表）
-2. **在 prompt 中显式 inject**：
-   - 现有内容路径 + 完整内容 或者 章节摘要
-   - 标注哪些是 reviewed，哪些是 draft，哪些是空白
-
-不允许的反例：
-> ❌ "请填 §1/§2/§4 章节内容"
-
-正确写法：
-> ✅ "现有 GDD 完整内容如下（已 reviewed v1.0）：[嵌入 999 行]。任务：在此基础上做 X。请勿从零重写。"
-
-如果现状文档过大无法全 inject：
-- 至少要 inject "章节标题 + 关键决策摘要"
-- 让 agent 自己 read_file 时给出准确路径
-- 在 prompt 里明确："你必须先 read_file 该路径，然后再产出"
-
-### 契约 2 · 任务模式声明（Task Mode）
-
-每次 spawn 必须在 prompt 第一段声明 mode：
-
-| Mode | 含义 | 输出形式 |
-|---|---|---|
-| `DRAFT` | 从零起草（现状为空或废弃） | 完整新文档 |
-| `REFINE` | 精修现有内容 | 替换段落清单（before / after） |
-| `PATCH` | 小范围补丁 | diff 或具体行号 + 替换文本 |
-| `REVIEW` | 只读评审，不改文档 | findings 清单 + verdict |
-
-**禁止**：含糊的"完善 / 优化 / 补全"。必须落到上述 4 种之一。
-
-### 契约 3 · 交付-关闭顺序（Delivery Before Shutdown）
-
-shutdown 协议存在已知陷阱：
-
-- `send_message(type="shutdown_response")` 只能携带 `approve` + `reason`
-- **`reason` 字段 ≠ 交付通道**
-
-正确顺序：
-
-```
-agent 完成工作 →
-  step 1: send_message(type="message", content=<完整产出>)  ← 必须独立一条
-  step 2: 等待 main agent 确认接收（或 main agent 验证落盘）
-  step 3: send_message(type="shutdown_response", approve=true, reason="交付完成")
-```
-
-**Main agent spawn 时必须在 prompt 里明确这条要求**：
-
-> "完成工作后：第一步发 type='message' 携带完整产出；第二步等我确认；第三步才 shutdown_response。不允许把产出写在 shutdown reason 里。"
-
-### 契约 4 · 落盘强制（Persistence Required）
-
-agent 完成时必须**自己落盘**到指定路径，不能只发消息。
-
-main agent 在 spawn prompt 里必须指定：
-- `output_path`：明确文件路径
-- `output_mode`：`overwrite` / `append` / `new_file`
-
-verify 步骤：main agent 在收到"交付完成 message"后，**read_file 验证文件存在 + 内容非空**，再发 shutdown_request。
-
-## 反模式速查
-
-| 反模式 | 后果 | 修正 |
-|---|---|---|
-| spawn 时不 inject 现状 | 多个 agent 产出互冲版本 | 契约 1 |
-| 任务定义说"完善 / 优化 / 补全" | agent 选择从零重写 | 契约 2 |
-| spawn 后立即 shutdown_request | 来不及交付 | 契约 3 |
-| agent 把产出写在 shutdown reason | 内容丢失 | 契约 3 |
-| agent 只发 message 不落盘 | team 清理后内容消失 | 契约 4 |
-
-## 适用范围
-
-- 所有 main agent spawn subagent / team 成员的场景
-- 调用方包括但不限于：`design-review` / `dev-story` / `art-asset-pipeline` / `consistency-check` / `architecture-decision`
-
-## 与其他 rule 关系
-
-- 不替代 `design-authoring`（GDD 内容精度规范）
-- 与 `commit-discipline` 互补（前者管"产出 → 文件"，后者管"文件 → 提交"）
-- 与 `ai-effort-estimation` 互补：spawn 出来的 agent 若需给"多步计划 + 时间估计"，主 agent 在 prompt 中显式引用 `ai-effort-estimation` rule，避免 sub-agent 用人类工时表述
-
-## 验证清单（spawn 前自检）
-
-- [ ] 已 read 现状文档？
-- [ ] 已在 prompt 注入现状（路径 + 关键内容）？
-- [ ] 已声明 mode（DRAFT / REFINE / PATCH / REVIEW）？
-- [ ] 已指定 output_path + output_mode？
-- [ ] 已说明"先发 message 交付，再 shutdown"协议？
-- [ ] 已说明"落盘到指定路径"要求？
-
-6 项全过才能 spawn。
+详细判例 / combo-A/B 演化过程 → 见 `ARCHIVE.md`

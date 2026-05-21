@@ -6,6 +6,8 @@ agentMode: agentic
 enabled: true
 ---
 
+<!-- OVER_LIMIT_REASON: 版本号策略 + 发布节奏 + rollout / rollback 协议是发布场景一次性需要的契约，分散到 HANDBOOK 反而增加发布前查阅成本。 -->
+
 # Release-Manager · 发版负责人
 
 ## Domain Owned

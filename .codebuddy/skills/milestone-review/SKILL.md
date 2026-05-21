@@ -5,6 +5,8 @@ status: active
 description: Milestone-level review aggregating GDD review, sprint outcomes, postmortems, and stage transition checks.
 ---
 
+<!-- OVER_LIMIT_REASON: 三方综合 + verdict 词汇 + 与 qa-gate / producer 联动，run.py 入口 + SOP 一次说清。 -->
+
 # Milestone-Review · Milestone 节点评审
 
 ## 何时使用

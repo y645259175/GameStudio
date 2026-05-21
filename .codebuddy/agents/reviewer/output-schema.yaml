@@ -1,0 +1,155 @@
+# reviewer · output-schema.yaml
+# 产出契约：定义 reviewer agent 所有可能产出的结构规范
+# 用途：self-rubric 交付前自检 + shadow-review 对照标准 + calibration 判定基准
+# 写于：2026-05-18 · combo-B M1
+
+---
+
+outputs:
+  # --- 产出 1: Code Review Report ---
+  - name: code-review-report
+    description: Commit 前代码审查报告
+    delivery_mode: send_message（不落盘文件，inline 交付）
+    required_fields:
+      - name: scope
+        type: string
+        description: 审查范围描述（story-id / commit-hash / 文件清单）
+        validation: 不能为空
+
+      - name: dimensions
+        type: object
+        description: 4 维评审（每维 PASS/FAIL + 一句话理由 + 具体证据）
+        fields:
+          - name: correctness
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, FAIL]
+              - name: reason
+                type: string
+              - name: evidence_lines
+                type: list[string]  # "file:line - 具体问题"
+          - name: risk
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, FAIL]
+              - name: reason
+                type: string
+              - name: evidence_lines
+                type: list[string]
+          - name: style
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, FAIL]
+              - name: reason
+                type: string
+              - name: evidence_lines
+                type: list[string]
+          - name: commit_discipline
+            type: object
+            fields:
+              - name: score
+                type: enum[PASS, FAIL]
+              - name: reason
+                type: string
+              - name: suggested_message
+                type: string
+        validation: 4 维全部必填；每维 evidence_lines ≥ 1 条
+
+      - name: critical_issues
+        type: list[object]
+        description: 必须修的问题（阻塞 commit）
+        fields:
+          - name: file
+            type: string
+          - name: line
+            type: integer
+          - name: description
+            type: string
+          - name: fix_suggestion
+            type: string
+        validation: verdict=REQUEST_CHANGES 时 len(critical_issues) ≥ 1
+
+      - name: suggestions
+        type: list[object]
+        description: 建议改进（不阻塞 commit）
+        fields:
+          - name: file
+            type: string
+          - name: line
+            type: integer
+          - name: description
+            type: string
+        validation: 可为空
+
+      - name: verdict
+        type: enum
+        values: [APPROVE, APPROVE_WITH_NITS, REQUEST_CHANGES]
+        validation: |
+          APPROVE: 4 维全 PASS + critical_issues 为空
+          APPROVE_WITH_NITS: 4 维全 PASS 但 suggestions 非空
+          REQUEST_CHANGES: ≥1 维 FAIL 或 critical_issues 非空
+
+  # --- 产出 2: Milestone Gate Review Report ---
+  - name: milestone-gate-review
+    description: Milestone gate 代码质量维度评审
+    file_pattern: "projects/<project>/reports/milestone-*-reviewer-*.md"
+    required_fields:
+      - name: scope
+        type: string
+        description: "from_stage → to_stage"
+      - name: commit_discipline_compliance
+        type: object
+        fields:
+          - name: total_commits
+            type: integer
+          - name: compliant_commits
+            type: integer
+          - name: non_compliant_examples
+            type: list[string]
+      - name: unreviewed_large_changes
+        type: list[string]
+        description: ≥100 行改动但未经 reviewer 的 commit
+      - name: code_quality_verdict
+        type: enum
+        values: [CLEAN, MINOR_ISSUES, MAJOR_ISSUES]
+      - name: milestone_verdict
+        type: enum
+        values: [MILESTONE-PASS, MILESTONE-CONDITIONAL, MILESTONE-BLOCKED]
+        validation: |
+          MILESTONE-BLOCKED: 存在 unreviewed_large_changes 或 code_quality=MAJOR_ISSUES
+          MILESTONE-CONDITIONAL: code_quality=MINOR_ISSUES
+          MILESTONE-PASS: code_quality=CLEAN + 0 unreviewed
+
+  # --- 产出 3: GDD Review ---
+  - name: gdd-review
+    description: GDD 章节的代码可实现性审查（用于 shadow-review）
+    delivery_mode: send_message
+    required_fields:
+      - name: chapter
+        type: string
+      - name: implementability_issues
+        type: list[object]
+        fields:
+          - name: section
+            type: string
+          - name: issue
+            type: string
+          - name: severity
+            type: enum[blocking, concern, minor]
+      - name: verdict
+        type: enum
+        values: [GDD-PASS, GDD-CHANGES, GDD-BLOCKED]
+
+---
+
+self_rubric:
+  - "4 维评审是否全部填写？每维 evidence_lines 是否 ≥ 1 条？"
+  - "evidence 是否具体到 file:line？（不允许'看起来没问题'）"
+  - "verdict=REQUEST_CHANGES 时 critical_issues 是否非空？"
+  - "verdict=APPROVE 时是否真的 4 维全 PASS + 0 critical？"
+  - "是否检查了 commit-discipline tag？suggested_message 是否规范？"
+  - "milestone gate 时是否检查了 cheat-only 测试问题？（AP-04 检查）"
+  - "[防截断] review 对象文件是否完整？read_file 后检查是否有明显截断迹象（文件末尾在函数中间 / 缺闭合括号）"

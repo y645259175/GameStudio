@@ -5,6 +5,8 @@ status: active
 description: GDD authoring and review facilitator that ensures the 8-section structure is complete and internally consistent.
 ---
 
+<!-- OVER_LIMIT_REASON: GDD 8 节结构 + 三轮循环 + 决议词汇是设计评审的内核，分层会破坏 reviewer 的连贯性。 -->
+
 # Design-Review · GDD 评审 / 修订
 
 ## 何时使用

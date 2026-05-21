@@ -1,0 +1,126 @@
+# engineer · output-schema.yaml
+# 产出契约：定义 engineer agent 所有可能产出的结构规范
+# 用途：self-rubric 交付前自检 + shadow-review 对照标准 + calibration 判定基准
+# 写于：2026-05-18 · combo-B M1
+
+---
+
+outputs:
+  # --- 产出 1: Implementation Delivery (story 实现交付) ---
+  - name: implementation-delivery
+    description: 完成一个 user story 的代码实现交付
+    delivery_mode: send_message to main agent
+    required_fields:
+      - name: files_changed
+        type: list[object]
+        description: 所有新增/修改的文件清单
+        fields:
+          - name: path
+            type: string
+          - name: action
+            type: enum[created, modified, deleted]
+          - name: line_count
+            type: integer
+        validation: 不能为空；每个文件必须真实存在（read_file 可验证）
+
+      - name: acceptance_criteria_coverage
+        type: list[object]
+        description: story 中每条 acceptance criteria 对应的实现位置
+        fields:
+          - name: criteria_id
+            type: string  # e.g. "AC-1"
+          - name: criteria_text
+            type: string
+          - name: implementation_location
+            type: string  # file:line 或 "scene node path"
+          - name: covered
+            type: boolean
+        validation: story 中所有 AC 必须列出；covered=false 必须给原因
+
+      - name: engine_check_result
+        type: object
+        description: godot --headless --check-only 执行结果
+        fields:
+          - name: exit_code
+            type: integer
+          - name: stderr_summary
+            type: string  # 空 = 无错误
+        validation: exit_code 必须 = 0 才能交付；非 0 必须先修再交付
+
+      - name: red_lines_checked
+        type: list[object]
+        description: 视觉资产红线 + 其他硬约束检查
+        fields:
+          - name: rule_name
+            type: string  # e.g. "visual-asset-red-line" / "data-driven"
+          - name: status
+            type: enum[PASS, VIOLATION, N/A]
+          - name: detail
+            type: string
+        validation: |
+          涉及视觉的 story 必须含 visual-asset-red-line 检查；
+          VIOLATION 必须有对应的 VISUAL_DEBT backlog ID
+
+      - name: debt_logged
+        type: list[object]
+        description: 本次实现中产生的技术债/视觉债/绕过决策
+        fields:
+          - name: backlog_id
+            type: string  # e.g. "BL-P2-xxx"
+          - name: type
+            type: enum[VISUAL_DEBT, BUG_DEBT, bypass]
+          - name: reason
+            type: string
+        validation: 可为空（无债）；有债必须有 backlog_id（不允许只记 retro 不进 backlog）
+
+      - name: needs_review
+        type: boolean
+        description: 改动 ≥100 行 或 ≥5 文件 或涉及核心系统 → true
+        validation: true 时 main agent 必须后续 spawn reviewer
+
+      - name: tests_added
+        type: boolean
+        description: 本 story 是否由 engineer 自己写了测试（dev-story SOP 中测试由 tester 写，此字段通常 false）
+        validation: 如果 true 需注明为什么不走 tester
+
+  # --- 产出 2: Quick-fix Delivery (bug 修复交付) ---
+  - name: quickfix-delivery
+    description: 轻通道 bug 修复交付
+    delivery_mode: send_message to main agent
+    required_fields:
+      - name: files_changed
+        type: list[object]
+        description: 同上
+      - name: root_cause
+        type: string
+        description: 一句话根因（不允许 "不清楚但这样改能修"）
+        validation: 必须可验证（给行号/调用栈/状态）
+      - name: regression_risk
+        type: enum[low, medium, high]
+        description: 修改是否可能引入回归
+        validation: medium/high 必须注明影响范围 + 建议加回归测试
+      - name: engine_check_result
+        type: object
+        description: 同上
+
+---
+
+# 决议词汇（engineer 原缺，combo-B M1 新增）
+verdict_vocabulary:
+  - name: IMPL-COMPLETE
+    meaning: 实现完成，所有 AC covered + engine check EXIT 0 + 红线全 PASS
+  - name: IMPL-PARTIAL
+    meaning: 部分 AC covered（给原因）；或有 VISUAL_DEBT 占位
+  - name: IMPL-BLOCKED
+    meaning: 实现被阻塞（缺依赖/缺资产/缺设计决策），需升级
+
+---
+
+self_rubric:
+  - "files_changed 每个文件是否真实存在（read_file 不报错）？"
+  - "所有 acceptance criteria 是否列全（对比 story md）？covered=false 是否有原因？"
+  - "engine_check exit_code 是否 = 0？（必须真实执行，不允许假设）"
+  - "涉及视觉的 story 是否检查了 visual-asset-red-line？"
+  - "有债时是否开了 backlog ID？（不允许只记 retro）"
+  - "needs_review 判定是否正确？（≥100 行或 ≥5 文件 → true）"
+  - "[防截断] 每个新建文件 read_file 后行数是否 ≥ 预期行数的 80%？如文件被截断必须用 replace_in_file 追加补全后再交付"

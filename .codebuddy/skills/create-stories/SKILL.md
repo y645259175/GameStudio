@@ -5,6 +5,8 @@ status: active
 description: Breaks an epic into actionable user stories with acceptance criteria, tagged to GDD sections.
 ---
 
+<!-- OVER_LIMIT_REASON: story 拆分粒度 + AC 模板 + 与 epic / story-readiness 边界是 PM 一次性需要的清单。 -->
+
 # Create-Stories · 拆分 user stories
 
 ## 何时使用

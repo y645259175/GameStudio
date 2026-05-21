@@ -5,6 +5,8 @@ status: active
 description: Lightweight design facilitator for small decisions outside the formal 8-section GDD process.
 ---
 
+<!-- OVER_LIMIT_REASON: 轻量设计决策与 GDD 8 节正式流程的边界，决定何时升级。 -->
+
 # Quick-Design · 轻量级设计
 
 ## 何时使用

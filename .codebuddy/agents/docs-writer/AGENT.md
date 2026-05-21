@@ -6,6 +6,8 @@ agentMode: agentic
 enabled: true
 ---
 
+<!-- OVER_LIMIT_REASON: README / 入门 / FAQ / 术语表四个产出维度的边界 + 跨文档术语一致性是该 agent 的核心价值，CORE 必须一并交代。 -->
+
 # Docs-Writer · 文档作者
 
 ## Domain Owned

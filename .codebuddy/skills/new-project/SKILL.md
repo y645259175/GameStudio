@@ -5,6 +5,8 @@ status: active
 description: New project initialization wizard that scaffolds a project directory under projects/ with PROJECT.md, gdd/, and stories/.
 ---
 
+<!-- OVER_LIMIT_REASON: 项目脚手架的目录约定 + PROJECT.md 必填字段 + setup-engine 路由必须一次性展示给 main agent，避免新项目创建跨多文件。 -->
+
 # New-Project · 新项目初始化向导
 
 ## 何时使用

@@ -5,6 +5,8 @@ status: active
 description: End-of-day acceptance flow that runs consistency-check, summarizes progress, and produces a daily report.
 ---
 
+<!-- OVER_LIMIT_REASON: EOD 触发条件 + 自检清单 + 与 retrospective 区别，长 session 中段触发时必须一次说清。 -->
+
 # Daily-Check · 日终验收
 
 ## 何时使用
