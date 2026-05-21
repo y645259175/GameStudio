@@ -8,15 +8,22 @@
 
 ## hook 总览
 
-| # | 文件 | 类型 | 触发 | 启用时机 | Phase 1 状态 |
-|---|---|---|---|---|---|
-| 1 | `validate-commit.sh` | git pre-commit | 每次 commit 前 | Phase 2+ 启用 | 完整实现 |
-| 2 | `pre-commit-lite.sh` | git pre-commit（替代）| 每次 commit 前 | Phase 2+ 启用 | 完整实现 |
-| 3 | `log-agent.sh` | AI 框架钩子 | skill / agent 事件 | Phase 1.5+ 启用 | 骨架 |
-| 4 | `session-start.sh` | AI 框架钩子 | 新会话启动 | Phase 1.5+ 启用 | 骨架 |
-| 5 | `detect-gaps.sh` | cli 工具 | 手动 / 定时 | Phase 2+ 启用 | 骨架（指向 skill）|
+| # | 文件 | 类型 | 触发 | 启用状态 |
+|---|---|---|---|---|
+| 1 | `validate-commit.sh` | git pre-commit | 每次 commit 前 | Phase 2+ 启用，待挂载 |
+| 2 | `pre-commit-lite.sh` | git pre-commit（替代）| 每次 commit 前 | Phase 2+ 启用，待挂载 |
+| 3 | `log-agent.sh` | AI 框架钩子 | skill / agent 事件 | 骨架（待集成 IDE 事件链）|
+| 4 | `session-start.py` | **SessionStart** | 新会话启动 | **✅ 已启用** · 精简引导（~1KB）|
+| 5 | `user-prompt-route.py` | **UserPromptSubmit** | 用户每次发送 prompt | **✅ 已启用** · 按关键词精准注入 |
+| 6 | `pre-tool-bash.py` | **PreToolUse** | 任何工具调用前 | **✅ 已启用** · image_gen/删除拦截 + 自动 allow |
+| 7 | `detect-gaps.sh` | cli 工具 | 手动 / 定时 | 骨架（指向 skill）|
 
-> 1 / 2 二选一：`validate-commit.sh` 强校验阻塞 / `pre-commit-lite.sh` 轻量警告不阻塞。建议项目早期用 lite，进入 production stage 后切换强校验。
+> 3 层 hook 设计（2026-05-19 升级）：
+> - Layer 1（SessionStart）：极简引导，告诉 main agent **有什么资源、什么场景查哪里**
+> - Layer 2（UserPromptSubmit）：识别 prompt 关键词，**按场景精准注入**相关 AP / SOP / 命令
+> - Layer 3（PreToolUse）：在 image_gen / Remove-Item 等高风险工具调用前**强提示**
+>
+> 设计理由：避免 SessionStart 全量注入（占上下文 + 容易被遗忘），改为事件驱动的精准提醒。
 
 ---
 

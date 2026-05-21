@@ -1,0 +1,188 @@
+[gd_scene load_steps=20 format=3 uid="uid://blevel01story004"]
+
+[ext_resource type="Script" path="res://scripts/level/level_manager.gd" id="1_lvlmgr"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/puzzle/signal_network.gd" id="3_signet"]
+[ext_resource type="Script" path="res://scripts/puzzle/pipe_node.gd" id="4_pipe"]
+[ext_resource type="Script" path="res://scripts/puzzle/puzzle_door.gd" id="5_door"]
+[ext_resource type="Texture2D" path="res://assets/ground_tile.png" id="6_ground"]
+[ext_resource type="Texture2D" path="res://assets/pipe_straight.png" id="7_pipe"]
+[ext_resource type="Texture2D" path="res://assets/puzzle_door.png" id="8_door"]
+[ext_resource type="Texture2D" path="res://assets/goal_flag.png" id="9_goal"]
+[ext_resource type="Script" path="res://scripts/level/kill_zone.gd" id="10_killzone"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
+size = Vector2(1280, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plat1"]
+size = Vector2(192, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plat2"]
+size = Vector2(160, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plat3"]
+size = Vector2(128, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pipe_col"]
+size = Vector2(48, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(32, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
+size = Vector2(64, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(16, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_killzone"]
+size = Vector2(1280, 32)
+
+[node name="Level01" type="Node2D"]
+
+[node name="LevelManager" type="Node" parent="."]
+script = ExtResource("1_lvlmgr")
+goal_area = NodePath("../GoalArea")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(64, 400)
+groups = ["player"]
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(640, 560)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectangleShape2D_ground")
+
+[node name="Sprite2D" type="Sprite2D" parent="Ground"]
+texture = ExtResource("6_ground")
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 32)
+texture_repeat = 2
+
+[node name="Platform1" type="StaticBody2D" parent="."]
+position = Vector2(200, 460)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform1"]
+shape = SubResource("RectangleShape2D_plat1")
+
+[node name="Sprite2D" type="Sprite2D" parent="Platform1"]
+texture = ExtResource("6_ground")
+region_enabled = true
+region_rect = Rect2(0, 0, 192, 16)
+texture_repeat = 2
+
+[node name="Platform2" type="StaticBody2D" parent="."]
+position = Vector2(480, 400)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform2"]
+shape = SubResource("RectangleShape2D_plat2")
+
+[node name="Sprite2D" type="Sprite2D" parent="Platform2"]
+texture = ExtResource("6_ground")
+region_enabled = true
+region_rect = Rect2(0, 0, 160, 16)
+texture_repeat = 2
+
+[node name="Platform3" type="StaticBody2D" parent="."]
+position = Vector2(720, 340)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platform3"]
+shape = SubResource("RectangleShape2D_plat3")
+
+[node name="Sprite2D" type="Sprite2D" parent="Platform3"]
+texture = ExtResource("6_ground")
+region_enabled = true
+region_rect = Rect2(0, 0, 128, 16)
+texture_repeat = 2
+
+[node name="PuzzleArea" type="Node2D" parent="."]
+position = Vector2(700, 480)
+z_index = 1
+
+[node name="SignalNetwork" type="Node2D" parent="PuzzleArea"]
+script = ExtResource("3_signet")
+source_grid = Vector2i(0, 0)
+target_grids = Array[Vector2i]([Vector2i(2, 0)])
+
+[node name="PipeA" type="Area2D" parent="PuzzleArea/SignalNetwork"]
+position = Vector2(0, 0)
+script = ExtResource("4_pipe")
+connections = Array[bool]([false, true, false, false])
+grid_x = 0
+grid_y = 0
+rotation_steps = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PuzzleArea/SignalNetwork/PipeA"]
+shape = SubResource("RectangleShape2D_pipe_col")
+
+[node name="Sprite2D" type="Sprite2D" parent="PuzzleArea/SignalNetwork/PipeA"]
+texture = ExtResource("7_pipe")
+
+[node name="PipeB" type="Area2D" parent="PuzzleArea/SignalNetwork"]
+position = Vector2(64, 0)
+script = ExtResource("4_pipe")
+connections = Array[bool]([false, true, false, true])
+grid_x = 1
+grid_y = 0
+rotation_steps = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PuzzleArea/SignalNetwork/PipeB"]
+shape = SubResource("RectangleShape2D_pipe_col")
+
+[node name="Sprite2D" type="Sprite2D" parent="PuzzleArea/SignalNetwork/PipeB"]
+texture = ExtResource("7_pipe")
+
+[node name="PipeC" type="Area2D" parent="PuzzleArea/SignalNetwork"]
+position = Vector2(128, 0)
+script = ExtResource("4_pipe")
+connections = Array[bool]([false, false, false, true])
+grid_x = 2
+grid_y = 0
+rotation_steps = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PuzzleArea/SignalNetwork/PipeC"]
+shape = SubResource("RectangleShape2D_pipe_col")
+
+[node name="Sprite2D" type="Sprite2D" parent="PuzzleArea/SignalNetwork/PipeC"]
+texture = ExtResource("7_pipe")
+
+[node name="PuzzleDoor" type="StaticBody2D" parent="PuzzleArea"]
+position = Vector2(220, -8)
+script = ExtResource("5_door")
+signal_network_path = NodePath("../SignalNetwork")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PuzzleArea/PuzzleDoor"]
+shape = SubResource("RectangleShape2D_door")
+
+[node name="Sprite2D" type="Sprite2D" parent="PuzzleArea/PuzzleDoor"]
+texture = ExtResource("8_door")
+
+[node name="GoalArea" type="Area2D" parent="."]
+position = Vector2(1180, 496)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalArea"]
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="Sprite2D" type="Sprite2D" parent="GoalArea"]
+texture = ExtResource("9_goal")
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-8, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(1288, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="KillZone" type="Area2D" parent="."]
+position = Vector2(640, 720)
+script = ExtResource("10_killzone")
+respawn_position = Vector2(64, 400)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone"]
+shape = SubResource("RectangleShape2D_killzone")

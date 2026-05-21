@@ -56,3 +56,12 @@ GameStudio/
 | 项目 | 状态 | 说明 |
 |---|---|---|
 | breakout | ✅ 可玩 | 5 关打砖块 / 5 种道具 / 49 自动化测试 / AI 生成背景 |
+
+## 环境配置（换机器/换磁盘必读）
+
+本项目中有少量**必须使用绝对路径**的运行时配置文件。克隆到新环境后需要修改以下位置：
+
+| 文件 | 需改内容 | 说明 |
+|---|---|---|
+| `.codebuddy/settings.json` | hook command 里的 `python <绝对路径>/.codebuddy/hooks/pre-tool-bash.py` | PreToolUse hook 脚本路径，CodeBuddy 不展开环境变量 |
+| `.codebuddy/rules/agent-spawn-contract/RULE.mdc` | `<PROJECT_PATH>: d:/AI/GameStudio/projects/<name>/game` | TPL-01

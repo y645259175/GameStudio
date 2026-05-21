@@ -31,5 +31,9 @@ __pycache__/
 *.tmp
 *.log
 
+# === CodeBuddy temp（spawn-prompt / metrics 暂存）===
+.codebuddy/temp/
+.codebuddy/logs/
+
 # === Node (if ever used) ===
 node_modules/
