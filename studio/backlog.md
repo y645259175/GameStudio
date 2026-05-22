@@ -22,7 +22,7 @@
 |---|---|---|---|---|---|
 | BL-S001 | sop-doc | 写 `studio/docs/anti-patterns.md`，沉淀 8 条通用反模式 + 检测信号 + 修法 | P0 | retro-bolt-1-1-experience | **done**（2026-05-20 · 实际沉淀 11 条 · digest 36 行 + manual 258 行 + archive 150 行 三层结构）|
 | BL-S002 | agent-improve | 修 `agent-spawn-contract` rule，加 5 个高频 spawn 模板示例 + 完整 task prompt | P0 | retro-bolt-1-1-experience | **done**（2026-05-20 · MANUAL.md 共 9 个 TPL · TPL-01~09 含 implementer/designer/reviewer/qa/architect/debugger/refactor/art-director-review/vertical-slice）|
-| BL-S003 | migration | v4 Phase 1 批 12 收尾扫：cross-reference 验证 + 修复断链 | P0 | v4-tasks.md 遗留 | open |
+| BL-S003 | migration | v4 Phase 1 批 12 收尾扫：cross-reference 验证 + 修复断链 | P0 | v4-tasks.md 遗留 | **done**（2026-05-22 · 扫 325 活跃文件排除归档区 · 真实断链 0 个 · v4-tasks.md 状态同步 6/12→10/12 · 批 7/8/9/11 实际已在 combo-B + D 系列中完成）|
 | BL-S004 | rule-enforce | commit-discipline rule 加 pre-commit hook 强制 [story]/[fix]/[chore]/[hotfix] tag | P0 | retro-bolt-1-1-experience | **done**（2026-05-19 · pre-commit-discipline.py + .git/hooks/commit-msg 挂载 + 3 case 测试通过）|
 | BL-S005 | skill-improve | `milestone-review` skill 端到端化（spawn 三方 agent + 自动写报告 + 落 backlog） | P1 | retro-bolt-1-1-experience | open |
 | BL-S006 | tooling | timiai-image：image_edit 限流自动切 chat_image fallback | P1 | retro-bolt-1-1-experience | open |

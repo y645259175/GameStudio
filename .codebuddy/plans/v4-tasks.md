@@ -23,14 +23,14 @@
 | 4 | skill 第二轮（7 个） | help + 项目级纯流程 6 个：create-stories / create-epics / sprint-plan / design-review / review-all-gdds / story-readiness | AI 自主 + 抽查 | `[x]` | 2026-05-14 14:48 | Step 4 |
 | 5 | skill 第三轮（8 个） | 项目级纯流程 3 个：quick-design / milestone-review / story-done + 带占位路由 4 个：dev-story / quick-fix / architecture-decision / setup-engine + 美术 1 个：art-asset-pipeline | AI 自主 + 抽查 | `[x]` | 2026-05-14 14:58 | Step 5 |
 | 6 | hook 实现（5 个） | validate-commit.sh / pre-commit-lite.sh / log-agent.sh / session-start.sh / detect-gaps.sh | **3 步回写** | `[x]` | 2026-05-14 15:50 | Step 6 |
-| 7 | agent 第一轮（15 个） | 职务 5（producer / pm / designer / engineer / qa）+ 代码 5（architect / debugger / reviewer / refactorer / tester）+ engine-specialist 5（先 godot-3）| AI 自主 + 抽查 | `[ ]` | — | — |
-| 8 | agent 第二轮（15 个） | engine-specialist 余 10（unity-5 / unreal-5）+ 其他 5（art-director 含 / qa-lead / release-manager / postmortem-keeper / docs-writer） | AI 自主 + 抽查 | `[ ]` | — | — |
-| 9 | rule（6 个） | commit-discipline / design-authoring / **language-policy（薄壳）** / project-structure / data-driven / test-standards | **3 步回写** | `[ ]` | — | — |
-| 10 | template（9 个） | PROJECT.md.tpl / gdd-8-sections / retro / consistency-report / adr / sprint-plan / ux-spec / hud / accessibility | AI 自主 | `[ ]` | — | — |
-| 11 | engine-reference 占位（45+3） | 45 个引擎占位文件 + 3 个引擎 README（godot/unity/unreal） | AI 自主 | `[ ]` | — | — |
-| 12 | 收尾一致性扫 | 引用闭合扫描 + 修复 + Phase 1.5 归位准备 + log 封版 | **3 步回写** | `[ ]` | — | — |
+| 7 | agent 第一轮（15 个） | 职务 5（producer / pm / designer / engineer / qa）+ 代码 5（architect / debugger / reviewer / refactorer / tester）+ engine-specialist 5（先 godot-3）| AI 自主 + 抽查 | `[x]` | 2026-05-19~21 | combo-B + D 系列中完成 · 31 agent 全部存在 |
+| 8 | agent 第二轮（15 个） | engine-specialist 余 10（unity-5 / unreal-5）+ 其他 5（art-director 含 / qa-lead / release-manager / postmortem-keeper / docs-writer） | AI 自主 + 抽查 | `[x]` | 2026-05-19~21 | 同批 7 · 5 核心 agent 三层化 |
+| 9 | rule（6 个） | commit-discipline / design-authoring / **language-policy（薄壳）** / project-structure / data-driven / test-standards | **3 步回写** | `[x]` | 2026-05-19~21 | 10 个 rule 全部存在 · D 系列渐进披露改造 |
+| 10 | template（9 个） | PROJECT.md.tpl / gdd-8-sections / retro / consistency-report / adr / sprint-plan / ux-spec / hud / accessibility | AI 自主 | `[~]` | — | 2/9：progressive-disclosure + godot-screenshot · 缺 7 个模板 |
+| 11 | engine-reference 占位（45+3） | 45 个引擎占位文件 + 3 个引擎 README（godot/unity/unreal） | AI 自主 | `[x]` | 2026-05-19 | 56 个文件（3 引擎 × README/VERSION/best-practices/deprecated/breaking-changes + modules 各 8 + plugins）|
+| 12 | 收尾一致性扫 | 引用闭合扫描 + 修复 + Phase 1.5 归位准备 + log 封版 | **3 步回写** | `[x]` | 2026-05-22 | 扫 325 活跃文件 · 真实断链 0（255 误报均为归档区 + glob/相对路径）|
 
-**进度**：6 / 12 已完成（50%）· **22 skill 全部就位** ✅ · **5 hook + README 就位** ✅
+**进度**：11 / 12 已完成（92%）· 批 10 template 缺 7 个（P2 暂缓 · 等项目实际需要时再写模板）
 
 ---
 
