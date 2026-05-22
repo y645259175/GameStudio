@@ -97,7 +97,29 @@ def check_consistency(proj: Path, only_story: str | None = None) -> dict:
                                    "msg": f"{story_id} done 但代码中未找到引用",
                                    "fix": "确认代码 commit msg 含 story-id（commit-discipline rule）"})
 
-    # 5. data-driven 红线扫（魔法数字检测）—— 只在显式启用时跑
+    # 5. GDD ↔ 实现一致性 grep（BL-S034 · AP-10 修法）
+    # 扫 GDD 中提到的关键概念，检查代码中是否有对应实现
+    GDD_KEYWORDS = ["camera", "boundary", "feedback", "death", "win", "spawn",
+                    "kill_zone", "goal", "score", "health", "damage", "level"]
+    gdd_dir = proj / "gdd"
+    if code_dir.exists() and gdd_dir.exists():
+        # 收集 GDD 中实际出现的关键词
+        gdd_text = ""
+        for gf in gdd_dir.rglob("*.md"):
+            try:
+                gdd_text += gf.read_text(encoding="utf-8", errors="ignore").lower() + "\n"
+            except Exception:
+                pass
+        mentioned_in_gdd = [kw for kw in GDD_KEYWORDS if kw in gdd_text]
+        if mentioned_in_gdd and all_code:
+            code_lower = all_code.lower()
+            missing_in_code = [kw for kw in mentioned_in_gdd if kw not in code_lower]
+            for kw in missing_in_code:
+                issues.append({"level": "warn", "category": "gdd-impl-gap",
+                               "msg": f"GDD 提到 '{kw}' 但代码中未找到对应实现",
+                               "fix": f"确认 '{kw}' 相关功能是否已实现（可能命名不同）或尚在 backlog"})
+
+    # 6. data-driven 红线扫（魔法数字检测）—— 只在显式启用时跑
     # （此处简化跳过；可由用户后续手动 grep）
 
     # 汇总

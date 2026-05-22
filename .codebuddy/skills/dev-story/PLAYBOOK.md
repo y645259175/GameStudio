@@ -31,10 +31,11 @@
 | 仅延迟外部 API 等待 | 可绕过 |
 | 任何场景下绕过决定 | **必须开 backlog story**（带 priority + due milestone），不只是 retro |
 
-## §3 dod-checklist · DoD 自检（4 项）
+## §3 dod-checklist · DoD 自检（5 项）
 
 实现完成后 reviewer 检查：
 - [ ] 视觉债务清单（`[VISUAL_DEBT]` 占位）已登记
+- [ ] **debt_logged 可 grep**：story 中提到的任何 debt/TODO 必须同时出现在 `stories/backlog.md` 中（grep `VISUAL_DEBT` / `TECH_DEBT` / story-id 必须命中 ≥ 1 行）
 - [ ] 真实玩家路径测试存在且 PASS
 - [ ] 已知 issue 数 ≤ story 容量预算（默认 ≤ 2）
 - [ ] consistency-check 结果 critical = 0

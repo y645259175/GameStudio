@@ -29,31 +29,31 @@
 | ~~BL-S007~~ | ~~tooling~~ | ~~godot 项目模板抽离~~ | ~~P1~~ | ~~retro-bolt-1-1-experience~~ | **cancelled**（2026-05-21 · 用户决策：等有更稳定成熟的项目再做，目前模板会过早抽象）|
 | BL-S008 | tooling | session-start hook 注入 anti-patterns + 上次 session agent/skill 调用记录 | P1 | retro-bolt-1-1-experience | **done**（2026-05-20 · session-start.py 已含 digest 路径指引 + 三层结构提示 · agent/skill 利用率统计仍待 BL-S014 完成）|
 | BL-S009 | migration | v4 Phase 1 批 7/8 抽查 5 个高频 agent（engineer/reviewer/qa/art-director/debugger）质量 | P1 | v4-tasks.md 遗留 | **done**（2026-05-19 · architect 体检 5 agent · ARCH-MINOR_GAPS · designer/reviewer FAIR 已修补 · 报告 studio/reports/agent-audit-5core-2026-05-19.md）|
-| BL-S010 | rule-enforce | 9 个 rule 每个配 `validate.sh`，PreToolUse / pre-commit 跑 | P1 | retro-bolt-1-1-experience | open |
+| BL-S010 | rule-enforce | 9 个 rule 每个配 `validate.sh`，PreToolUse / pre-commit 跑 | ~~P1~~ P2 | retro-bolt-1-1-experience | open（降级 P2 · 无违反案例不做校验脚本，等真发生再加）|
 | BL-S011 | tooling | screenshot_tool 自动化：sprint 收尾 hook 自动跑 + spawn art-director 评审 | P2 | retro-bolt-1-1-experience | open |
-| BL-S012 | tooling | settings.json 权限配置 helper：`add-bash-cmd <name>` 命令式工具 | P2 | retro-bolt-1-1-experience | open |
+| ~~BL-S012~~ | ~~tooling~~ | ~~settings.json 权限配置 helper~~ | ~~P2~~ | ~~retro-bolt-1-1-experience~~ | **cancelled**（2026-05-22 · settings.json 已精简为只挂 hooks，不再有 allow 列表需管理，原需求不存在）|
 | BL-S013 | sop-doc | `studio/docs/codebuddy-environment-quirks.md`（IDE 插件 vs CLI / 复合命令审批 / .import 元数据等客户端行为） | P2 | retro-bolt-1-1-experience | **done**（2026-05-19 · studio/docs/codebuddy-environment-quirks.md 已建 · 8KB）|
-| BL-S014 | tooling | `daily-check` skill 加自动汇总 "今天 spawn 了哪些 agent / skill 利用率" | P2 | retro-bolt-1-1-experience | open |
+| BL-S014 | tooling | `daily-check` skill 加自动汇总 "今天 spawn 了哪些 agent / skill 利用率" | P2 | retro-bolt-1-1-experience | **done**（2026-05-22 · daily-check/run.py 调 agent_metrics.py + lint + 可选 consistency-check）|
 | BL-S015 | sop-doc | 可访问性 SOP 模板（高对比 / 色弱 / 输入重映射 / 字幕系统）作为 GDD §6 UX 节常驻清单 | P2 | bolt-1-1 GDD 引出 | open |
 | BL-S016 | tooling | image_edit 多次 429 → 自动写"限流冷却时间"到 cache，下次提交前先查 | P2 | M6.2 实战 | open |
 | BL-S017 | agent-improve | 31 agent 启动时自动读 PROJECT.md + 当前 milestone backlog，不用 main agent 重复贴上下文 | P1 | retro-bolt-1-1-experience | **done**（2026-05-19 · agent-spawn-contract 加"项目上下文自动注入"协议）|
 | BL-S018 | skill-improve | skill 从 markdown 升级到可调用工具：每个 skill 配一个 `run.py` 或 `run.sh` | P1 | retro-bolt-1-1-experience | **partial-done**（qa-gate / milestone-review / dev-story 已通电，详见 evolution-combo-a-validation） |
 | BL-S019 | tooling | milestone-review run.py 解析 backlog 表格 false positive：把已 closed 项判 blocker（解析逻辑过保守）| P2 | combo-A validation | open |
-| BL-S020 | skill-improve | dev-story `--action done` 后自动跑 consistency-check（当前只是文字提示）| P2 | combo-A validation | open |
-| BL-S021 | tooling | session-start.sh 在 PowerShell 内嵌 git bash 时 `find projects` 返回 0（路径分隔符问题）| P2 | combo-A validation | open |
-| BL-S022 | tooling | dev-story run.py 解析 PROJECT.md `engine` 字段时多行 yaml 解析错误（"godot\\nengine_version"）| P3 | combo-A validation | open |
+| BL-S020 | skill-improve | dev-story `--action done` 后自动跑 consistency-check（当前只是文字提示）| P2 | combo-A validation | **done**（2026-05-22 · dev-story run.py --action done 自动 subprocess 调 consistency-check/run.py · critical > 0 时提示修复再 commit）|
+| ~~BL-S021~~ | ~~tooling~~ | ~~session-start.sh PowerShell 兼容~~ | ~~P2~~ | ~~combo-A validation~~ | **cancelled**（2026-05-22 · session-start.sh 已被 session-start.py 取代，.py 版无此问题）|
+| BL-S022 | tooling | dev-story run.py 解析 PROJECT.md `engine` 字段时多行 yaml 解析错误（"godot\\nengine_version"）| P3 | combo-A validation | **done**（2026-05-22 · regex `[\w\-\.\s]+` 改为 `[\w\-\.]+` 不含换行 + split('\n')[0] 兜底）|
 | BL-S023 | tooling | **pre-tool-bash.py hook bug 影响所有非 Bash 工具**：line 90/92-100 错误代码导致 modifiedInput 无条件回传（含完整文件内容）→ write_to_file/replace_in_file 截断 + 参数异常。已于 2026-05-19 修复 | P0 | combo-B 实战 + hook 审计 | **done**（2026-05-19）|
 | BL-S024 | sop-doc | replace_in_file 在长 session 中频繁失败（"old_str not found" / "found multiple times"）：根因 = 上下文过时 + old_str 选取不精确。需要写入 tool-usage rule "long session 卫生" 段 | P1 | combo-B 实战 | **done**（2026-05-19 · tool-usage rule §Long Session 卫生）|
 | BL-S025 | rule-enforce | engineer 流程逃逸案例：story-004 时 engineer 直接重写 player.gd 而非走 dev-story re-implement。dev-story SOP 加"如发现需要重写已交付内容必须 spawn 新 story 或回 implementing 状态" | P1 | combo-B 实战 story-004 | **done**（2026-05-19 · tool-usage rule §流程逃逸禁令）|
 | BL-S026 | rule-enforce | 跨 agent 数值一致性回路缺失：reviewer 发现 GDD 写 180px/s 而 story-AC 写 300px/s，无人裁定。需要 designer-engineer-reviewer 三方共识 SOP（数值变化时三方都要确认）| P1 | combo-B story-002 reviewer 发现 | **done**（2026-05-19 · tool-usage rule §数值一致性回路 + designer/reviewer AGENT.md 历史教训）|
 | BL-S027 | tooling | Godot headless 测试只能 SMOKE，不能跑物理：`_physics_process` 在 headless 单帧模式无法执行 → tester 大量 SKIP。引入 GUT 框架或 multi-frame 测试方案 | P2 | platformer-2 tester SKIP 6 条 | **partial-done**（2026-05-19 · tool-usage rule §Godot Headless 测试限制 已写入应对 · GUT 引入待 M3）|
-| BL-S028 | sop-doc | VISUAL_DEBT 不上 backlog 反模式：engineer 在 story 中提到债务但未真正登记到 stories/backlog.md。dev-story SOP 加"红线检查：debt_logged 字段必须能在 backlog 中被 grep 到" | P2 | platformer-2 BL-P2-010~013 漏登 | open |
-| BL-S029 | rule-enforce | 知识精炼流第 4 步"删除已并入条目"被忽视：playbook.md 出现条目错乱（line 22 两条记录粘连 + 重复行）。SOP 应规定用 replace_in_file 精确删除而非 write_to_file 整体重写 | P2 | combo-B 知识总结实战 | open |
+| BL-S028 | sop-doc | VISUAL_DEBT 不上 backlog 反模式：engineer 在 story 中提到债务但未真正登记到 stories/backlog.md。dev-story SOP 加"红线检查：debt_logged 字段必须能在 backlog 中被 grep 到" | P2 | platformer-2 BL-P2-010~013 漏登 | **done**（2026-05-22 · dev-story PLAYBOOK §3 DoD 从 4 项升为 5 项 · 新增 debt_logged 可 grep 红线）|
+| BL-S029 | rule-enforce | 知识精炼流第 4 步"删除已并入条目"被忽视：playbook.md 出现条目错乱（line 22 两条记录粘连 + 重复行）。SOP 应规定用 replace_in_file 精确删除而非 write_to_file 整体重写 | ~~P2~~ 备注 | combo-B 知识总结实战 | **降级为备注**（2026-05-22 · 仅 combo-B 出现过一次，概率极低不值得单独跟踪。知识已在 engineer ARCHIVE.md 教训段沉淀）|
 | BL-S030 | sop-doc | shadow review prompt 还是同 batch 而非 team 模式生成：dev-story/run.py 已在提示文字中改为 team，但实际 spawn 时 main agent 仍倾向用 batch task（行为惯性）。需要 SOP 明确"shadow 必须用 team mode"+ 示例 | P1 | combo-B story-003 shadow review | **done**（2026-05-19 · tool-usage rule §Shadow Review 必须 team mode）|
 | BL-S031 | rule-enforce | **dev-story 状态机加 playtest_pending 状态（AP-10 修法）**：reviewing → playtest_pending → done。playtest_pending 必须真人玩家 ≥ 1 分钟实玩才能进 done，AI 不允许自跳。需要修改 `.codebuddy/skills/dev-story/run.py` 状态机 + RULE.mdc TPL-01 加体验维度 AC 模板 | P0 | platformer-2 实玩事故 | **done**（2026-05-19）|
 | BL-S032 | sop-doc | **资产评审必须 in-context 渲染（AP-10 修法）**：art-director 不能只看 1024x1024 raw 图，必须看资产**在 level 里的截图**（缩放到目标尺寸 + 跟其他元素对比）。修改 art-director TPL-05 加截图集成步骤 | P0 | platformer-2 实玩事故 | **done**（2026-05-19 · TPL-05 v2 + studio/templates/godot-screenshot/ + AP-11）|
 | BL-S033 | rule-enforce | **vertical slice 强制 5 项清单（AP-10 修法）**：camera follow / 屏幕边界 / 主角视觉辨识度 / 死亡反馈 / 完成反馈——任一缺失 reviewer 必须 REQUEST_CHANGES。写入 `agent-spawn-contract` 新增 TPL-09 vertical-slice 模板 | P0 | platformer-2 实玩事故 | **done**（2026-05-19 · TPL-09）|
-| BL-S034 | sop-doc | **GDD ↔ 实现一致性 grep（AP-10 修法）**：每完成一个 story，main agent 必须 grep GDD 关键词（camera/boundary/feedback/death/win）确认是否在代码中体现。consistency-check skill 加此自动检查 | P1 | platformer-2 实玩事故 | open（已在 designer AGENT.md 历史教训中提示，consistency-check skill 改造待 M3）|
+| BL-S034 | sop-doc | **GDD ↔ 实现一致性 grep（AP-10 修法）**：每完成一个 story，main agent 必须 grep GDD 关键词（camera/boundary/feedback/death/win）确认是否在代码中体现。consistency-check skill 加此自动检查 | P1 | platformer-2 实玩事故 | **done**（2026-05-22 · consistency-check run.py 加 §5 GDD↔实现 grep · 12 关键词对照扫 · warn 级报告缺失实现）|
 | BL-S035 | rule-enforce | **不允许 AI 自我宣布 QUALITY_PROVEN**：必须有用户实玩反馈作证据；只有机制 PASS → `QUALITY_MECHANISM_PROVEN`。更新 qa-gate / milestone-review verdict 词汇表 | P0 | platformer-2 实玩事故 | **done**（2026-05-19 · qa-gate run.py + milestone-review run.py verdict 全加 _MECHANISM 后缀）|
 | BL-S036 | tooling | **3 层 hook 体系**（AP-10 后续设计修正）：SessionStart 精简引导 + UserPromptSubmit 按 prompt 关键词精准注入 + PreToolUse image_gen/Remove-Item 拦截 | P0 | hook 设计反思 | **done**（2026-05-19）|
 | BL-S037 | tooling | **timiai-image SKILL.md 适配工作室**：加"零、首次必跑 _check_key.py"段 + 工作室 fallback 路径明确（key 不可用时降级流程）+ _check_key.py 自检脚本 | P0 | platformer-2 资产事故 | **done**（2026-05-19）|

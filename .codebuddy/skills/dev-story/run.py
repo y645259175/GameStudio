@@ -373,13 +373,30 @@ def main(argv: list[str] | None = None) -> int:
         update_story_status(story_path, "done")
         confirmed_by = args.playtest_confirmed_by or "force"
         print(f"[ok] story {story_id} 状态: {current_status} → done · playtest_confirmed_by={confirmed_by}")
-        # 提示后续手动触发 consistency-check
+
+        # 自动跑 consistency-check（BL-S020 修法）
         print()
         print("=" * 60)
-        print("Story 收尾建议（main agent 手动跑）：")
-        print(f"  1. 跑 consistency-check skill（核对 GDD/code/data 一致性）")
-        print(f"  2. commit message: [story] {story_id}: <短描述>")
-        print(f"  3. 如本次改动 ≥ 100 行：再 spawn 一次 reviewer 看 commit 前 review（TPL-08）")
+        print("自动运行 consistency-check...")
+        print("=" * 60)
+        cc_script = Path(__file__).resolve().parents[1] / "consistency-check" / "run.py"
+        if cc_script.exists():
+            import subprocess
+            project_name = story_path.resolve().parts[-3] if len(story_path.resolve().parts) >= 3 else None
+            cc_args = [sys.executable, str(cc_script), "--no-report"]
+            if project_name:
+                cc_args.extend(["--project", project_name, "--story", story_id])
+            r = subprocess.run(cc_args, capture_output=False, text=True, encoding="utf-8",
+                               cwd=str(Path(__file__).resolve().parents[3]), timeout=30)
+            if r.returncode != 0:
+                print(f"\n[warn] consistency-check 发现 critical 问题（exit={r.returncode}）")
+                print("       请修复后再 commit")
+        else:
+            print("  (consistency-check run.py 不存在，跳过)")
+        print()
+        print("Story 收尾建议：")
+        print(f"  1. commit message: [story] {story_id}: <短描述>")
+        print(f"  2. 如本次改动 >= 100 行：再 spawn reviewer 看 commit 前 review（TPL-08）")
         print("=" * 60)
         return 0
 
@@ -410,8 +427,8 @@ def main(argv: list[str] | None = None) -> int:
     # 准备 prompt 模板变量
     project_md_path = project_dir / "PROJECT.md"
     project_md_text = _read_text_safe(project_md_path)
-    m_engine = re.search(r"^\s*engine\s*[:=]\s*([\w\-\.\s]+)", project_md_text, re.M | re.I)
-    engine = m_engine.group(1).strip() if m_engine else "unknown"
+    m_engine = re.search(r"^\s*engine\s*[:=]\s*([\w\-\.]+(?:\s+[\w\-\.]+)*)", project_md_text, re.M | re.I)
+    engine = m_engine.group(1).strip().split("\n")[0].strip() if m_engine else "unknown"
 
     story_excerpt = body.strip()
     if len(story_excerpt) > 3000:
