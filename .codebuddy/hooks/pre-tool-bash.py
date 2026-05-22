@@ -62,6 +62,49 @@ def main():
         "original_requires_approval": tool_input.get("requires_approval") if isinstance(tool_input, dict) else None
     }
 
+    # ===== 度量增强（P0-A）=====
+    # Task 工具调用（sub-agent spawn）：记录 subagent_name / description / team 信息
+    # 写到独立 agent-spawn-*.jsonl，便于统计 agent 利用率
+    if tool_name == "Task" and isinstance(tool_input, dict):
+        spawn_entry = {
+            "ts": ts,
+            "subagent_name": tool_input.get("subagent_name", "unknown"),
+            "description": tool_input.get("description", ""),
+            "team_mode": bool(tool_input.get("name")),  # 带 name 参数 = team 模式
+            "team_name": tool_input.get("team_name", ""),
+            "max_turns": tool_input.get("max_turns"),
+            "prompt_len": len(tool_input.get("prompt", "")),
+        }
+        spawn_log = os.path.join(log_dir, f"agent-spawn-{datetime.now().strftime('%Y-%m-%d')}.jsonl")
+        try:
+            with open(spawn_log, "a", encoding="utf-8") as f:
+                f.write(json.dumps(spawn_entry, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        # 也写到主 log（保持向后兼容）
+        log_entry["subagent_name"] = spawn_entry["subagent_name"]
+        log_entry["team_mode"] = spawn_entry["team_mode"]
+
+    # Bash / execute_command 调用 skill run.py：记录到 skill-call-*.jsonl
+    # 识别模式：python <...>/.codebuddy/skills/<name>/run.py 或 run.sh
+    if tool_name in ("Bash", "execute_command") and command:
+        import re
+        m = re.search(r"\.codebuddy[\\/]skills[\\/]([\w\-]+)[\\/]run\.(py|sh)", command)
+        if m:
+            skill_entry = {
+                "ts": ts,
+                "skill_name": m.group(1),
+                "runner": m.group(2),
+                "command_excerpt": command[:200],
+            }
+            skill_log = os.path.join(log_dir, f"skill-call-{datetime.now().strftime('%Y-%m-%d')}.jsonl")
+            try:
+                with open(skill_log, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(skill_entry, ensure_ascii=False) + "\n")
+            except Exception:
+                pass
+            log_entry["skill_name"] = skill_entry["skill_name"]
+
     try:
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
