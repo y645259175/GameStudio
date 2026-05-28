@@ -1,3 +1,6 @@
+# === Engine（二进制，各设备自行下载）===
+engine/
+
 # === Godot ===
 .godot/
 # 注意：*.import 必须 commit（Godot 资源元数据，clone 后游戏才能正确加载贴图）
@@ -20,12 +23,17 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.env.local
+.env.*.local
 .venv/
 
 # === Secrets ===
 .timiai_key
 *.key
 *.pem
+*.secret
+credentials.json
+secrets.json
 
 # === Temp ===
 *.tmp

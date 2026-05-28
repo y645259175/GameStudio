@@ -8,17 +8,18 @@
 GameStudio/
 ├── .codebuddy/           ← 能力层（21 agent / 23 skill / 6 rule / 11 template / 5 hook）
 ├── studio/               ← 工作室层（docs / engine-reference / reference）
-├── engine/               ← 引擎层（Godot 4.6.2，进 git）
+├── engine/               ← 引擎层（Godot 4.6.2，不进 git，各设备自行下载）
 └── projects/             ← 项目层（每个项目独立自包含）
     └── breakout/         ← 验证项目（打砖块，5 关可玩）
 ```
 
 ## 快速开始
 
-1. **克隆仓库**：`git clone <url>`
-2. **打开 Godot**：运行 `engine/Godot/Godot_v4.6.2-stable_win64.exe`
-3. **导入项目**：Import → `projects/breakout/game/project.godot`
-4. **按 F5 运行**
+1. **克隆仓库**：`git clone https://github.com/y645259175/GameStudio.git`
+2. **部署环境**：按 [`SETUP.md`](SETUP.md) 配置引擎 + 密钥 + 路径
+3. **打开 Godot**：运行 `engine/Godot/Godot_v4.6.2-stable_win64.exe`
+4. **导入项目**：Import → `projects/breakout/game/project.godot`
+5. **按 F5 运行**
 
 ## 核心能力
 
@@ -49,7 +50,8 @@ GameStudio/
 ## 引擎
 
 - Godot 4.6.2（`engine/Godot/Godot_v4.6.2-stable_win64.exe`）
-- 纳入 git 追踪，确保协作者版本一致
+- **不纳入 git**（164 MB 超 GitHub 限制），需各设备自行下载放置
+- 下载地址：https://godotengine.org/download/archive/4.6.2-stable/
 
 ## 项目
 
@@ -59,9 +61,11 @@ GameStudio/
 
 ## 环境配置（换机器/换磁盘必读）
 
-本项目中有少量**必须使用绝对路径**的运行时配置文件。克隆到新环境后需要修改以下位置：
+**👉 详见 [`SETUP.md`](SETUP.md)**
 
-| 文件 | 需改内容 | 说明 |
-|---|---|---|
-| `.codebuddy/settings.json` | hook command 里的 `python <绝对路径>/.codebuddy/hooks/pre-tool-bash.py` | PreToolUse hook 脚本路径，CodeBuddy 不展开环境变量 |
-| `.codebuddy/rules/agent-spawn-contract/RULE.mdc` | `<PROJECT_PATH>: d:/AI/GameStudio/projects/<name>/game` | TPL-01
+核心要点：
+- `engine/` 目录不在 git 中，需自行下载 Godot 4.6.2 放入
+- `.timiai_key`（美术管线 API Key）需在每台设备单独配置
+- `.codebuddy/settings.json` 中的 hook 路径含绝对路径，需适配当前设备
+
+完整的部署步骤、验证清单、离线打包方案均在 SETUP.md 中。
