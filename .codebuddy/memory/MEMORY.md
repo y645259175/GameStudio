@@ -34,7 +34,42 @@
 
 `.codebuddy/scripts/check_progressive_disclosure.py` 是 lint 工具，已挂到 commit-msg hook。
 
-## 项目状态（2026-05-22）
+## 项目状态（2026-05-23）
+
+### 当前项目
+- **xiuxian**（修仙宗门搜打撤退，2026-05-23 启动）
+  - 类型：单机 2D 沙盒经营 + 选项式 extraction（潜水员戴夫 × 鬼谷八荒 × Tarkov-lite）
+  - 引擎：Godot 4.6.2-stable，平台：Steam PC
+  - 核心循环：宗门内务（50%）⇄ 外出历练（50%）+ 角色境界成长贯穿
+  - 双层时钟：外层月历（1 月 = 1 回合）+ 内层历练百分比
+  - 节奏：前期 20 min / 中期 35 min / 后期 60 min（一个完整循环）
+  - 角色统一系统：门主 / 弟子 / 长老（State 字段切换），门主死可传位
+  - 战斗 VS1 = 数值模拟，但**必须**抽象 `BattleResolver` 接口
+  - 美术：水墨写意（鬼谷参考），AI 辅助 + 修绘
+  - **用户最强约束**："框架必须为后续内容留足开放性"——数据驱动 / 接口抽象 / 状态机 / 时间总线 / 存档版本号 6 条工程纪律已写入 GDD-01 §6
+  - **里程碑纪律**（2026-05-23 用户定调，二次精修）：
+    - M1 = GDD 全章节框架穷尽 + **风险预知 + 解耦设计**（不是"封闭"M2+ 加系统，而是"先验关卡"——加新系统走 5 步预案：ADR / GDD-10 / 存档兼容 / 依赖矩阵 / 接口检查）
+    - M2 = 框架搭建，**4 接口（BattleResolver / EventResolver / ProductionRule / WorldEventTrigger）+ 存档结构 + 数据位置**一次到位（GDD-01 §6.7 5 点必做）
+    - M3 = 垂直切片，含基础商业化美术达标 + 5 件基本功能（主菜单/开始/结束/存档/读档）+ 战斗用 StatSimulator 数值对拼
+    - M4 内容扩展（宗门+大地图）/ M5 主线剧情 **+ 战斗系统升级**（回合制 + 技能 + 装备 + 状态效果衍生）/ M6 Beta / M7 Release
+  - **战斗系统纪律**：M3 数据结构必须含 skills/equipped/status_effects 字段（即使为空），M5 升级回合制时不爆存档；5 个战斗接入点 M1 列全（历练挑战 / 宗门被攻击 / 派遣遭遇 / 主线 boss / 仙宗大比）
+  - **系统解耦纪律**：通信只走 3 通道（EventBus / Service 接口 / 只读 data），禁止直读他系统内部；GDD-10 必含依赖矩阵；跨 3+ 系统改动 commit 加 `[cross-system]` tag
+  - **角色三维度数据结构**（v3.1 关键架构决策）：
+    - Identity（身份）：MASTER_CURRENT / DISCIPLE / ELDER / NON_SECT —— 长期、互斥
+    - ActionState（行动状态）：IDLE / IN_CLOSED_DOOR / RECOVERING / DEFECTED / DEAD —— 每月可刷新、互斥
+    - Buffs（修饰器）：由 BuffService 管理 —— 可叠加，不互斥
+    - **Character 实现 IBuffable 接口**；**injury_level 字段已删除**（受伤值是 buff 查询结果）
+  - **通用 Buff 系统**（ADR-0005 v2）：
+    - **双表注册**：BuffType 定义表（大类 / 小类 / 数值 schema / 适用 target）+ BuffInstance 模板表（具体 buff_id + 默认值）
+    - **IBuffable 接口**：任意实体可挂 buff（CHARACTER / SECT / MAP / REGION）
+    - 各系统通过 `apply_by_id("buff_xxx", target)` 直接挂 buff，不硬编码字段
+    - **InjuryService = buff 消费者**，不持有数据；通过订阅 buff signal + 累计查询实现受伤逻辑
+  - **宗门数据结构**（ADR-0006）：
+    - Sect 是独立实体，实现 IBuffable
+    - SectService 是 Sect 数据唯一入口；InventoryService / BuildingService / ReputationService 做领域逻辑，通过 SectService 读写
+    - 宗门可挂 SECT 类型 buff（灵气加速 / 邻宗来袭 / 弟子骚动等）
+  - GDD-01 v5 + ADR-0001/0003v3.1/0005v2/0006 已落地
+  - M1 待建：gdd-02 ~ gdd-10 + ADR-0002（战斗）+ ADR-0004（存档）
 
 ### 历史项目（已不再处理）
 - **bolt-1-1**：M6.2 完成，已归档
