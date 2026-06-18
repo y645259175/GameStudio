@@ -1,0 +1,108 @@
+{
+  "BuffType": [
+    {
+      "buff_main_id": "buff_injury",
+      "buff_subtype_id": "buff_injury_main",
+      "buff_desc": "Text_buff_injury_main",
+      "buff_param1": "injury",
+      "buff_param1_type": "INT16",
+      "buff_param2": "",
+      "buff_param2_type": "",
+      "buff_param3": "",
+      "buff_param3_type": "",
+      "buff_param4": "",
+      "buff_param4_type": "",
+      "buff_param5": "",
+      "buff_param5_type": ""
+    },
+    {
+      "buff_main_id": "buff_instance",
+      "buff_subtype_id": "buff_instance_type1",
+      "buff_desc": "Text_buff_aaaa",
+      "buff_param1": "time",
+      "buff_param1_type": "INT16",
+      "buff_param2": "",
+      "buff_param2_type": "",
+      "buff_param3": "",
+      "buff_param3_type": "",
+      "buff_param4": "",
+      "buff_param4_type": "",
+      "buff_param5": "",
+      "buff_param5_type": ""
+    },
+    {
+      "buff_main_id": "buff_instance",
+      "buff_subtype_id": "buff_instance_type2",
+      "buff_desc": "Text_buff_bbb",
+      "buff_param1": "percent",
+      "buff_param1_type": "INT16",
+      "buff_param2": "more_percent",
+      "buff_param2_type": "ARRAY",
+      "buff_param3": "time",
+      "buff_param3_type": "INT16",
+      "buff_param4": "",
+      "buff_param4_type": "",
+      "buff_param5": "",
+      "buff_param5_type": ""
+    }
+  ],
+  "BuffInstance": [
+    {
+      "buffid": 1,
+      "buff_main_id": "buff_injury",
+      "buff_subtype_id": "buff_injury_main",
+      "buff_param1": 20,
+      "buff_param2": null,
+      "buff_param3": null,
+      "buff_param4": null,
+      "buff_param5": null
+    },
+    {
+      "buffid": 2,
+      "buff_main_id": "buff_injury",
+      "buff_subtype_id": "buff_injury_main",
+      "buff_param1": 5,
+      "buff_param2": null,
+      "buff_param3": null,
+      "buff_param4": null,
+      "buff_param5": null
+    },
+    {
+      "buffid": 3,
+      "buff_main_id": "buff_injury",
+      "buff_subtype_id": "buff_injury_main",
+      "buff_param1": -30,
+      "buff_param2": null,
+      "buff_param3": null,
+      "buff_param4": null,
+      "buff_param5": null
+    },
+    {
+      "buffid": 4,
+      "buff_main_id": "buff_instance",
+      "buff_subtype_id": "buff_instance_type1",
+      "buff_param1": 10,
+      "buff_param2": null,
+      "buff_param3": null,
+      "buff_param4": null,
+      "buff_param5": null
+    },
+    {
+      "buffid": 5,
+      "buff_main_id": "buff_instance",
+      "buff_subtype_id": "buff_instance_type2",
+      "buff_param1": 0,
+      "buff_param2": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60
+      ],
+      "buff_param3": 3,
+      "buff_param4": null,
+      "buff_param5": null
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+# =============================================================================
+# Schema · 境界曲线.xlsx
+# 关联：GDD-04 §2 / GDD-06 §6.2 修炼曲线 + base_speed + 突破基础分
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "境界曲线.xlsx"
+output_baked   = "realm_curve.tres"
+
+[tables.RealmCurve]
+sheet = "境界曲线"
+pkey  = "realm_sub"
+cn    = "境界 × 小境曲线"
+desc  = "每个 (大境_小境) 一行；CultivationSystem 按 realm + sub_level 索引"
+
+inherit_when_blank = ["realm_id", "realm_cn"]
+
+[tables.RealmCurve.fields.realm_sub]
+type = "string"
+cn   = "境界主键"
+desc = "<realm_id>_<sub>，如 qi_1 / golden_9"
+
+[tables.RealmCurve.fields.realm_id]
+type = "enum"
+enum = ["mortal", "qi", "foundation", "golden", "yuanying", "huashen"]
+cn   = "大境"
+
+[tables.RealmCurve.fields.realm_cn]
+type = "string"
+cn   = "大境中文"
+
+[tables.RealmCurve.fields.sub_level]
+type = "int"
+cn   = "小境1-9"
+
+[tables.RealmCurve.fields.exp_threshold]
+type = "float"
+cn   = "升下一小境所需经验"
+
+[tables.RealmCurve.fields.base_speed]
+type = "float"
+cn   = "基础修炼速度"
+desc = "monthly_gain = base_speed × (1 + Σ aᵢ·rootᵢ) × (1 + buff)"
+
+[tables.RealmCurve.fields.breakthrough_base_score]
+type = "float"
+cn   = "突破基础分"
+desc = "9层瓶颈后的突破检定基础分"
+
+[tables.RealmCurve.fields.breakthrough_difficulty]
+type = "float"
+cn   = "突破难度系数"
+desc = "GDD-06 §6.4，难度=100 时 1 分=1%"
+
+[tables.RealmCurve.fields.lifespan_bonus_months]
+type = "int"
+cn   = "突破成功寿元加成（月）"
+
+[tables.RealmCurve.fields.combat_power_multiplier]
+type = "float"
+cn   = "战力倍率"
+desc = "GDD-06 §7.1 base_power 该境界的乘数"

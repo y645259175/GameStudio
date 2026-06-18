@@ -1,0 +1,28 @@
+# =============================================================================
+# Schema · 文本表_基础文本表.xlsx
+# 工作室通用配表范式 v1.0
+# 关联：所有以 文本表_*.xlsx 命名的文件共享此 schema（target_xlsx_glob）
+# =============================================================================
+
+schema_version    = 1
+target_xlsx_glob  = "TEXT/文本表_*.xlsx"   # 所有文本表共用此 schema
+output_baked      = "text_cn.tres"          # 多个文本表合并到一个 tres
+
+# ----------------------------------------------------------------------------
+# Sheet: 文本（所有文本表都用这个 sheet 名）
+# ----------------------------------------------------------------------------
+[tables.TextTable]
+sheet = "文本"
+pkey  = "key"
+cn    = "文本（多语言）"
+desc  = "key 全局唯一。所有 buff_desc / item_name / dialog 等业务字段通过 tid 引用此表"
+
+[tables.TextTable.fields.key]
+type = "string"
+cn   = "文本key"
+desc = "命名规范：Text_<domain>_<entity>，例：Text_buff_injury_main"
+
+[tables.TextTable.fields.content_cn]
+type = "string"
+cn   = "中文文案"
+desc = "玩家最终看到的中文文本。未来加 content_en / content_jp 即可扩展多语言"

@@ -1,0 +1,138 @@
+# =============================================================================
+# Schema · BUFF系统.xlsx
+# 工作室通用配表范式 v1.0
+# 关联：与 BUFF系统.xlsx 同名（去后缀），导表脚本自动配对
+# 维护：程序员维护此文件；策划改 xlsx，新增字段时同步通知程序员更新此 schema
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "BUFF系统.xlsx"
+output_baked   = "buff_system.tres"      # data/baked/ 下产物名
+
+# ----------------------------------------------------------------------------
+# Sheet 1: buff枚举（buff 类型注册表）
+# ----------------------------------------------------------------------------
+[tables.BuffType]
+sheet = "buff枚举"
+pkey  = "buff_subtype_id"            # 主键：每个子类全局唯一
+cn    = "Buff 类型注册表"
+desc  = "声明每个 buff 子类的参数 schema（参数名 + 数据类型）"
+
+# 承上规则：buff_main_id 列空白时，沿用上一行同列的值（多 subtype 共享一个 main_id）
+inherit_when_blank = ["buff_main_id"]
+
+[tables.BuffType.fields.buff_main_id]
+type = "string"
+cn   = "buff主类id"
+desc = "大类标识，例：buff_injury / buff_cultivation / buff_battle"
+
+[tables.BuffType.fields.buff_subtype_id]
+type = "string"
+cn   = "buff子类id"
+desc = "子类标识，全局唯一。代码通过此值索引 BuffType"
+
+[tables.BuffType.fields.buff_desc]
+type = "tid"                          # 指向文本表的 key
+fkey = "TextTable.key"
+cn   = "中文描述key"
+desc = "Text_xxx 形式，引用文本表的多语言文案"
+
+# 参数槽 1-5：通用变长设计（不为每种 buff 单独建列）
+# 参数名 + 类型 一组。具体业务含义看 desc / 备注列
+[tables.BuffType.fields.buff_param1]
+type = "string"
+cn   = "buff参数1"
+desc = "参数1的字段名（业务侧用此名访问）。空 = 该 buff 不用参数1"
+
+[tables.BuffType.fields.buff_param1_type]
+type = "enum"
+enum = ["INT16", "INT32", "INT64", "FLOAT", "STRING", "ARRAY", "BOOL", ""]
+cn   = "buff参数1类型"
+desc = "参数1的数据类型。空 = 该 buff 不用参数1"
+
+[tables.BuffType.fields.buff_param2]
+type = "string"
+cn   = "buff参数2"
+
+[tables.BuffType.fields.buff_param2_type]
+type = "enum"
+enum = ["INT16", "INT32", "INT64", "FLOAT", "STRING", "ARRAY", "BOOL", ""]
+cn   = "buff参数2类型"
+
+[tables.BuffType.fields.buff_param3]
+type = "string"
+cn   = "buff参数3"
+
+[tables.BuffType.fields.buff_param3_type]
+type = "enum"
+enum = ["INT16", "INT32", "INT64", "FLOAT", "STRING", "ARRAY", "BOOL", ""]
+cn   = "buff参数3类型"
+
+[tables.BuffType.fields.buff_param4]
+type = "string"
+cn   = "buff参数4"
+
+[tables.BuffType.fields.buff_param4_type]
+type = "enum"
+enum = ["INT16", "INT32", "INT64", "FLOAT", "STRING", "ARRAY", "BOOL", ""]
+cn   = "buff参数4类型"
+
+[tables.BuffType.fields.buff_param5]
+type = "string"
+cn   = "buff参数5"
+
+[tables.BuffType.fields.buff_param5_type]
+type = "enum"
+enum = ["INT16", "INT32", "INT64", "FLOAT", "STRING", "ARRAY", "BOOL", ""]
+cn   = "buff参数5类型"
+
+# ----------------------------------------------------------------------------
+# Sheet 2: buff实例（具体 buff 实例配置）
+# ----------------------------------------------------------------------------
+[tables.BuffInstance]
+sheet = "buff实例"
+pkey  = "buffid"
+cn    = "Buff 实例配置"
+desc  = "具体的 buff 实例。代码通过 buffid 取实例，运行时挂到目标上"
+
+[tables.BuffInstance.fields.buffid]
+type = "int"
+cn   = "实际buffid"
+desc = "全局唯一数字 ID，代码通过此 ID 索引"
+
+[tables.BuffInstance.fields.buff_main_id]
+type = "fkey"
+fkey = "BuffType.buff_main_id"
+cn   = "buff主类id"
+
+[tables.BuffInstance.fields.buff_subtype_id]
+type = "fkey"
+fkey = "BuffType.buff_subtype_id"
+cn   = "buff子类id"
+
+# 参数 1-5 是动态类型：实际类型由 buff_subtype_id 反查 BuffType.buff_paramN_type 决定
+# 烘焙时按反查类型解析（INT16 → int / ARRAY → list[int]）
+[tables.BuffInstance.fields.buff_param1]
+type          = "dynamic"
+type_resolver = "BuffType[{buff_subtype_id}].buff_param1_type"
+cn            = "buff参数1（实际值）"
+
+[tables.BuffInstance.fields.buff_param2]
+type          = "dynamic"
+type_resolver = "BuffType[{buff_subtype_id}].buff_param2_type"
+cn            = "buff参数2（实际值）"
+
+[tables.BuffInstance.fields.buff_param3]
+type          = "dynamic"
+type_resolver = "BuffType[{buff_subtype_id}].buff_param3_type"
+cn            = "buff参数3（实际值）"
+
+[tables.BuffInstance.fields.buff_param4]
+type          = "dynamic"
+type_resolver = "BuffType[{buff_subtype_id}].buff_param4_type"
+cn            = "buff参数4（实际值）"
+
+[tables.BuffInstance.fields.buff_param5]
+type          = "dynamic"
+type_resolver = "BuffType[{buff_subtype_id}].buff_param5_type"
+cn            = "buff参数5（实际值）"

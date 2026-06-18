@@ -1,0 +1,231 @@
+[gd_scene load_steps=3 format=3 uid="uid://b0xiuxianm3main"]
+
+[ext_resource type="Script" path="res://scripts/ui/main_screen.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://art/m3/ui/bg_main_paper.png" id="2_bg"]
+
+[node name="MainScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="PaperOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.96, 0.94, 0.88, 0.55)
+
+[node name="Root" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+; ============================================================
+; 顶栏
+; ============================================================
+[node name="TopBar" type="HBoxContainer" parent="Root/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TitleLabel" type="Label" parent="Root/VBox/TopBar"]
+layout_mode = 2
+text = "青云宗 · 修仙宗门经营"
+theme_override_colors/font_color = Color(0.103, 0.094, 0.078, 1)
+theme_override_font_sizes/font_size = 22
+
+[node name="Spacer1" type="Control" parent="Root/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeLabel" type="Label" parent="Root/VBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "1 年 1 月"
+theme_override_colors/font_color = Color(0.66, 0.196, 0.149, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="Spacer2" type="Control" parent="Root/VBox/TopBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(24, 0)
+
+[node name="ResourceLabel" type="Label" parent="Root/VBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "灵石 0   灵草 0"
+theme_override_colors/font_color = Color(0.549, 0.427, 0.247, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Spacer3" type="Control" parent="Root/VBox/TopBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(24, 0)
+
+[node name="AdvanceBtn" type="Button" parent="Root/VBox/TopBar"]
+layout_mode = 2
+text = "推进 1 月 ▶"
+
+[node name="SaveBtn" type="Button" parent="Root/VBox/TopBar"]
+layout_mode = 2
+text = "存档"
+
+[node name="LoadBtn" type="Button" parent="Root/VBox/TopBar"]
+layout_mode = 2
+text = "读档"
+
+; ============================================================
+; 横分隔线
+; ============================================================
+[node name="HSep" type="HSeparator" parent="Root/VBox"]
+layout_mode = 2
+
+; ============================================================
+; 中间：左建筑 + 右弟子
+; ============================================================
+[node name="MidArea" type="HBoxContainer" parent="Root/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+; --- 左：建筑列表 ---
+[node name="LeftCol" type="VBoxContainer" parent="Root/VBox/MidArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 6
+
+[node name="LeftTitle" type="Label" parent="Root/VBox/MidArea/LeftCol"]
+layout_mode = 2
+text = "宗门建筑"
+theme_override_colors/font_color = Color(0.103, 0.094, 0.078, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="BuildingScroll" type="ScrollContainer" parent="Root/VBox/MidArea/LeftCol"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="BuildingList" type="VBoxContainer" parent="Root/VBox/MidArea/LeftCol/BuildingScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+; --- 中分隔 ---
+[node name="VSep" type="VSeparator" parent="Root/VBox/MidArea"]
+layout_mode = 2
+
+; --- 右：弟子列表 ---
+[node name="RightCol" type="VBoxContainer" parent="Root/VBox/MidArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 6
+
+[node name="RightTitle" type="Label" parent="Root/VBox/MidArea/RightCol"]
+layout_mode = 2
+text = "门人弟子"
+theme_override_colors/font_color = Color(0.103, 0.094, 0.078, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="DiscipleScroll" type="ScrollContainer" parent="Root/VBox/MidArea/RightCol"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DiscipleList" type="VBoxContainer" parent="Root/VBox/MidArea/RightCol/DiscipleScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+; ============================================================
+; 历练栏
+; ============================================================
+[node name="ExpeditionBar" type="HBoxContainer" parent="Root/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ExpeditionBtn" type="Button" parent="Root/VBox/ExpeditionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✦ 出发历练 ✦"
+
+[node name="ExpeditionStatus" type="Label" parent="Root/VBox/ExpeditionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+theme_override_colors/font_color = Color(0.66, 0.196, 0.149, 1)
+size_flags_horizontal = 3
+
+[node name="ExpeditionAdvanceBtn" type="Button" parent="Root/VBox/ExpeditionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "推进 ▶"
+visible = false
+
+; ============================================================
+; 横分隔
+; ============================================================
+[node name="HSep2" type="HSeparator" parent="Root/VBox"]
+layout_mode = 2
+
+; ============================================================
+; 底栏：日志
+; ============================================================
+[node name="LogPanel" type="VBoxContainer" parent="Root/VBox"]
+layout_mode = 2
+size_flags_vertical = 0
+custom_minimum_size = Vector2(0, 160)
+
+[node name="LogTitle" type="Label" parent="Root/VBox/LogPanel"]
+layout_mode = 2
+text = "宗门事记"
+theme_override_colors/font_color = Color(0.103, 0.094, 0.078, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="LogScroll" type="ScrollContainer" parent="Root/VBox/LogPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogText" type="RichTextLabel" parent="Root/VBox/LogPanel/LogScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+fit_content = true
+
+[connection signal="pressed" from="Root/VBox/TopBar/AdvanceBtn" to="." method="_on_advance_pressed"]
+[connection signal="pressed" from="Root/VBox/TopBar/SaveBtn" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="Root/VBox/TopBar/LoadBtn" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="Root/VBox/ExpeditionBar/ExpeditionBtn" to="." method="_on_expedition_start_pressed"]
+[connection signal="pressed" from="Root/VBox/ExpeditionBar/ExpeditionAdvanceBtn" to="." method="_on_expedition_advance_pressed"]

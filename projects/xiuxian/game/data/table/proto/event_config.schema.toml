@@ -1,0 +1,130 @@
+# =============================================================================
+# Schema · 事件配置.xlsx
+# 关联：GDD-03 §2 历练事件引擎；EventEngine autoload 读配表分发
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "事件配置.xlsx"
+output_baked   = "event_config.tres"
+
+# ----------------------------------------------------------------------------
+# 事件模板（每行一个事件，event_id 全局唯一）
+# ----------------------------------------------------------------------------
+[tables.EventTemplate]
+sheet = "事件模板"
+pkey  = "event_id"
+cn    = "事件模板"
+desc  = "声明事件基本属性；action 序列在 EventAction 表"
+
+[tables.EventTemplate.fields.event_id]
+type = "string"
+cn   = "事件ID"
+
+[tables.EventTemplate.fields.title_cn]
+type = "string"
+cn   = "标题"
+
+[tables.EventTemplate.fields.desc_cn]
+type = "string"
+cn   = "描述文本"
+
+[tables.EventTemplate.fields.category]
+type = "enum"
+enum = ["encounter", "treasure", "story", "trial", "battle", "system"]
+cn   = "事件类别"
+
+[tables.EventTemplate.fields.min_node_depth]
+type = "int"
+cn   = "最小节点深度"
+desc  = "0 = 任意节点可触发；1 = 仅第1节点后、以此类推"
+
+[tables.EventTemplate.fields.weight]
+type = "int"
+cn   = "权重"
+desc = "同池抽选权重，越大越易中"
+
+# ----------------------------------------------------------------------------
+# 事件动作（每个 event_id 对应多条 action，按 order 排序）
+# ----------------------------------------------------------------------------
+[tables.EventAction]
+sheet = "事件动作"
+pkey  = "row_id"
+cn    = "事件动作序列"
+desc  = "每个 event_id 的核心逻辑 = 一条或多条 action 按 order 依次执行"
+
+inherit_when_blank = ["event_id"]
+
+[tables.EventAction.fields.row_id]
+type = "string"
+cn   = "行ID"
+desc = "<event_id>_<order>，如 exp_forest_stroll_1"
+
+[tables.EventAction.fields.event_id]
+type = "fkey"
+fkey = "EventTemplate.event_id"
+cn   = "事件ID"
+
+[tables.EventAction.fields.order]
+type = "int"
+cn   = "顺序"
+
+[tables.EventAction.fields.action_type]
+type = "enum"
+enum = ["show_text", "show_options", "give_loot", "give_resource", "set_flag", "start_battle", "random_branch", "extraction"]
+cn   = "动作类型"
+
+[tables.EventAction.fields.condition]
+type = "string"
+cn   = "条件"
+desc = "ConditionEvaluator 表达式，空 = 无条件；如 flag('choice') == 'explore'"
+
+[tables.EventAction.fields.param1]
+type = "string"
+cn   = "参数1"
+
+[tables.EventAction.fields.param2]
+type = "string"
+cn   = "参数2"
+
+[tables.EventAction.fields.param3]
+type = "string"
+cn   = "参数3"
+
+# ----------------------------------------------------------------------------
+# 事件选项（show_options 的选项池；option_id → 分支跳转/奖励）
+# ----------------------------------------------------------------------------
+[tables.EventOption]
+sheet = "事件选项"
+pkey  = "option_id"
+cn    = "事件选项"
+desc  = "每个 option_id 定义一个玩家可选择的分支"
+
+[tables.EventOption.fields.option_id]
+type = "string"
+cn   = "选项ID"
+
+[tables.EventOption.fields.text_cn]
+type = "string"
+cn   = "选项文本"
+
+[tables.EventOption.fields.battle_trigger]
+type = "bool"
+cn   = "是否触发战斗"
+desc = "选此项后是否进入战斗"
+
+[tables.EventOption.fields.battle_enemy_realm]
+type = "string"
+cn   = "敌方境界"
+desc = "qi / foundation / golden 等"
+
+[tables.EventOption.fields.battle_enemy_count]
+type = "int"
+cn   = "敌方数量"
+
+[tables.EventOption.fields.reward_resource_id]
+type = "string"
+cn   = "奖励资源ID"
+
+[tables.EventOption.fields.reward_amount]
+type = "int"
+cn   = "奖励数量"

@@ -11,12 +11,45 @@
 - **不喜欢"留 backlog 当收尾"**：如果剩下任务几分钟可做完，直接做完。"分阶段确认"在模板化任务里是浪费。
 - **关注"是否真在工作"而不是"是否完整"**：偏向用证据/数据评估系统，反感百科全书式堆砌。
 
+## xiuxian 美术风格基因（2026-06-18 用户定调，v2 完成）
+
+- **统一走水墨写意风**（不是二次元日漫，不是卡通）。
+- **canonical 基准 6 张全部就位**：`projects/xiuxian/art/style-anchors/`
+  - `anchor-char-master.png`（门主立绘，水墨写意脸基准——细长墨眼、最简笔意五官、衣袂大块墨晕带飞白）
+  - `anchor-char-disciple.png`（弟子立绘 v2，与 master 同谱系）
+  - `anchor-sect-overview.png`（宗门全景，建筑笔触基准——屋顶墨色晕染 + 飞白 + 融入山水）
+  - `anchor-building.png`（聚灵塔 v2，与 sect-overview 建筑同笔触）
+  - `anchor-expedition-map.png`（历练地图，含朱砂洞穴 boss 标识）
+  - `anchor-ui-panel.png`（UI 面板，回纹墨边 + 朱砂印章 + 山青进度条）
+- **长期红线：后续所有生成图必须同系列同风格**——每次量产新资产前，art-director 必须拿这 6 张做对比基准，跑偏即重抽。**画风一致性是项目视觉基因的红线**。
+- **风格修订 prompt 工程要诀**（v2 沉淀）：① 显式锚定参考画家/作品（齐白石/蒋兆和/傅抱石）比抽象风格词有效 10 倍 ② 把"水墨写意"拆为具体笔法（"眼睛是细长墨点不是日漫大眼"/"屋顶墨色浓淡晕染不是卡通块"）③ 必带禁忌列表（"不要 X / Y / Z"）— AI 对禁忌的执行比对正向描述更稳。
+
+## 用户协作偏好（2026-06-18 定调）
+
+- **程序实现细节用户不关心**：纯代码实现（service / 数据结构 / 接口 / 单测）AI 自主推进到底，**不要逐步汇报代码细节**。只在以下时刻停下找用户：① 需要用户做设计/方向判断 ② 有"实际可见现状"可看（美术成品 / 可运行 demo / 玩法手感）③ 遇到取舍。
+- **需要用户确认的文件（含图片）必须给出基于项目根目录 `d:\AI\GameStudio` 的相对路径**（如 `projects\xiuxian\art\style-anchors\anchor-char-master.png`），这样用户才能直接点开。不要只写文件名不带路径。
+
 ## 项目级架构约定
 
 - **四层架构**：`.codebuddy/`（能力层）+ `studio/`（工作室层）+ `engine/`（引擎层 gitignored）+ `projects/`（项目层）
 - **不在根目录建文件**（除 README.md）
 - **路径不引用 `analysis-report/` 或 `my-game/`**（历史遗留，已迁走）
 - **新建项目前必须** `read_file studio/docs/project-structure-full.md`
+- **延后细节存档模式**（2026-06-09 xiuxian M1 沉淀）：跨里程碑内容延后用 `projects/<name>/docs/m{N}-deferred-details.md`——主章节保持"当前里程碑必需 only"，延后内容仅留思路骨架到此存档，展开时搬回主章节再删存档对应条目。避免主章节膨胀 + M{N+1} 启动时遗忘思路。
+- **架构重构三步**（2026-06-09 xiuxian GDD-02 沉淀）：加迁移指针 → 验证（用户审 PASS）→ 删除原内容。不一步删干净，避免回滚成本高。
+- **ADR amendment 命名**：v1.0 → v1.1（接口扩充 / 增补，向后兼容）/ v2.0（schema 不兼容变更，需 migration）。amendment 附在原 ADR 文件末尾，不另起新文件。
+- **里程碑收尾 AI 预审模式**（2026-06-18 xiuxian M1 沉淀）：用户审多章 GDD/ADR 工作量大，AI 应提前出三件套——① cross-章一致性扫描（数值/命名/接口签名机械检查）② 删除/重构预案（精确行号 + 特殊处理标注）③ 审阅报告 + verdict 模板（让用户填空式反馈）。把"逐字读 5000 行"降为"看报告 + 填模板"。
+- **删除前先写预案而非直接删**（2026-06-18 沉淀）：写删除/重构预案本身就是审阅过程，逐项过一遍会发现"原本以为该删的其实是契约"（如 GDD-02 §7 buff 清单是 buff_id 集中登记，不该搬走）。**永远先 plan 再 execute**。
+
+## Godot headless 开发约定（2026-06-18 xiuxian M2 沉淀）
+
+- **Godot 二进制路径**：`engine/Godot/Godot_v4.6.2-stable_win64.exe`（gitignored，用户本机放置）。AI 用前先 `Test-Path` 确认。
+- **autoload 路径**：`--path` 指向 `game/`，故 `res://` 根 = game/，autoload/脚本路径写 `res://scripts/...` **不带 game/ 前缀**。
+- **新增 class_name 文件后必须先扫描**：直接 headless 跑会报 "Could not find type X"，因为 global_script_class_cache 未更新。先跑 `--headless --editor --quit` 触发 first_scan 注册 class_name，再跑验证。
+- **headless 自检方式**：autoload 在 `--script`（SceneTree）模式**不挂载** → 必须建主场景（main_check.tscn）+ 普通 Node 的 _ready 跑断言，命令 `cmd /c "Godot.exe --headless --path X res://scenes/main_check.tscn > log 2>&1"`（用 cmd 重定向，PowerShell `&` 调用 CLIXML 污染输出 + 拿不到干净 exit code）。日志写文件再 read_file。
+- **autoload 跨 service 时序**：autoload 顺序保证实例存在，但**不保证 _ready 逻辑完成**。依赖方查询前用 public `is_loaded()` 守卫（如 BuffService 查 DataRegistry 前判断）。
+- **GDScript 类型推断陷阱**：`var x := null`（推不出）→ 写 `var x: Variant = null`；`var x := untyped_node.method()`（untyped 返回推不出）→ 显式 `var x: int =`。
+- **autoload .gd 不写 class_name**（与单例名冲突）；纯数据类（RefCounted/Resource）可写 class_name。
 
 ## 文件 / 文档分层（渐进披露三层架构）
 
@@ -106,3 +139,18 @@
 - **PowerShell 中文 + emoji 易触发 GBK 编码错误**：用 `$env:PYTHONIOENCODING="utf-8"` 或重定向到文件读取
 - **commit msg 含中文 / 多行**：必须用 `git commit -F file.txt`，不能用 `-m`
 - **CodeBuddy 高危关键词扫描**：`Remove-Item` / `rm` / `del` / `git reset --hard` 弹窗 hook 之前拦——绕过见 `.codebuddy/PERMISSIONS.md`
+
+### CodeBuddy 插件管理
+
+- **本地路径**：`C:\Users\<user>\.codebuddycn\extensions`（中文版）或 `.codebuddy\extensions`
+- **没有独立的 codebuddy CLI**，但 VSCode 的 `code` CLI 兼容：
+  ```powershell
+  & code --install-extension <publisher.id> --extensions-dir C:\Users\<user>\.codebuddycn\extensions
+  ```
+  装完重启 CodeBuddy 生效。CodeBuddy 用 VSCode marketplace，所有 VSCode 扩展可用。
+- **xiuxian 项目数据编辑栈**（已装于 .codebuddycn）：
+  - `mechatroner.rainbow-csv` — CSV 列着色
+  - `grapecity.gc-excelviewer` — Excel/CSV 网格视图（最强，已自带）
+  - `janisdd.vscode-edit-csv` — CSV 网格编辑
+  - `tamasfe.even-better-toml` — schema sidecar 文件高亮
+  - `redhat.vscode-yaml` — YAML 高亮

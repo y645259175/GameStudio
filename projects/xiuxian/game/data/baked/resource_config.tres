@@ -1,0 +1,63 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+data = {
+	"Resource": [
+		{
+			"resource_id": "spirit_stone",
+			"name_cn": "灵石",
+			"icon_path": "res://art/m3/icons/spirit_stone.png",
+			"category": "currency",
+			"cap": 0,
+			"desc_cn": "宗门基础货币，建造/招募/炼丹皆需要"
+		},
+		{
+			"resource_id": "spirit_herb",
+			"name_cn": "灵草",
+			"icon_path": "res://art/m3/icons/herb.png",
+			"category": "material",
+			"cap": 9999,
+			"desc_cn": "炼丹原料，野外历练采集"
+		},
+		{
+			"resource_id": "mortal_pill",
+			"name_cn": "凡品丹药",
+			"icon_path": "",
+			"category": "consumable",
+			"cap": 999,
+			"desc_cn": "回复体力 / 消除轻伤 / 短期 buff"
+		},
+		{
+			"resource_id": "yellow_pill",
+			"name_cn": "黄品丹药",
+			"icon_path": "",
+			"category": "consumable",
+			"cap": 999,
+			"desc_cn": "中阶丹药"
+		},
+		{
+			"resource_id": "mystic_pill",
+			"name_cn": "玄品丹药",
+			"icon_path": "",
+			"category": "consumable",
+			"cap": 99,
+			"desc_cn": "高阶丹药"
+		},
+		{
+			"resource_id": "breakthrough_pill_qi",
+			"name_cn": "炼气突破丹",
+			"icon_path": "",
+			"category": "consumable",
+			"cap": 99,
+			"desc_cn": "炼气境突破检定时消耗，提升基础概率"
+		},
+		{
+			"resource_id": "sect_token",
+			"name_cn": "宗门令牌",
+			"icon_path": "",
+			"category": "treasure",
+			"cap": 1,
+			"desc_cn": "宗门权柄象征"
+		}
+	]
+}

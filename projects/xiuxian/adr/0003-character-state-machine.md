@@ -3,9 +3,12 @@ adr_id: 0003-character-state-machine
 status: accepted
 date: 2026-05-23
 accepted_at: 2026-05-26
+last_amended: 2026-05-29
 deciders: [用户, codebuddy]
 supersedes:
-related_gdd: gdd-01 §2.5 失败死亡处理 / §6.3 角色统一状态机 / §6.8 战斗系统框架
+related_gdd: gdd-01 §2.5 失败死亡处理 / §6.3 角色统一状态机 / §6.8 战斗系统框架 / gdd-02 §5 弟子招收
+amendments:
+  - 2026-05-29: 加入 gender / original_name / portrait_id / age_months / traits / personality / origin 字段（GDD-02 §5 角色生成需求）
 ---
 
 # ADR 0003 · 角色统一数据结构与三维度状态
@@ -68,16 +71,25 @@ enum ActionState {
 
 # 核心字段
 var id: String
-var name: String
+var name: String                     # 玩家可见名（支持改名）
+var original_name: String = ""       # 生成时的初始名（追溯用）
+var gender: String = "male"          # 性别："male" / "female"（影响立绘 / 名字匹配）
 var identity: Identity
 var action_state: ActionState
 var non_sect_role: String = ""       # 当 identity = NON_SECT 时填（"路人" / "异宗" / "敌人" 等扩展点，M3 占位）
+var portrait_id: String = ""         # 立绘资源 id
+var age_months: int = 0              # 当前年龄（月数，与 TimeService 单位统一）
+
+# 内容字段（M3 schema 就位 / 内容 M5+ 启用）
+var traits: Array = []               # Array[trait_id]，特性列表（buff 类型扩展）
+var personality: String = ""         # M5+ 性格描述
+var origin: String = ""              # M5+ 出身（农户 / 世家 / 孤儿等）
 
 # 修仙属性
 var spirit_root: SpiritRoot
 var realm: Realm                     # 境界
 var lifespan_remaining: int          # 寿元（月）
-var attributes: Dict                 # atk / def / spd / 灵力 / 心性 ...
+var attributes: Dict                 # 悟性 / 体魄 / 神识 / 炼丹 / 炼器 / 灵力 ...（详见 GDD-02 §3）
 
 # 战斗衍生字段（M3 占位 / M5 启用）
 var skills: Array = []               # Array[SkillId]
@@ -108,7 +120,7 @@ var action_state_data: Dict = {}     # 例：IN_CULTIVATION → {mode: "closed_d
 ```
 
 > 注：身份转移**不**包含 DEAD，因为死亡是 action_state 维度。
-> NON_SECT → DISCIPLE 是"招收"路径；DISCIPLE → NON_SECT 是"叛门后离宗"路径（叛门事件触发 identity 直接转 NON_SECT，不需要独立的 DEFECTED action 状态——叛门后角色就不再是本宗成员）。
+> NON_SECT → DISCIPLE 是"招收"路径；DISCIPLE → NON_SECT 是"离宗"路径（如玩家主动逐出 / 主线事件触发等，具体由玩法系统定义；本游戏不内置叛门机制）。
 
 ### ActionState 转移规则
 
@@ -198,6 +210,146 @@ ActionState 转移相对宽松，由各系统按场景调用：
   - 三维度组合非法状态被拒绝（如 NON_SECT + IN_CULTIVATION 占用本宗修炼资源）
   - 序列化 / 反序列化（含 buffs / skills / equipped 占位字段）
   - **伤病通过 buff 触发死亡**：累计 buff `injury/general_wound` level 到 100 → 角色 ActionState 自动转 DEAD（由 InjuryService 监听 buff signal 实现）
+
+---
+
+## Amendment v3.3（2026-06-09 · CharacterRegistry 注册扩展接口）
+
+> 触发：GDD-01 §6.12 角色契约 vs 子系统玩法分离哲学落地——GDD-02 仅持有契约，子系统通过 CharacterRegistry **注册扩展**而不修改 GDD-02 源码。GDD-04 §0.4 已写接口骨架，本 amendment 把它正式纳入 ADR 契约。
+
+### 设计哲学
+
+```
+GDD-02 角色契约 ─────► 字段 / 状态枚举 / 接口签名（稳定）
+       │
+       │ CharacterRegistry（autoload）  ←── M2 实装
+       │
+       ├── register_state_mode(state, mode_id)        ← GDD-04 注册 cultivating: normal/bottleneck
+       ├── register_attribute(attr_id, default)       ← M5 心境注册 mental_state
+       ├── register_attribute_modifier_source(...)    ← 建筑/buff 注入 modifier 来源声明
+       └── register_signal_listener(signal, cb)       ← 子系统挂监听器
+              ↑
+              │
+   各子系统（GDD-04 成长 / GDD-05 宗门 / M5 心境等）启动期注册
+```
+
+**核心约束**：**子系统不修改 GDD-02 源码**，通过注册接口扩展。
+
+### CharacterRegistry 接口（M2 必落地）
+
+```gdscript
+# scripts/services/character_registry.gd（autoload）
+class_name CharacterRegistry extends Node
+
+# === 状态扩展 ===
+# 注册某 ActionState 的子模式（如 cultivating 的 normal/bottleneck/deep_retreat）
+func register_state_mode(action_state: String, mode_id: String, handler: ICharacterStateHandler = null) -> void
+
+# 查询某状态合法子模式
+func get_state_modes(action_state: String) -> Array[String]
+
+
+# === 字段扩展 ===
+# 注册新字段（如 M5 心境 mental_state）
+# 注册后：序列化自动包含；get/set 自动校验类型
+func register_attribute(attribute_id: String, default_value: Variant, value_type: String = "auto") -> void
+
+# 查询所有已注册字段
+func get_registered_attributes() -> Dictionary  # {attr_id: {default, type}}
+
+
+# === Modifier 来源声明 ===
+# 子系统声明"我会通过 buff 修改 character 的某属性"
+# 用于 review / 文档 / 自动生成依赖图
+func register_attribute_modifier_source(source_id: String, modifier_targets: Array[String]) -> void
+
+# 例：
+# CharacterRegistry.register_attribute_modifier_source(
+#   "building/cultivation_tower",
+#   ["cultivation_speed_bonus"]
+# )
+
+
+# === Signal 监听 ===
+# 给 character 事件挂监听（避免子系统散接 signal）
+func register_signal_listener(signal_name: String, callback: Callable) -> void
+
+# 例：
+# CharacterRegistry.register_signal_listener(
+#   "experience_added",
+#   _on_check_breakthrough_pending
+# )
+```
+
+### 子系统注册典型流程（M2 启动期）
+
+```gdscript
+# scripts/cultivation/cultivation_system.gd
+func _ready():
+    # 1. 注册状态子模式
+    CharacterRegistry.register_state_mode("cultivating", "normal")
+    CharacterRegistry.register_state_mode("cultivating", "bottleneck")
+    # M5 加：CharacterRegistry.register_state_mode("cultivating", "deep_retreat")
+    
+    # 2. 声明 modifier 来源
+    CharacterRegistry.register_attribute_modifier_source(
+        "cultivation_system",
+        ["experience", "cultivation_score", "lifespan_remaining_months"]
+    )
+    
+    # 3. 监听 character 事件
+    CharacterRegistry.register_signal_listener(
+        "sub_realm_advanced",
+        _on_sub_realm_advanced
+    )
+
+# scripts/sect/building_service.gd
+func _ready():
+    CharacterRegistry.register_attribute_modifier_source(
+        "buildings",
+        ["cultivation_speed_bonus", "insight_per_month"]
+    )
+
+# M5 心境系统
+# scripts/mental/mental_system.gd
+func _ready():
+    CharacterRegistry.register_attribute("mental_state", default = "calm", value_type = "enum")
+    CharacterRegistry.register_state_mode("haunted", "")  # 新 ActionState
+```
+
+### 与 ADR-0003 原文的关系
+
+- **状态枚举骨架**仍在 ADR-0003 原文定义（IDENTITY / ACTION_STATE 主枚举）
+- **子模式扩展**走 CharacterRegistry 注册（不在原文枚举里硬编码）
+- **新字段**（如 M5 心境）走 register_attribute（不改 Character schema 源码）
+- **序列化**自动处理已注册字段（SaveService 通过 CharacterRegistry 查询字段清单）
+
+### Review 红线
+
+| 红线 | 违反后果 |
+|---|---|
+| 子系统直接改 `character.xxx = ...` 字段 | review 拒收，必须走 set_state / add_buff / get_attribute 接口 |
+| 子系统在 character 字典里塞自己的运行态 | 同上 |
+| 子系统直接 import GDD-02 源码加新枚举 | 必须走 register_state_mode |
+| ActionState 主枚举变更（如加 IDENTITY 类型）| 改 ADR-0003 原文 + 走 ADR 评审 |
+
+### 实施清单
+
+| # | 内容 | 里程碑 |
+|---|---|---|
+| 1 | CharacterRegistry autoload + 4 注册接口 | M2 |
+| 2 | CharacterService 内部通过 registry 校验属性 / 状态合法性 | M2 |
+| 3 | SaveService 通过 registry 序列化已注册字段 | M2 |
+| 4 | GDD-04 CultivationSystem 注册示例（cultivating 子模式 + signal）| M2 |
+| 5 | GDD-05 BuildingService 注册示例（modifier 来源声明）| M2 |
+| 6 | review 红线 hook（pre-commit 静态检查直接字段写）| M2 后期 |
+| 7 | M5 心境 / 魔修体系注册示例 | M5 → docs/m1-deferred-details.md |
+
+### 影响
+
+- 加新成长玩法零侵入 GDD-02 / ADR-0003 源码
+- 序列化集中（不需要每个子系统单独写 ChunkSerializer，已注册字段自动入 character chunk）
+- 测试隔离（子系统单测只需 mock CharacterRegistry）
 
 ## 关联
 

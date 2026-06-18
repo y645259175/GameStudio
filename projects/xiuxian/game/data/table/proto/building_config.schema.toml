@@ -1,0 +1,71 @@
+# =============================================================================
+# Schema · 建筑配置.xlsx
+# 关联：GDD-05 §3-4 建筑系统；BuildingService 运行时读
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "建筑配置.xlsx"
+output_baked   = "building_config.tres"
+
+# ----------------------------------------------------------------------------
+# 建筑等级表（每行 = 一个建筑的某一级配置）
+# ----------------------------------------------------------------------------
+[tables.BuildingLevel]
+sheet = "建筑等级"
+pkey  = "row_id"
+cn    = "建筑等级配置"
+desc  = "每个建筑 × 等级一行；BuildingService 按 building_id+level 索引"
+
+inherit_when_blank = ["building_id", "name_cn", "icon_path", "modifier_kind"]
+
+[tables.BuildingLevel.fields.row_id]
+type = "string"
+cn   = "行ID"
+desc = "<building_id>_lv<level>，如 cultivation_tower_lv1"
+
+[tables.BuildingLevel.fields.building_id]
+type = "string"
+cn   = "建筑ID"
+desc = "全局唯一，代码索引用，如 cultivation_tower / library"
+
+[tables.BuildingLevel.fields.level]
+type = "int"
+cn   = "等级"
+desc = "1-3"
+
+[tables.BuildingLevel.fields.name_cn]
+type = "string"
+cn   = "中文名"
+
+[tables.BuildingLevel.fields.icon_path]
+type = "string"
+cn   = "图标路径"
+desc = "res:// 起始的相对路径，UI 读"
+
+[tables.BuildingLevel.fields.build_months]
+type = "int"
+cn   = "建造月数"
+
+[tables.BuildingLevel.fields.cost_spirit_stone]
+type = "int"
+cn   = "灵石成本"
+
+[tables.BuildingLevel.fields.modifier_kind]
+type = "string"
+cn   = "modifier类型"
+desc = "qi_acceleration / insight_per_month / forge_speed 等；空 = 无modifier"
+
+[tables.BuildingLevel.fields.modifier_value]
+type = "float"
+cn   = "modifier数值"
+desc = "对应类型的 percent 或绝对值"
+
+[tables.BuildingLevel.fields.capacity]
+type = "int"
+cn   = "弟子容量"
+desc = "0 = 无容量限制（如住所只用于居住，不影响修炼）"
+
+[tables.BuildingLevel.fields.desc_cn]
+type = "string"
+cn   = "中文描述"
+desc = "UI tooltip 用"

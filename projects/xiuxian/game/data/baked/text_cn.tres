@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+data = {
+	"TextTable": [
+		{
+			"key": "Text_buff_injury_main",
+			"content_cn": "受伤"
+		},
+		{
+			"key": "Text_buff_aaaa",
+			"content_cn": "测试用，战斗时战斗力提高"
+		},
+		{
+			"key": "Text_buff_bbb",
+			"content_cn": "测试用，战斗时削弱敌人战斗力"
+		}
+	]
+}

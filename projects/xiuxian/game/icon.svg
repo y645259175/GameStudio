@@ -1,0 +1,6 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="16" fill="#F5EFE0"/>
+  <path d="M24 92 L48 52 L64 72 L84 40 L104 92 Z" fill="#4A6670" opacity="0.85"/>
+  <circle cx="96" cy="34" r="12" fill="#A93226"/>
+  <text x="64" y="116" font-family="serif" font-size="20" fill="#1A1814" text-anchor="middle">仙</text>
+</svg>

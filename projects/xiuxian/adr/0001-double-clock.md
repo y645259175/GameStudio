@@ -153,6 +153,63 @@ TimeService (singleton autoload)
   - 历练中宗门月度结算系统正常响应 month_advanced
   - 存档恢复时状态正确（仅大世界状态，依赖 ADR-0004）
 
+---
+
+## Amendment v1.1（2026-06-09 · 接口扩充）
+
+> 触发：GDD-03 §3.4 / §4.5 / GDD-04 §9 都引用 `TimeService.advance_progress` / `advance_outer` 接口，但 v1.0 ADR 未明示。本 amendment 把接口正式列入契约。
+
+### 公开接口清单（M2 必落地）
+
+```gdscript
+# scripts/services/time_service.gd（autoload）
+class_name TimeService extends Node
+
+# === 大世界（月节拍）===
+func get_current_month() -> int                   # 全局月份累加器
+func get_current_year() -> int                    # 月 / 12 派生
+func advance_outer(months: int) -> void           # 推进 N 月（含逐月广播）
+                                                  # 触发：撤离回宗 / debug 跳月
+
+# === 历练内层（百分比时钟）===
+func enter_expedition(initial_percent: int = 100) -> void
+func exit_expedition() -> void
+func get_expedition_remaining_percent() -> int
+func advance_progress(percent: int) -> void       # 推进 N% 进度
+                                                  # 触发：节点进入 / 选项 cost_time / 事件 action 消耗
+                                                  # 内部检查：跨月阈值则广播 month_advanced
+                                                  # 内部检查：percent ≤ 0 → 标记 timeout_pending（GDD-03 §4.3）
+
+# === Signal ===
+signal month_advanced(new_month: int, year: int, month_of_year: int)
+signal progress_advanced(new_remaining_percent: int, just_consumed: int)
+signal year_advanced(new_year: int)
+signal expedition_time_warning(threshold: String)  # "warning"(30%) / "critical"(10%)
+                                                  # GDD-03 §4.3.3
+```
+
+### 调用方约定（v3.1 v1.1）
+
+| 调用方 | API | 场景 |
+|---|---|---|
+| GDD-03 §3.4 OptionDef | `advance_progress(option.cost_time_percent)` | 选项消耗历练时间 |
+| GDD-03 §4.5 ExtractionService | `advance_outer(return_days_to_months)` | 撤离回宗推进月份（注：M3 实际按天，需另加 `advance_outer_by_days`，或将天数四舍五入到月）|
+| GDD-04 §2.2 闭关 | 订阅 `month_advanced` | 月节拍涨经验 |
+| GDD-04 §8.3 寿元衰减 | 订阅 `month_advanced` | 每月 -1 寿元 |
+| GDD-05 月俸 / 建造 / 炼丹 | 订阅 `month_advanced` | 各种月节拍推进 |
+| 历练事件 wait_months action（M5）| `advance_outer(months)` | 事件链中"暂停 N 月再继续"|
+
+### 待解小细节（M2 实装时定）
+
+- 撤离回宗天数 1/3/7 天（GDD-06 §7.5）→ 是否在 TimeService 加 `advance_outer_by_days(days)` API？还是调用方按 30 天 = 1 月四舍五入？
+  → **决议**：加 `advance_outer_by_days(days)`，内部累计满 30 天广播一次 month_advanced（避免精度丢失）
+- progress_advanced signal 是否含具体哪个 action 消耗的 → 不含（保持 signal 精简，调用方自记日志）
+
+### 影响
+
+- GDD-03 / GDD-04 / GDD-05 引用此 API 的位置无需改文，amendment 是补 ADR 不是改 GDD
+- M2 TimeService 实装时按此清单实现 + 单元测试覆盖
+
 ## 关联
 
 - GDD：gdd-01 §2.3（双层时钟设计）/ §6.4（时间总线）

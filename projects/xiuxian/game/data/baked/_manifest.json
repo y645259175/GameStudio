@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "baked_at": 1781782374,
+  "tables": [
+    {
+      "schema": "buff_system.schema.toml",
+      "output": "buff_system.tres",
+      "source_hash": "c2fcbe7ca298e4c0",
+      "row_count": 8,
+      "tables": [
+        "BuffType",
+        "BuffInstance"
+      ]
+    },
+    {
+      "schema": "building_config.schema.toml",
+      "output": "building_config.tres",
+      "source_hash": "66fa4f2671324971",
+      "row_count": 15,
+      "tables": [
+        "BuildingLevel"
+      ]
+    },
+    {
+      "schema": "event_config.schema.toml",
+      "output": "event_config.tres",
+      "source_hash": "c16de55836232fe0",
+      "row_count": 37,
+      "tables": [
+        "EventTemplate",
+        "EventAction",
+        "EventOption"
+      ]
+    },
+    {
+      "schema": "realm_curve.schema.toml",
+      "output": "realm_curve.tres",
+      "source_hash": "d668c8d605ed120c",
+      "row_count": 46,
+      "tables": [
+        "RealmCurve"
+      ]
+    },
+    {
+      "schema": "resource_config.schema.toml",
+      "output": "resource_config.tres",
+      "source_hash": "fac075a01b6c5897",
+      "row_count": 7,
+      "tables": [
+        "Resource"
+      ]
+    },
+    {
+      "schema": "text_table.schema.toml",
+      "output": "text_cn.tres",
+      "source_hash": "2ce9d96e998e4cde",
+      "row_count": 3,
+      "tables": [
+        "TextTable"
+      ]
+    }
+  ]
+}

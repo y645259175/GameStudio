@@ -1,0 +1,367 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+data = {
+	"EventTemplate": [
+		{
+			"event_id": "exp_forest_stroll",
+			"title_cn": "林间漫步",
+			"desc_cn": "前方的树林灵气弥漫，隐约可见几株灵草在阳光下闪着微光。",
+			"category": "treasure",
+			"min_node_depth": 0,
+			"weight": 40
+		},
+		{
+			"event_id": "exp_ancient_stele",
+			"title_cn": "古碑残文",
+			"desc_cn": "一块半埋的石碑上刻着古老的符文，似乎记载着某种心法。",
+			"category": "story",
+			"min_node_depth": 0,
+			"weight": 30
+		},
+		{
+			"event_id": "exp_cave_discover",
+			"title_cn": "洞窟抉择",
+			"desc_cn": "前方山壁有一个洞口，洞内隐隐有灵气发出，但也似乎有危险的气息。",
+			"category": "trial",
+			"min_node_depth": 1,
+			"weight": 50
+		},
+		{
+			"event_id": "exp_spirit_beast",
+			"title_cn": "灵兽袭扰",
+			"desc_cn": "一头受伤的赤鬃灵虎拦在路中央，对着你发出威严的低吼。",
+			"category": "battle",
+			"min_node_depth": 1,
+			"weight": 30
+		},
+		{
+			"event_id": "exp_boss_guardian",
+			"title_cn": "山谷守卫",
+			"desc_cn": "一只巨大的碧鳞蟾蜍守在前往秘境的必经之路上，浑身散发着浓烈的妖气。",
+			"category": "battle",
+			"min_node_depth": 2,
+			"weight": 60
+		},
+		{
+			"event_id": "__sys_extraction__",
+			"title_cn": "撤离历练",
+			"desc_cn": "历练结束，收获归宗。",
+			"category": "system",
+			"min_node_depth": 0,
+			"weight": 0
+		}
+	],
+	"EventAction": [
+		{
+			"row_id": "exp_forest_stroll_1",
+			"event_id": "exp_forest_stroll",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "前方的树林灵气弥漫，隐约可见几株灵草。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_forest_stroll_2",
+			"event_id": "exp_forest_stroll",
+			"order": 2,
+			"action_type": "give_resource",
+			"condition": "",
+			"param1": "spirit_herb",
+			"param2": "5",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_ancient_stele_1",
+			"event_id": "exp_ancient_stele",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "古碑上刻着'大道无形，生育天地'，你静心参悟，若有所得。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_ancient_stele_2",
+			"event_id": "exp_ancient_stele",
+			"order": 2,
+			"action_type": "give_resource",
+			"condition": "",
+			"param1": "spirit_stone",
+			"param2": "300",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_ancient_stele_3",
+			"event_id": "exp_ancient_stele",
+			"order": 3,
+			"action_type": "set_flag",
+			"condition": "",
+			"param1": "got_insight",
+			"param2": "1",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_1",
+			"event_id": "exp_cave_discover",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "洞口发出幽幽绿光，你听到了低沉的嘶鸣声。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_2",
+			"event_id": "exp_cave_discover",
+			"order": 2,
+			"action_type": "show_options",
+			"condition": "",
+			"param1": "opt_cave_explore",
+			"param2": "opt_cave_bypass",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_3",
+			"event_id": "exp_cave_discover",
+			"order": 3,
+			"action_type": "show_text",
+			"condition": "flag('choice') == 'opt_cave_explore'",
+			"param1": "你握紧武器，迈入洞穴深处——一只石魔猿迎面扑来！",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_4",
+			"event_id": "exp_cave_discover",
+			"order": 4,
+			"action_type": "start_battle",
+			"condition": "flag('choice') == 'opt_cave_explore'",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_5",
+			"event_id": "exp_cave_discover",
+			"order": 5,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "石魔猿轰然倒地，洞内灵气四溢，你发现了不少灵石。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_6",
+			"event_id": "exp_cave_discover",
+			"order": 6,
+			"action_type": "give_resource",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "spirit_stone",
+			"param2": "500",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_7",
+			"event_id": "exp_cave_discover",
+			"order": 7,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'lose'",
+			"param1": "你且战且退，撤出洞穴，身上的灵石掉落了几颗...",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_8",
+			"event_id": "exp_cave_discover",
+			"order": 8,
+			"action_type": "give_resource",
+			"condition": "flag('battle_result') == 'lose'",
+			"param1": "spirit_stone",
+			"param2": "-200",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_9",
+			"event_id": "exp_cave_discover",
+			"order": 9,
+			"action_type": "show_text",
+			"condition": "flag('choice') == 'opt_cave_bypass'",
+			"param1": "你选择安全为上，绕开洞穴，从山路采集了沿途的灵草。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_cave_discover_10",
+			"event_id": "exp_cave_discover",
+			"order": 10,
+			"action_type": "give_resource",
+			"condition": "flag('choice') == 'opt_cave_bypass'",
+			"param1": "spirit_herb",
+			"param2": "10",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_spirit_beast_1",
+			"event_id": "exp_spirit_beast",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "赤鬃灵虎虽然是受伤之躯，但眼中依然透着猛兽的威严。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_spirit_beast_2",
+			"event_id": "exp_spirit_beast",
+			"order": 2,
+			"action_type": "start_battle",
+			"condition": "",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_spirit_beast_3",
+			"event_id": "exp_spirit_beast",
+			"order": 3,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "击败灵虎后，你发现它守护的草丛中长满了珍稀灵草。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_spirit_beast_4",
+			"event_id": "exp_spirit_beast",
+			"order": 4,
+			"action_type": "give_resource",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "spirit_herb",
+			"param2": "15",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_spirit_beast_5",
+			"event_id": "exp_spirit_beast",
+			"order": 5,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'lose'",
+			"param1": "灵虎逼退了你，它慢慢躺回草丛中。你受了些伤，先退一步。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_1",
+			"event_id": "exp_boss_guardian",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "碧鳞蟾蜍吐出一片毒雾，你感到一阵眩晕。此战避无可避！",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_2",
+			"event_id": "exp_boss_guardian",
+			"order": 2,
+			"action_type": "start_battle",
+			"condition": "",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_3",
+			"event_id": "exp_boss_guardian",
+			"order": 3,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "碧鳞蟾蜍倒地，一颗碧绿的内丹滚落在地，周围散落着大量灵石。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_4",
+			"event_id": "exp_boss_guardian",
+			"order": 4,
+			"action_type": "give_resource",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "spirit_stone",
+			"param2": "1000",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_5",
+			"event_id": "exp_boss_guardian",
+			"order": 5,
+			"action_type": "extraction",
+			"condition": "flag('battle_result') == 'win'",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_6",
+			"event_id": "exp_boss_guardian",
+			"order": 6,
+			"action_type": "show_text",
+			"condition": "flag('battle_result') == 'lose'",
+			"param1": "你被击退，毒雾让身体虚弱。这次历练到此为止。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "exp_boss_guardian_7",
+			"event_id": "exp_boss_guardian",
+			"order": 7,
+			"action_type": "extraction",
+			"condition": "flag('battle_result') == 'lose'",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "sys_ext_1",
+			"event_id": "__sys_extraction__",
+			"order": 1,
+			"action_type": "show_text",
+			"condition": "",
+			"param1": "带着此行收获，你踏上了归宗之路。",
+			"param2": "",
+			"param3": ""
+		},
+		{
+			"row_id": "sys_ext_2",
+			"event_id": "__sys_extraction__",
+			"order": 2,
+			"action_type": "extraction",
+			"condition": "",
+			"param1": "",
+			"param2": "",
+			"param3": ""
+		}
+	],
+	"EventOption": [
+		{
+			"option_id": "opt_cave_explore",
+			"text_cn": "勇闯洞穴",
+			"battle_trigger": true,
+			"battle_enemy_realm": "qi",
+			"battle_enemy_count": 1,
+			"reward_resource_id": "",
+			"reward_amount": 0
+		},
+		{
+			"option_id": "opt_cave_bypass",
+			"text_cn": "绕路前行",
+			"battle_trigger": false,
+			"battle_enemy_realm": "",
+			"battle_enemy_count": 0,
+			"reward_resource_id": "",
+			"reward_amount": 0
+		}
+	]
+}

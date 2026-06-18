@@ -45,3 +45,13 @@ secrets.json
 
 # === Node (if ever used) ===
 node_modules/
+
+# === 配表烘焙产物（工作室通用范式 v1.0）===
+# 所有项目的 data/baked/ 和 data/debug/ 都是烘焙产物，运行时由 excel_convert.py 重建
+# 详见各项目 docs/data-format-spec.md
+projects/*/data/baked/
+projects/*/data/debug/
+
+# Excel 临时文件（编辑时 Excel/WPS 自动产生，不能进 git）
+~$*.xlsx
+~$*.xls

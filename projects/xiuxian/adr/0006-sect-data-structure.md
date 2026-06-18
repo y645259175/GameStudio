@@ -95,7 +95,7 @@ sum_resources(sect, type) -> int
 
 # === 成员管理 ===
 add_member(sect, character_id) -> bool      # 招收弟子时调用
-remove_member(sect, character_id, reason)   # 叛门 / 死亡 / 离宗时调用
+remove_member(sect, character_id, reason)   # 死亡 / 离宗 / 主动逐出时调用
 
 # === 派系 / 声望 ===
 adjust_reputation(sect, delta, source)
@@ -131,7 +131,7 @@ signal reputation_changed(sect, old, new, source)
 | `environment/qi_richness`（仅 SECT）| 宗门所在地灵气浓度 | 长期 buff，影响修炼 / 弟子招收 |
 | `external/under_attack`（仅 SECT）| 邻宗来袭事件 | debuff，影响声望 / 阻止建设 |
 | `external/imperial_blessing`（仅 SECT）| 主线大事件 | 加资源产出 / 加声望 |
-| `internal/disciple_unrest`（仅 SECT）| 弟子心性平均值过低 | 加叛门概率 |
+| `internal/morale_low`（仅 SECT · 占位）| 弟子士气过低（M5+ 触发条件待定）| 影响声望 / 修炼速度 / 招收概率（具体 GDD-05 平衡时定）|
 
 > 关键：**宗门 buff 是单实体级**，但效果可能"广播到所有成员"（如 qi_acceleration 加成所有弟子修炼）。这种 fan-out 由消费方（ProductionService 等）实现，不是 BuffService 的责任。
 
@@ -147,7 +147,7 @@ signal reputation_changed(sect, old, new, source)
 | 字段 | M3 用法 | 后续可能扩展（玩法决定）|
 |---|---|---|
 | `faction` | 占位（"neutral"）| 玩家选择 / 主线分支 |
-| `reputation` | 占位（M3 不参与运算）| 后续叛门 / 主线触发条件 |
+| `reputation` | 占位（M3 不参与运算）| 后续主线触发条件 / 招收难度（具体玩法决定）|
 | `relations` | 空 Dict | 与 NPC 派系 / 异宗的关系值（仅数值，不需要异宗 Sect 实体）|
 | `resources` | 完整使用（5-8 种基础资源）| 后续扩展资源类型 |
 | `buildings` | 完整使用（5-8 个建筑位）| 后续扩展建筑链 |

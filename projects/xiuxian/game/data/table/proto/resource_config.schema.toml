@@ -1,0 +1,41 @@
+# =============================================================================
+# Schema · 资源配置.xlsx
+# 关联：GDD-06 §2 资源；InventoryService 用 / UI 显示元数据
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "资源配置.xlsx"
+output_baked   = "resource_config.tres"
+
+[tables.Resource]
+sheet = "资源"
+pkey  = "resource_id"
+cn    = "资源元数据"
+desc  = "玩家可见的资源种类（灵石/灵草/丹药等）"
+
+[tables.Resource.fields.resource_id]
+type = "string"
+cn   = "资源ID"
+desc = "全局唯一，代码索引用"
+
+[tables.Resource.fields.name_cn]
+type = "string"
+cn   = "中文名"
+
+[tables.Resource.fields.icon_path]
+type = "string"
+cn   = "图标路径"
+
+[tables.Resource.fields.category]
+type = "enum"
+enum = ["currency", "material", "consumable", "treasure"]
+cn   = "类别"
+
+[tables.Resource.fields.cap]
+type = "int"
+cn   = "上限"
+desc = "0 = 无上限"
+
+[tables.Resource.fields.desc_cn]
+type = "string"
+cn   = "描述"

@@ -1,0 +1,18 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/builds/
+
+# Imported assets cache
+*.import.bak
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# 临时验证日志（headless 自检产生）
+_check*.log
+_scan.log
+_import.log
+_run*.log
+_*.log

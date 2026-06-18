@@ -1,0 +1,62 @@
+; Engine configuration file.
+; xiuxian · 修仙模拟经营
+; Godot 4.6.2-stable
+;
+; M2 框架搭建起步：autoload 注册地基 service。
+; 新增 autoload 时按依赖顺序追加（DataRegistry 最先，EventBus 次之，TimeService 再次）。
+
+config_version=5
+
+[application]
+
+config/name="xiuxian · 修仙模拟经营"
+config/description="水墨写意修仙宗门模拟经营。M3 第一可运行画面。"
+run/main_scene="res://scenes/main_screen.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1366
+window/size/viewport_height=768
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[autoload]
+
+; 加载顺序即依赖顺序（Godot 按声明顺序初始化 autoload）
+; 注意：--path 指向 game/，故 res:// 根 = game/，路径不含 game/ 前缀。
+; 1. DataRegistry — 配表运行时入口（无依赖，最先）
+DataRegistry="*res://scripts/data/data_registry.gd"
+; 2. EventBus — 全局信号总线（无依赖）
+EventBus="*res://scripts/core/event_bus.gd"
+; 3. TimeService — 双层时钟（emit 到 EventBus）
+TimeService="*res://scripts/services/time_service.gd"
+; 4. CharacterRegistry — 角色契约扩展点（无强依赖）
+CharacterRegistry="*res://scripts/character/character_registry.gd"
+; 5. CharacterService — 角色仓库（用 EventBus / CharacterRegistry）
+CharacterService="*res://scripts/character/character_service.gd"
+; 6. BuffService — buff 系统（用 DataRegistry / 订阅 TimeService / tick CharacterService）
+BuffService="*res://scripts/services/buff_service.gd"
+; 7. SectService — 宗门数据入口（无强依赖）
+SectService="*res://scripts/sect/sect_service.gd"
+; 8. InventoryService — 资源（用 SectService）
+InventoryService="*res://scripts/services/inventory_service.gd"
+; 9. BuildingService — 建筑（用 Sect/Inventory/Buff/Character/订阅 Time）
+BuildingService="*res://scripts/sect/building_service.gd"
+; 10. ProductionService — 生产任务（用 Inventory/订阅 Time）
+ProductionService="*res://scripts/sect/production_service.gd"
+; 11. CultivationSystem — 成长（用 Buff/Character/CharacterRegistry/订阅 Time）
+CultivationSystem="*res://scripts/cultivation/cultivation_system.gd"
+; 12. SaveService — 存档（收集各 service chunk）
+SaveService="*res://scripts/services/save_service.gd"
+; 13. BattleService — 战斗（持有 StatSimulator resolver）
+BattleService="*res://scripts/battle/battle_service.gd"
+; 14. EventEngine — 历练事件引擎（用 DataRegistry / ConditionEvaluator / BattleService）
+EventEngine="*res://scripts/expedition/event_engine.gd"
+; 15. ExpeditionService — 历练状态机（用 EventEngine）
+ExpeditionService="*res://scripts/services/expedition_service.gd"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
