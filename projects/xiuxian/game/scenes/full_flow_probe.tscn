@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0xiuxianfullflow"]
+
+[ext_resource type="Script" path="res://scripts/core/full_flow_probe.gd" id="1_flow"]
+
+[node name="FullFlowProbe" type="Node"]
+script = ExtResource("1_flow")

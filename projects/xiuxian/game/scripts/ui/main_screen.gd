@@ -243,12 +243,13 @@ func _on_expedition_finished(reason: String) -> void:
 	expedition_advance_btn.visible = false
 	expedition_retreat_btn.visible = false
 	expedition_status.text = ""
-	var msg := {
+	var msg_map := {
 		"cleared": "✦ 历练圆满，满载而归 ✦",
 		"timeout": "✦ 击败守关之敌，凯旋而归 ✦",
 		"active": "✦ 主动撤离，平安归宗 ✦",
 		"defeat": "☠ 队伍折损，狼狈撤回 ☠",
-	}.get(reason, "✦ 历练结束 ✦")
+	}
+	var msg: String = msg_map.get(reason, "✦ 历练结束 ✦")
 	_log("[color=#A93226]%s[/color]" % msg)
 	_refresh_all()
 
