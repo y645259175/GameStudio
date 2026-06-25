@@ -27,6 +27,7 @@ const COLOR_BRONZE := Color("#8C6D3F")
 @onready var expedition_btn: Button = %ExpeditionBtn
 @onready var expedition_status: Label = %ExpeditionStatus
 @onready var expedition_advance_btn: Button = %ExpeditionAdvanceBtn
+@onready var expedition_retreat_btn: Button = %ExpeditionRetreatBtn
 
 const DEFAULT_DISCIPLE_PORTRAITS := [
 	"res://art/m3/portraits/disciple_male.png",
@@ -35,58 +36,13 @@ const DEFAULT_DISCIPLE_PORTRAITS := [
 
 
 func _ready() -> void:
-	_init_world()
+	# 世界已由 GameManager.start_new_game / continue_game 初始化好
 	_connect_signals()
 	_refresh_all()
-	_log("[color=#A93226]太初元年 春[/color]——宗门初立，欢迎门主。", false)
-
-
-# -----------------------------------------------------------------------------
-# 世界初始化（M3 第一画面：开新存档）
-# -----------------------------------------------------------------------------
-func _init_world() -> void:
-	# 宗门
-	SectService.init_new_sect("青云宗", 1)
-	# 起步资源
-	InventoryService.add("spirit_stone", 2000)
-	InventoryService.add("spirit_herb", 50)
-	# 预建建筑（GDD-05 §3.2：主殿/居所 is_predefined 开局 lv1）
-	# + 修炼塔开局也建好 lv1，让玩家一进游戏就能体验"分配弟子闭关"
-	BuildingService.predefine_building("slot_main_hall", "main_hall", 1)
-	BuildingService.predefine_building("slot_disciple_dorm", "disciple_dorm", 1)
-	BuildingService.predefine_building("slot_cultivation_tower", "cultivation_tower", 1)
-	# 创建门主
-	var master := CharacterService.create("char_master")
-	master.character_name = "云一道人"
-	master.identity = Character.Identity.MASTER_CURRENT
-	master.realm = "golden_3"
-	master.sub_level = 3
-	master.portrait_id = "res://art/m3/portraits/master_portrait.png"
-	master.spirit_root = {"fire": 7, "metal": 5}
-	master.attributes = {"insight": 130, "physique": 80, "shenshi": 90, "experience": 0.0}
-	master.lifespan_total_months = 1200
-	master.lifespan_remaining_months = 800
-	SectService.add_member("char_master")
-
-	# 创建 2 个起始弟子
-	var disciple_data := [
-		{"name": "林清雪", "realm": "qi_1", "sub": 1, "roots": {"water": 6, "wood": 4}, "insight": 110},
-		{"name": "苏长风", "realm": "qi_2", "sub": 2, "roots": {"fire": 5, "metal": 3}, "insight": 105},
-	]
-	for i in range(disciple_data.size()):
-		var did := "char_disciple_%d" % (i + 1)
-		var d := CharacterService.create(did)
-		var data: Dictionary = disciple_data[i]
-		d.identity = Character.Identity.DISCIPLE
-		d.character_name = data["name"]
-		d.realm = data["realm"]
-		d.sub_level = data["sub"]
-		d.portrait_id = DEFAULT_DISCIPLE_PORTRAITS[i % DEFAULT_DISCIPLE_PORTRAITS.size()]
-		d.spirit_root = data["roots"]
-		d.attributes = {"insight": data["insight"], "physique": 50, "shenshi": 60, "experience": 0.0}
-		d.lifespan_total_months = 720
-		d.lifespan_remaining_months = 720
-		SectService.add_member(did)
+	_log("[color=#A93226]%s[/color]——欢迎门主，%s 已立。" % [
+		"%d 年 %d 月" % [TimeService.get_current_year(), TimeService.get_month_of_year()],
+		SectService.get_sect().sect_name,
+	], false)
 
 
 # -----------------------------------------------------------------------------
@@ -106,6 +62,106 @@ func _connect_signals() -> void:
 	SectService.salary_paid.connect(_on_salary_paid)
 	EventBus.character_died.connect(_on_character_died)
 	EventBus.lifespan_warning.connect(_on_lifespan_warning)
+	EventBus.game_over.connect(_on_game_over)
+	RecruitService.recruit_candidates_ready.connect(_on_recruit_candidates)
+	RecruitService.auto_recruit_arrived.connect(_on_auto_recruit)
+
+
+# -----------------------------------------------------------------------------
+# 招收（GDD-05 §8）
+# -----------------------------------------------------------------------------
+func _on_recruit_pressed() -> void:
+	if RecruitService.is_recruiting():
+		_log("[color=#8C6D3F]已在开门收徒中，请等待月末…[/color]")
+		return
+	if not RecruitService.has_housing_room():
+		_log("[color=#A93226]弟子居所已满，无法招收（可升级居所扩容）[/color]")
+		return
+	if RecruitService.start_active_recruit():
+		_log("[color=#A93226]开门收徒，需 %d 灵石，月末有缘者将至…[/color]" % RecruitService.ACTIVE_RECRUIT_COST)
+		_refresh_topbar()
+	else:
+		_log("[color=#A93226]灵石不足，无法开门收徒（需 %d）[/color]" % RecruitService.ACTIVE_RECRUIT_COST)
+
+
+func _on_recruit_candidates(candidates: Array) -> void:
+	_show_recruit_dialog("开门收徒 · 有缘者求收", candidates)
+
+
+func _on_auto_recruit(candidate: Dictionary) -> void:
+	_show_recruit_dialog("有散修前来投奔", [candidate])
+
+
+func _show_recruit_dialog(title: String, candidates: Array) -> void:
+	var dlg := AcceptDialog.new()
+	dlg.title = title
+	dlg.dialog_hide_on_ok = true
+	dlg.ok_button_text = "全部婉拒"
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	var tip := Label.new()
+	tip.text = "选择一位收入门下（居所余位 %d）：" % (BuildingService.get_housing_capacity() - SectService.member_count())
+	tip.add_theme_color_override("font_color", COLOR_INK)
+	vb.add_child(tip)
+	for cand in candidates:
+		vb.add_child(_make_candidate_row(cand, dlg))
+	dlg.add_child(vb)
+	add_child(dlg)
+	dlg.popup_centered(Vector2i(460, 120 + candidates.size() * 90))
+	dlg.confirmed.connect(func(): dlg.queue_free())
+
+
+func _make_candidate_row(cand: Dictionary, dlg: AcceptDialog) -> Control:
+	var panel := _wrap_card(HBoxContainer.new())
+	var hb: HBoxContainer = panel.get_child(0)
+	hb.add_theme_constant_override("separation", 10)
+	var portrait := TextureRect.new()
+	portrait.custom_minimum_size = Vector2(54, 72)
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var pp: String = cand.get("portrait", "")
+	if pp != "" and ResourceLoader.exists(pp):
+		portrait.texture = load(pp)
+	hb.add_child(portrait)
+
+	var vb := VBoxContainer.new()
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var nm := Label.new()
+	var gender_cn := "♂" if cand.get("gender") == "male" else "♀"
+	nm.text = "%s %s  (%d 岁)" % [cand.get("name", "无名"), gender_cn, cand.get("age_years", 16)]
+	nm.add_theme_color_override("font_color", COLOR_INK)
+	vb.add_child(nm)
+	var roots_str := ""
+	for el in cand.get("spirit_root", {}):
+		roots_str += "%s%d " % [_element_cn(el), cand["spirit_root"][el]]
+	var detail := Label.new()
+	detail.text = "灵根：%s(共%d)  悟性 %d" % [roots_str, cand.get("root_total", 0), int(cand.get("attributes", {}).get("insight", 0))]
+	detail.add_theme_color_override("font_color", COLOR_SHANQING)
+	detail.add_theme_font_size_override("font_size", 11)
+	vb.add_child(detail)
+	hb.add_child(vb)
+
+	var btn := Button.new()
+	btn.text = "收入门下"
+	btn.pressed.connect(func():
+		var cid := RecruitService.accept_candidate(cand)
+		if cid != "":
+			_log("[color=#A93226]✦ %s 拜入青云宗 ✦[/color]" % cand.get("name", ""))
+			_refresh_all()
+		dlg.queue_free()
+	)
+	hb.add_child(btn)
+	return panel
+
+
+func _element_cn(el: String) -> String:
+	return {"fire":"火","water":"水","wood":"木","metal":"金","earth":"土"}.get(el, el)
+
+
+func _on_game_over(_reason: String) -> void:
+	_log("[color=#A93226]☠ 宗门覆灭…[/color]")
+	await get_tree().create_timer(1.5).timeout
+	get_tree().change_scene_to_file(GameManager.SCENE_GAME_OVER)
 
 
 func _on_salary_paid(total: int, affordable: bool) -> void:
@@ -165,10 +221,11 @@ func _on_breakthrough_failed(cid: String, _info: Dictionary) -> void:
 # 历练（ExpeditionService signal 回调）
 # -----------------------------------------------------------------------------
 func _on_expedition_started(map_id: String, _participant_ids: Array) -> void:
-	_log("[color=#A93226]✦ 出发历练：%s ✦[/color]" % map_id)
+	_log("[color=#A93226]✦ 出发历练：%s（共 %d 处秘地）✦[/color]" % [map_id, ExpeditionService.node_count()])
 	expedition_btn.visible = false
 	expedition_advance_btn.visible = true
-	expedition_status.text = "第 1 节点 · 准备探索..."
+	expedition_retreat_btn.visible = true
+	expedition_status.text = "准备探索..."
 
 
 func _on_expediton_node_entered(node_index: int, event_id: String) -> void:
@@ -178,15 +235,27 @@ func _on_expediton_node_entered(node_index: int, event_id: String) -> void:
 			if row.get("event_id") == event_id:
 				title = row.get("title_cn", event_id)
 				break
-	expedition_status.text = "第 %d 节点 · %s" % [node_index + 1, title]
+	expedition_status.text = "第 %d/%d 处 · %s" % [node_index + 1, ExpeditionService.node_count(), title]
 
 
-func _on_expedition_finished() -> void:
+func _on_expedition_finished(reason: String) -> void:
 	expedition_btn.visible = true
 	expedition_advance_btn.visible = false
+	expedition_retreat_btn.visible = false
 	expedition_status.text = ""
-	_log("[color=#A93226]✦ 历练结束，弟子们已返回宗门 ✦[/color]")
+	var msg := {
+		"cleared": "✦ 历练圆满，满载而归 ✦",
+		"timeout": "✦ 击败守关之敌，凯旋而归 ✦",
+		"active": "✦ 主动撤离，平安归宗 ✦",
+		"defeat": "☠ 队伍折损，狼狈撤回 ☠",
+	}.get(reason, "✦ 历练结束 ✦")
+	_log("[color=#A93226]%s[/color]" % msg)
 	_refresh_all()
+
+
+func _on_expedition_retreat_pressed() -> void:
+	if ExpeditionService.is_active():
+		ExpeditionService.retreat()
 
 
 func _on_world_event_triggered(hook_id: String, payload: Dictionary) -> void:
@@ -221,32 +290,18 @@ func _on_advance_pressed() -> void:
 
 
 func _on_save_pressed() -> void:
-	var path := "user://savegame.dat"
-	var data := SaveService.collect_save_data()
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f != null:
-		f.store_string(JSON.stringify(data))
-		f.close()
-		_log("[color=#4A6670]存档已写入 %s[/color]" % path)
+	if SaveService.save_to_slot(0):
+		_log("[color=#4A6670]✓ 存档成功[/color]")
+	else:
+		_log("[color=#A93226]存档失败[/color]")
 
 
 func _on_load_pressed() -> void:
-	var path := "user://savegame.dat"
-	if not FileAccess.file_exists(path):
+	if SaveService.load_from_slot(0):
+		_refresh_all()
+		_log("[color=#4A6670]✓ 读档成功[/color]")
+	else:
 		_log("[color=#A93226]读档失败：未找到存档[/color]")
-		return
-	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null:
-		return
-	var txt := f.get_as_text()
-	f.close()
-	var json := JSON.new()
-	if json.parse(txt) != OK:
-		_log("[color=#A93226]读档失败：存档损坏[/color]")
-		return
-	SaveService.apply_save_data(json.data)
-	_refresh_all()
-	_log("[color=#4A6670]读档完成[/color]")
 
 
 # -----------------------------------------------------------------------------
@@ -372,7 +427,9 @@ func _make_building_item(building_id: String) -> Control:
 
 	hb.add_child(vb)
 
-	# 右侧按钮
+	# 右侧按钮区（升级/建造 + 丹房炼丹）
+	var btn_box := VBoxContainer.new()
+	btn_box.add_theme_constant_override("separation", 4)
 	var btn := Button.new()
 	if current_lv == 0:
 		var cfg1 := BuildingService.get_level_config(building_id, 1)
@@ -387,9 +444,108 @@ func _make_building_item(building_id: String) -> Control:
 	else:
 		btn.text = "已满级"
 		btn.disabled = true
-	hb.add_child(btn)
+	btn_box.add_child(btn)
+	# 丹房：炼丹入口
+	if building_id == "alchemy_room" and current_lv >= 1:
+		var craft_btn := Button.new()
+		craft_btn.text = "炼丹（%d/%d）" % [AlchemyService.active_count(), AlchemyService.max_slots()]
+		craft_btn.pressed.connect(_show_alchemy_dialog)
+		btn_box.add_child(craft_btn)
+	hb.add_child(btn_box)
 
 	return hb
+
+
+# -----------------------------------------------------------------------------
+# 炼丹面板（GDD-05 §5.5）
+# -----------------------------------------------------------------------------
+func _show_alchemy_dialog() -> void:
+	var dlg := AcceptDialog.new()
+	dlg.title = "丹房 · 炼丹"
+	dlg.ok_button_text = "关闭"
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 8)
+
+	# 进行中任务
+	var tasks := AlchemyService.get_active_tasks()
+	if tasks.size() > 0:
+		var th := Label.new()
+		th.text = "— 炼制中 —"
+		th.add_theme_color_override("font_color", COLOR_VERMILION)
+		vb.add_child(th)
+		for t in tasks:
+			var tl := Label.new()
+			tl.text = "  %s  剩余 %d 月" % [t["recipe_row"].get("name_cn", ""), t["remaining"]]
+			tl.add_theme_color_override("font_color", COLOR_BRONZE)
+			tl.add_theme_font_size_override("font_size", 12)
+			vb.add_child(tl)
+
+	var rh := Label.new()
+	rh.text = "— 配方 —"
+	rh.add_theme_color_override("font_color", COLOR_INK)
+	vb.add_child(rh)
+	# 选炼丹值最高的可用弟子
+	var best_disciple := _best_alchemist()
+	for r in AlchemyService.get_all_recipes():
+		vb.add_child(_make_recipe_row(r, best_disciple, dlg))
+
+	dlg.add_child(vb)
+	add_child(dlg)
+	dlg.popup_centered(Vector2i(480, 160 + AlchemyService.get_all_recipes().size() * 40))
+	dlg.confirmed.connect(func(): dlg.queue_free())
+
+
+func _make_recipe_row(r: Dictionary, disciple_id: String, dlg: AcceptDialog) -> Control:
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 8)
+	var rid: String = r.get("recipe_id", "")
+	var info := Label.new()
+	var mat := "%s×%d" % [_res_name(r.get("material1_id","")), int(r.get("material1_count",0))]
+	if r.get("material2_id", "") != "":
+		mat += " %s×%d" % [_res_name(r.get("material2_id","")), int(r.get("material2_count",0))]
+	info.text = "%s  [%s]  %d月 %d%%" % [r.get("name_cn",""), mat, int(r.get("duration_months",1)), int(float(r.get("success_rate",0))*100)]
+	info.add_theme_color_override("font_color", COLOR_INK)
+	info.add_theme_font_size_override("font_size", 12)
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hb.add_child(info)
+
+	var reason := AlchemyService.cannot_craft_reason(rid, disciple_id)
+	var btn := Button.new()
+	if reason == "":
+		btn.text = "炼制"
+		btn.pressed.connect(func():
+			if AlchemyService.start_craft(rid, disciple_id):
+				_log("[color=#A93226]开始炼制 %s[/color]" % r.get("name_cn",""))
+				_refresh_all()
+			dlg.queue_free()
+		)
+	else:
+		btn.text = reason
+		btn.disabled = true
+	hb.add_child(btn)
+	return hb
+
+
+func _best_alchemist() -> String:
+	var best_id := ""
+	var best_skill := -1
+	for cid in SectService.get_member_ids():
+		var c := CharacterService.get_character(cid)
+		if c == null or c.action_state == Character.ActionState.DEAD:
+			continue
+		var sk := int(c.attributes.get("alchemy", 0))
+		if sk > best_skill:
+			best_skill = sk
+			best_id = cid
+	return best_id
+
+
+func _res_name(rid: String) -> String:
+	if rid == "" or not DataRegistry.is_loaded(): return rid
+	for row in DataRegistry.get_table("Resource"):
+		if row.get("resource_id") == rid:
+			return row.get("name_cn", rid)
+	return rid
 
 
 func _try_build(slot_id: String, building_id: String) -> void:

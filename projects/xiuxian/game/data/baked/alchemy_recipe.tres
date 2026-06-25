@@ -1,0 +1,87 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+data = {
+	"AlchemyRecipe": [
+		{
+			"recipe_id": "recipe_qi_pill",
+			"name_cn": "聚气丹",
+			"icon_path": "res://art/m3/icons/pill_mortal.png",
+			"material1_id": "spirit_herb",
+			"material1_count": 2,
+			"material2_id": "",
+			"material2_count": 0,
+			"required_alchemy_skill": 10,
+			"required_room_level": 1,
+			"duration_months": 1,
+			"success_rate": 0.9,
+			"output_id": "mortal_pill",
+			"output_count": 3,
+			"desc_cn": "闭关加速丹药，新手即可炼"
+		},
+		{
+			"recipe_id": "recipe_healing_pill",
+			"name_cn": "疗伤丹",
+			"icon_path": "res://art/m3/icons/pill_mortal.png",
+			"material1_id": "spirit_herb",
+			"material1_count": 1,
+			"material2_id": "beast_blood",
+			"material2_count": 1,
+			"required_alchemy_skill": 20,
+			"required_room_level": 1,
+			"duration_months": 1,
+			"success_rate": 0.8,
+			"output_id": "yellow_pill",
+			"output_count": 2,
+			"desc_cn": "治疗重伤"
+		},
+		{
+			"recipe_id": "recipe_breakthrough_pill",
+			"name_cn": "突破丹",
+			"icon_path": "res://art/m3/icons/pill_breakthrough.png",
+			"material1_id": "spirit_herb",
+			"material1_count": 3,
+			"material2_id": "demon_core",
+			"material2_count": 1,
+			"required_alchemy_skill": 40,
+			"required_room_level": 2,
+			"duration_months": 2,
+			"success_rate": 0.6,
+			"output_id": "breakthrough_pill_qi",
+			"output_count": 1,
+			"desc_cn": "突破成功率 +10%"
+		},
+		{
+			"recipe_id": "recipe_root_boost_fire",
+			"name_cn": "火灵根丹",
+			"icon_path": "res://art/m3/icons/pill_mystic.png",
+			"material1_id": "fire_essence",
+			"material1_count": 2,
+			"material2_id": "demon_core",
+			"material2_count": 2,
+			"required_alchemy_skill": 60,
+			"required_room_level": 3,
+			"duration_months": 2,
+			"success_rate": 0.45,
+			"output_id": "mystic_pill",
+			"output_count": 1,
+			"desc_cn": "火灵根 +1"
+		},
+		{
+			"recipe_id": "recipe_lifespan_pill",
+			"name_cn": "寿元丹",
+			"icon_path": "res://art/m3/icons/pill_yellow.png",
+			"material1_id": "millennium_herb",
+			"material1_count": 1,
+			"material2_id": "demon_core",
+			"material2_count": 3,
+			"required_alchemy_skill": 80,
+			"required_room_level": 3,
+			"duration_months": 3,
+			"success_rate": 0.3,
+			"output_id": "yellow_pill",
+			"output_count": 1,
+			"desc_cn": "寿元 +5 年（M4 启用）"
+		}
+	]
+}

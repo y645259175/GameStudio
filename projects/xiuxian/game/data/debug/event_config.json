@@ -41,6 +41,70 @@
       "weight": 60
     },
     {
+      "event_id": "exp_herb_field",
+      "title_cn": "灵草秘园",
+      "desc_cn": "一片隐蔽的山谷里长满了各色灵草，灵气扑面而来。",
+      "category": "treasure",
+      "min_node_depth": 0,
+      "weight": 35
+    },
+    {
+      "event_id": "exp_old_hermit",
+      "title_cn": "山中隐者",
+      "desc_cn": "一位白发老者在溪边垂钓，见你来到，微微一笑。",
+      "category": "encounter",
+      "min_node_depth": 0,
+      "weight": 25
+    },
+    {
+      "event_id": "exp_spirit_spring",
+      "title_cn": "灵泉涌动",
+      "desc_cn": "一汪清泉从石缝中涌出，泉水蕴含精纯灵气。",
+      "category": "treasure",
+      "min_node_depth": 0,
+      "weight": 30
+    },
+    {
+      "event_id": "exp_ruins_choice",
+      "title_cn": "古修遗府",
+      "desc_cn": "一座坍塌的洞府半掩在藤蔓之下，似有传承，亦有禁制。",
+      "category": "trial",
+      "min_node_depth": 1,
+      "weight": 45
+    },
+    {
+      "event_id": "exp_wandering_cultivator",
+      "title_cn": "散修问道",
+      "desc_cn": "一名散修拦路，要与你切磋一番，赌注是身上的灵石。",
+      "category": "battle",
+      "min_node_depth": 1,
+      "weight": 35
+    },
+    {
+      "event_id": "exp_poison_swamp",
+      "title_cn": "瘴气沼泽",
+      "desc_cn": "前方是一片散发着紫色瘴气的沼泽，强行通过会损耗灵石。",
+      "category": "story",
+      "min_node_depth": 1,
+      "weight": 25
+    },
+    {
+      "event_id": "exp_demon_ambush",
+      "title_cn": "妖群围攻",
+      "desc_cn": "三只金瞳妖豹从林中扑出，将你团团围住！",
+      "category": "battle",
+      "min_node_depth": 2,
+      "weight": 40
+    },
+    {
+      "event_id": "exp_treasure_vault",
+      "title_cn": "秘境宝库",
+      "desc_cn": "秘境深处的宝库大门虚掩，里面金光闪烁。",
+      "category": "treasure",
+      "min_node_depth": 2,
+      "weight": 35
+    },
+    {
       "event_id": "__sys_extraction__",
       "title_cn": "撤离历练",
       "desc_cn": "历练结束，收获归宗。",
@@ -321,6 +385,376 @@
       "param3": ""
     },
     {
+      "row_id": "exp_herb_field_1",
+      "event_id": "exp_herb_field",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "你小心采撷，收获颇丰。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_herb_field_2",
+      "event_id": "exp_herb_field",
+      "order": 2,
+      "action_type": "give_resource",
+      "condition": "",
+      "param1": "spirit_herb",
+      "param2": "12",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_1",
+      "event_id": "exp_old_hermit",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "老者道：'年轻人，可愿与我手谈一局？'",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_2",
+      "event_id": "exp_old_hermit",
+      "order": 2,
+      "action_type": "show_options",
+      "condition": "",
+      "param1": "opt_hermit_learn",
+      "param2": "opt_hermit_gift",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_3",
+      "event_id": "exp_old_hermit",
+      "order": 3,
+      "action_type": "show_text",
+      "condition": "flag('choice') == 'opt_hermit_learn'",
+      "param1": "老者指点了你几句修行心得，令你受益匪浅。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_4",
+      "event_id": "exp_old_hermit",
+      "order": 4,
+      "action_type": "give_resource",
+      "condition": "flag('choice') == 'opt_hermit_learn'",
+      "param1": "spirit_stone",
+      "param2": "200",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_5",
+      "event_id": "exp_old_hermit",
+      "order": 5,
+      "action_type": "show_text",
+      "condition": "flag('choice') == 'opt_hermit_gift'",
+      "param1": "老者赠你一袋灵草，飘然而去。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_old_hermit_6",
+      "event_id": "exp_old_hermit",
+      "order": 6,
+      "action_type": "give_resource",
+      "condition": "flag('choice') == 'opt_hermit_gift'",
+      "param1": "spirit_herb",
+      "param2": "20",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_spirit_spring_1",
+      "event_id": "exp_spirit_spring",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "你掬一捧泉水饮下，灵气在经脉中流转，神清气爽。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_spirit_spring_2",
+      "event_id": "exp_spirit_spring",
+      "order": 2,
+      "action_type": "give_resource",
+      "condition": "",
+      "param1": "spirit_stone",
+      "param2": "250",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_1",
+      "event_id": "exp_ruins_choice",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "洞府禁制隐隐发光，强闯有风险，但传承诱人。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_2",
+      "event_id": "exp_ruins_choice",
+      "order": 2,
+      "action_type": "show_options",
+      "condition": "",
+      "param1": "opt_ruins_force",
+      "param2": "opt_ruins_careful",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_3",
+      "event_id": "exp_ruins_choice",
+      "order": 3,
+      "action_type": "show_text",
+      "condition": "flag('choice') == 'opt_ruins_force'",
+      "param1": "你强行破禁，触发了守护傀儡！",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_4",
+      "event_id": "exp_ruins_choice",
+      "order": 4,
+      "action_type": "start_battle",
+      "condition": "flag('choice') == 'opt_ruins_force'",
+      "param1": "foundation",
+      "param2": "1",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_5",
+      "event_id": "exp_ruins_choice",
+      "order": 5,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "傀儡崩解，你取得了洞府中的宝物！",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_6",
+      "event_id": "exp_ruins_choice",
+      "order": 6,
+      "action_type": "give_resource",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "spirit_stone",
+      "param2": "800",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_7",
+      "event_id": "exp_ruins_choice",
+      "order": 7,
+      "action_type": "give_resource",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "demon_core",
+      "param2": "1",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_8",
+      "event_id": "exp_ruins_choice",
+      "order": 8,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'lose'",
+      "param1": "傀儡太强，你只得退走。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_9",
+      "event_id": "exp_ruins_choice",
+      "order": 9,
+      "action_type": "show_text",
+      "condition": "flag('choice') == 'opt_ruins_careful'",
+      "param1": "你只取了外围零散之物，安全离开。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_ruins_choice_10",
+      "event_id": "exp_ruins_choice",
+      "order": 10,
+      "action_type": "give_resource",
+      "condition": "flag('choice') == 'opt_ruins_careful'",
+      "param1": "spirit_herb",
+      "param2": "8",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_1",
+      "event_id": "exp_wandering_cultivator",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "散修抱拳：'得罪了！'",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_2",
+      "event_id": "exp_wandering_cultivator",
+      "order": 2,
+      "action_type": "start_battle",
+      "condition": "",
+      "param1": "qi",
+      "param2": "1",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_3",
+      "event_id": "exp_wandering_cultivator",
+      "order": 3,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "散修认输，留下灵石悻悻离去。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_4",
+      "event_id": "exp_wandering_cultivator",
+      "order": 4,
+      "action_type": "give_resource",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "spirit_stone",
+      "param2": "400",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_5",
+      "event_id": "exp_wandering_cultivator",
+      "order": 5,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'lose'",
+      "param1": "你技不如人，丢了些灵石。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_wandering_cultivator_6",
+      "event_id": "exp_wandering_cultivator",
+      "order": 6,
+      "action_type": "give_resource",
+      "condition": "flag('battle_result') == 'lose'",
+      "param1": "spirit_stone",
+      "param2": "-150",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_poison_swamp_1",
+      "event_id": "exp_poison_swamp",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "你运转灵力抵御瘴气，勉强通过，消耗不小。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_poison_swamp_2",
+      "event_id": "exp_poison_swamp",
+      "order": 2,
+      "action_type": "give_resource",
+      "condition": "",
+      "param1": "spirit_stone",
+      "param2": "-100",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_1",
+      "event_id": "exp_demon_ambush",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "三只金瞳妖豹气势汹汹！",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_2",
+      "event_id": "exp_demon_ambush",
+      "order": 2,
+      "action_type": "start_battle",
+      "condition": "",
+      "param1": "golden",
+      "param2": "3",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_3",
+      "event_id": "exp_demon_ambush",
+      "order": 3,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "妖豹尽数倒地，妖丹收入囊中！",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_4",
+      "event_id": "exp_demon_ambush",
+      "order": 4,
+      "action_type": "give_resource",
+      "condition": "flag('battle_result') == 'win'",
+      "param1": "demon_core",
+      "param2": "2",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_5",
+      "event_id": "exp_demon_ambush",
+      "order": 5,
+      "action_type": "show_text",
+      "condition": "flag('battle_result') == 'lose'",
+      "param1": "寡不敌众，你负伤撤退。",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_demon_ambush_6",
+      "event_id": "exp_demon_ambush",
+      "order": 6,
+      "action_type": "extraction",
+      "condition": "flag('battle_result') == 'lose'",
+      "param1": "",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_treasure_vault_1",
+      "event_id": "exp_treasure_vault",
+      "order": 1,
+      "action_type": "show_text",
+      "condition": "",
+      "param1": "宝库中珍宝琳琅满目，你满载而归！",
+      "param2": "",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_treasure_vault_2",
+      "event_id": "exp_treasure_vault",
+      "order": 2,
+      "action_type": "give_resource",
+      "condition": "",
+      "param1": "spirit_stone",
+      "param2": "600",
+      "param3": ""
+    },
+    {
+      "row_id": "exp_treasure_vault_3",
+      "event_id": "exp_treasure_vault",
+      "order": 3,
+      "action_type": "give_resource",
+      "condition": "",
+      "param1": "millennium_herb",
+      "param2": "1",
+      "param3": ""
+    },
+    {
       "row_id": "sys_ext_1",
       "event_id": "__sys_extraction__",
       "order": 1,
@@ -354,6 +788,42 @@
     {
       "option_id": "opt_cave_bypass",
       "text_cn": "绕路前行",
+      "battle_trigger": false,
+      "battle_enemy_realm": "",
+      "battle_enemy_count": 0,
+      "reward_resource_id": "",
+      "reward_amount": 0
+    },
+    {
+      "option_id": "opt_hermit_learn",
+      "text_cn": "请教修行",
+      "battle_trigger": false,
+      "battle_enemy_realm": "",
+      "battle_enemy_count": 0,
+      "reward_resource_id": "",
+      "reward_amount": 0
+    },
+    {
+      "option_id": "opt_hermit_gift",
+      "text_cn": "讨要灵草",
+      "battle_trigger": false,
+      "battle_enemy_realm": "",
+      "battle_enemy_count": 0,
+      "reward_resource_id": "",
+      "reward_amount": 0
+    },
+    {
+      "option_id": "opt_ruins_force",
+      "text_cn": "强闯洞府",
+      "battle_trigger": true,
+      "battle_enemy_realm": "foundation",
+      "battle_enemy_count": 1,
+      "reward_resource_id": "",
+      "reward_amount": 0
+    },
+    {
+      "option_id": "opt_ruins_careful",
+      "text_cn": "谨慎搜寻",
       "battle_trigger": false,
       "battle_enemy_realm": "",
       "battle_enemy_count": 0,

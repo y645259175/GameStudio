@@ -173,6 +173,11 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 16
 
+[node name="RecruitBtn" type="Button" parent="Root/VBox/ExpeditionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "开门收徒"
+
 [node name="ExpeditionBtn" type="Button" parent="Root/VBox/ExpeditionBar"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -189,6 +194,12 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 text = "推进 ▶"
+visible = false
+
+[node name="ExpeditionRetreatBtn" type="Button" parent="Root/VBox/ExpeditionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "撤离"
 visible = false
 
 ; ============================================================
@@ -227,5 +238,7 @@ fit_content = true
 [connection signal="pressed" from="Root/VBox/TopBar/AdvanceBtn" to="." method="_on_advance_pressed"]
 [connection signal="pressed" from="Root/VBox/TopBar/SaveBtn" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="Root/VBox/TopBar/LoadBtn" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="Root/VBox/ExpeditionBar/RecruitBtn" to="." method="_on_recruit_pressed"]
 [connection signal="pressed" from="Root/VBox/ExpeditionBar/ExpeditionBtn" to="." method="_on_expedition_start_pressed"]
 [connection signal="pressed" from="Root/VBox/ExpeditionBar/ExpeditionAdvanceBtn" to="." method="_on_expedition_advance_pressed"]
+[connection signal="pressed" from="Root/VBox/ExpeditionBar/ExpeditionRetreatBtn" to="." method="_on_expedition_retreat_pressed"]

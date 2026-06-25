@@ -7,7 +7,7 @@ extends Node
 signal expedition_started(map_id: String, participant_ids: Array)
 signal node_entered(node_index: int, event_id: String)
 signal all_nodes_completed(rewards: Dictionary)
-signal expedition_finished
+signal expedition_finished(reason: String)   # reason: active / timeout / defeat / cleared
 
 var _active: bool = false
 var _current_node: int = -1
@@ -31,14 +31,17 @@ func get_current_node() -> int: return _current_node
 func start_expedition(map_id: String, participant_ids: Array) -> void:
 	_active = true
 	_map_id = map_id
-	_participants = participant_ids
+	_participants.clear()
+	for pid in participant_ids:
+		_participants.append(str(pid))
 	_current_node = -1
 	_total_rewards.clear()
 	_node_events.clear()
 
-	# 简版 3 节点：按 participant 的 avg realm tier 决定节点深度的事件池
+	# 三层事件池抽 6 节点
 	var events := _pick_node_events(participant_ids)
-	_node_events = events
+	for ev in events:
+		_node_events.append(str(ev))
 	expedition_started.emit(map_id, participant_ids)
 	# 自动推进第 1 个节点
 	advance_node()
@@ -47,18 +50,28 @@ func start_expedition(map_id: String, participant_ids: Array) -> void:
 # -----------------------------------------------------------------------------
 # 节点事件池（按玩家平均境界决定难易度）
 # -----------------------------------------------------------------------------
-func _pick_node_events(participant_ids: Array) -> Array:
-	# 浅层池：simple events
-	var shallow := ["exp_forest_stroll", "exp_ancient_stele"]
-	# 中层池：choice + battle
-	var middle := ["exp_cave_discover", "exp_spirit_beast"]
-	# 深层池：boss
-	var deep := ["exp_boss_guardian"]
-	# 随机选（M3 简版：每个池随机抽 1 个）。保证每节点至少 1 事件
-	var e1: String = shallow[randi() % shallow.size()]
-	var e2: String = middle[randi() % middle.size()]
-	var e3: String = deep[randi() % deep.size()]
-	return [e1, e2, e3]
+func _pick_node_events(_participant_ids: Array) -> Array:
+	# 三层事件池（GDD-03 §1 节点深度）
+	var shallow := ["exp_forest_stroll", "exp_ancient_stele", "exp_herb_field", "exp_old_hermit", "exp_spirit_spring"]
+	var middle := ["exp_cave_discover", "exp_spirit_beast", "exp_ruins_choice", "exp_wandering_cultivator", "exp_poison_swamp"]
+	var deep := ["exp_boss_guardian", "exp_demon_ambush", "exp_treasure_vault"]
+	# M3：6 节点 DAG（2 浅 + 3 中 + 1 深），每层不重复抽
+	var out: Array = []
+	out += _sample(shallow, 2)
+	out += _sample(middle, 3)
+	out += _sample(deep, 1)
+	return out
+
+
+func _sample(pool: Array, n: int) -> Array:
+	var p := pool.duplicate()
+	p.shuffle()
+	return p.slice(0, min(n, p.size()))
+
+
+# 当前历练总节点数
+func node_count() -> int:
+	return _node_events.size()
 
 
 # -----------------------------------------------------------------------------
@@ -68,34 +81,48 @@ func advance_node() -> String:
 	if not _active: return ""
 	_current_node += 1
 	if _current_node >= _node_events.size():
-		_finish_expedition()
+		# 走完所有节点 = 全清通关
+		_finish_expedition("cleared")
 		return ""
 	var event_id := _node_events[_current_node]
 	node_entered.emit(_current_node, event_id)
 	# 调用 EventEngine 解析事件
 	var ctx := EventEngine.resolve_event(event_id, _participants)
-	# 检查是否 extraction
+	# 撤离三类之一：defeat（参与者全灭）
+	if _is_party_wiped():
+		_finish_expedition("defeat")
+		return event_id
+	# extraction action 触发（事件内 boss 战后撤离）
 	if ctx.flag("expedition_complete", false):
-		_finish_expedition()
+		_finish_expedition("timeout")
 		return event_id
 	return event_id
 
 
+## 主动撤离（GDD-03 §1 撤离三类之 active）
+func retreat() -> void:
+	if _active:
+		_finish_expedition("active")
+
+
+func _is_party_wiped() -> bool:
+	for cid in _participants:
+		var c: Character = CharacterService.get_character(cid)
+		if c != null and c.action_state != Character.ActionState.DEAD:
+			return false
+	return true
+
+
 # -----------------------------------------------------------------------------
-# 结束历练 → 回宗门
+# 结束历练 → 回宗门（reason: active / timeout / defeat / cleared）
 # -----------------------------------------------------------------------------
-func _finish_expedition() -> void:
-	var rewards := _collect_rewards()
-	_total_rewards = rewards
+func _finish_expedition(reason: String) -> void:
 	_active = false
 	_current_node = _node_events.size()
-	all_nodes_completed.emit(rewards)
-	expedition_finished.emit()
-	print("[ExpeditionService] expedition finished, rewards=", rewards)
+	all_nodes_completed.emit(_total_rewards)
+	expedition_finished.emit(reason)
+	EventBus.expedition_ended.emit(reason, _current_node)
+	print("[ExpeditionService] expedition finished (%s)" % reason)
 
 
-# -----------------------------------------------------------------------------
-# 奖励收集（派发前记录）
-# -----------------------------------------------------------------------------
-func _collect_rewards() -> Dictionary:
-	return _total_rewards
+

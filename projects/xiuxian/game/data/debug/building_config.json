@@ -10,7 +10,7 @@
       "cost_spirit_stone": 200,
       "modifier_kind": "qi_acceleration",
       "modifier_value": 20.0,
-      "capacity": 4,
+      "capacity": 2,
       "desc_cn": "提升驻塔弟子修炼速度，lv1 +20%"
     },
     {
@@ -23,7 +23,7 @@
       "cost_spirit_stone": 500,
       "modifier_kind": "qi_acceleration",
       "modifier_value": 35.0,
-      "capacity": 6,
+      "capacity": 3,
       "desc_cn": "lv2 +35%"
     },
     {
@@ -36,7 +36,7 @@
       "cost_spirit_stone": 1000,
       "modifier_kind": "qi_acceleration",
       "modifier_value": 50.0,
-      "capacity": 8,
+      "capacity": 5,
       "desc_cn": "lv3 +50%"
     },
     {
@@ -49,7 +49,7 @@
       "cost_spirit_stone": 250,
       "modifier_kind": "insight_per_month",
       "modifier_value": 1.0,
-      "capacity": 0,
+      "capacity": 3,
       "desc_cn": "驻阁修炼者每月 +1 悟性"
     },
     {
@@ -62,7 +62,7 @@
       "cost_spirit_stone": 600,
       "modifier_kind": "insight_per_month",
       "modifier_value": 2.0,
-      "capacity": 0,
+      "capacity": 6,
       "desc_cn": "+2 悟性/月"
     },
     {
@@ -75,7 +75,7 @@
       "cost_spirit_stone": 1200,
       "modifier_kind": "insight_per_month",
       "modifier_value": 3.0,
-      "capacity": 0,
+      "capacity": 10,
       "desc_cn": "+3 悟性/月"
     },
     {

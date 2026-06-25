@@ -11,7 +11,7 @@ config_version=5
 
 config/name="xiuxian · 修仙模拟经营"
 config/description="水墨写意修仙宗门模拟经营。M3 第一可运行画面。"
-run/main_scene="res://scenes/main_screen.tscn"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -56,6 +56,12 @@ BattleService="*res://scripts/battle/battle_service.gd"
 EventEngine="*res://scripts/expedition/event_engine.gd"
 ; 15. ExpeditionService — 历练状态机（用 EventEngine）
 ExpeditionService="*res://scripts/services/expedition_service.gd"
+; 16. RecruitService — 弟子招收（自动来投/主动招收，受 housing_capacity）
+RecruitService="*res://scripts/sect/recruit_service.gd"
+; 16b. AlchemyService — 炼丹（配方表 + 任务月推进 + 月产药材）
+AlchemyService="*res://scripts/sect/alchemy_service.gd"
+; 17. GameManager — 游戏流程总控（新游戏/读档/结束判定/场景切换）
+GameManager="*res://scripts/core/game_manager.gd"
 
 [rendering]
 

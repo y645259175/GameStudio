@@ -20,9 +20,41 @@ data = {
 			"desc_cn": "炼丹原料，野外历练采集"
 		},
 		{
+			"resource_id": "beast_blood",
+			"name_cn": "兽血",
+			"icon_path": "",
+			"category": "material",
+			"cap": 999,
+			"desc_cn": "炼丹原料，历练战利品"
+		},
+		{
+			"resource_id": "demon_core",
+			"name_cn": "妖丹",
+			"icon_path": "",
+			"category": "material",
+			"cap": 999,
+			"desc_cn": "妖兽内丹，高阶炼丹原料"
+		},
+		{
+			"resource_id": "fire_essence",
+			"name_cn": "火精",
+			"icon_path": "",
+			"category": "material",
+			"cap": 999,
+			"desc_cn": "火属性精华，灵根丹原料"
+		},
+		{
+			"resource_id": "millennium_herb",
+			"name_cn": "千年灵芝",
+			"icon_path": "",
+			"category": "material",
+			"cap": 99,
+			"desc_cn": "稀有药材，寿元丹原料"
+		},
+		{
 			"resource_id": "mortal_pill",
 			"name_cn": "凡品丹药",
-			"icon_path": "",
+			"icon_path": "res://art/m3/icons/pill_mortal.png",
 			"category": "consumable",
 			"cap": 999,
 			"desc_cn": "回复体力 / 消除轻伤 / 短期 buff"
@@ -30,7 +62,7 @@ data = {
 		{
 			"resource_id": "yellow_pill",
 			"name_cn": "黄品丹药",
-			"icon_path": "",
+			"icon_path": "res://art/m3/icons/pill_yellow.png",
 			"category": "consumable",
 			"cap": 999,
 			"desc_cn": "中阶丹药"
@@ -38,7 +70,7 @@ data = {
 		{
 			"resource_id": "mystic_pill",
 			"name_cn": "玄品丹药",
-			"icon_path": "",
+			"icon_path": "res://art/m3/icons/pill_mystic.png",
 			"category": "consumable",
 			"cap": 99,
 			"desc_cn": "高阶丹药"
@@ -46,7 +78,7 @@ data = {
 		{
 			"resource_id": "breakthrough_pill_qi",
 			"name_cn": "炼气突破丹",
-			"icon_path": "",
+			"icon_path": "res://art/m3/icons/pill_breakthrough.png",
 			"category": "consumable",
 			"cap": 99,
 			"desc_cn": "炼气境突破检定时消耗，提升基础概率"

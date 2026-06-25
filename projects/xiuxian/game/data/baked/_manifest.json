@@ -1,7 +1,16 @@
 {
   "schema_version": 1,
-  "baked_at": 1781782374,
+  "baked_at": 1781783733,
   "tables": [
+    {
+      "schema": "alchemy_recipe.schema.toml",
+      "output": "alchemy_recipe.tres",
+      "source_hash": "4bd8730e81a0b1ef",
+      "row_count": 5,
+      "tables": [
+        "AlchemyRecipe"
+      ]
+    },
     {
       "schema": "buff_system.schema.toml",
       "output": "buff_system.tres",
@@ -15,7 +24,7 @@
     {
       "schema": "building_config.schema.toml",
       "output": "building_config.tres",
-      "source_hash": "66fa4f2671324971",
+      "source_hash": "72c5feacbf39c1f0",
       "row_count": 15,
       "tables": [
         "BuildingLevel"
@@ -24,8 +33,8 @@
     {
       "schema": "event_config.schema.toml",
       "output": "event_config.tres",
-      "source_hash": "c16de55836232fe0",
-      "row_count": 37,
+      "source_hash": "c32a30e44c5f7d6b",
+      "row_count": 86,
       "tables": [
         "EventTemplate",
         "EventAction",
@@ -35,7 +44,7 @@
     {
       "schema": "realm_curve.schema.toml",
       "output": "realm_curve.tres",
-      "source_hash": "d668c8d605ed120c",
+      "source_hash": "63fc8d617b540f36",
       "row_count": 46,
       "tables": [
         "RealmCurve"
@@ -44,8 +53,8 @@
     {
       "schema": "resource_config.schema.toml",
       "output": "resource_config.tres",
-      "source_hash": "fac075a01b6c5897",
-      "row_count": 7,
+      "source_hash": "1791d65903e900eb",
+      "row_count": 11,
       "tables": [
         "Resource"
       ]

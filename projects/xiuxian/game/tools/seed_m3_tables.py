@@ -33,14 +33,14 @@ def gen_building():
 
     # 5 建筑 × 3 级 = 15 行（GDD-05 §3.2 / §4.5 数值）
     rows = [
-        # 修炼塔（GDD-05 §3.2.3 修炼速度）
-        ["cultivation_tower_lv1", "cultivation_tower", 1, "修炼塔", "res://art/m3/buildings/cultivation_tower.png", 1, 200, "qi_acceleration", 20, 4, "提升驻塔弟子修炼速度，lv1 +20%", ""],
-        ["cultivation_tower_lv2", "",                  2, "",       "",                                              2, 500, "",                  35, 6, "lv2 +35%",                              ""],
-        ["cultivation_tower_lv3", "",                  3, "",       "",                                              2, 1000, "",                 50, 8, "lv3 +50%",                              ""],
-        # 藏经阁（GDD-05 §3.2 悟性 / insight_per_month）
-        ["library_lv1",           "library",           1, "藏经阁", "res://art/m3/buildings/library.png",            1, 250, "insight_per_month",  1, 0, "驻阁修炼者每月 +1 悟性",                ""],
-        ["library_lv2",           "",                  2, "",       "",                                              2, 600, "",                   2, 0, "+2 悟性/月",                            ""],
-        ["library_lv3",           "",                  3, "",       "",                                              2, 1200, "",                  3, 0, "+3 悟性/月",                            ""],
+        # 修炼塔（GDD-05 §3.2.3 修炼速度 / §7.5 容量 2/3/5）
+        ["cultivation_tower_lv1", "cultivation_tower", 1, "修炼塔", "res://art/m3/buildings/cultivation_tower.png", 1, 200, "qi_acceleration", 20, 2, "提升驻塔弟子修炼速度，lv1 +20%", ""],
+        ["cultivation_tower_lv2", "",                  2, "",       "",                                              2, 500, "",                  35, 3, "lv2 +35%",                              ""],
+        ["cultivation_tower_lv3", "",                  3, "",       "",                                              2, 1000, "",                 50, 5, "lv3 +50%",                              ""],
+        # 藏经阁（GDD-05 §3.2.4 悟性 / §7.5 容量 3/6/10）
+        ["library_lv1",           "library",           1, "藏经阁", "res://art/m3/buildings/library.png",            1, 250, "insight_per_month",  1, 3, "驻阁修炼者每月 +1 悟性",                ""],
+        ["library_lv2",           "",                  2, "",       "",                                              2, 600, "",                   2, 6, "+2 悟性/月",                            ""],
+        ["library_lv3",           "",                  3, "",       "",                                              2, 1200, "",                  3, 10, "+3 悟性/月",                           ""],
         # 丹房（GDD-05 §3.2 / GDD-04 §6 炼丹）
         ["alchemy_room_lv1",      "alchemy_room",      1, "丹房",   "res://art/m3/buildings/alchemy_room.png",       1, 300, "forge_speed",        20, 1, "炼丹任务速度 +20%",                      ""],
         ["alchemy_room_lv2",      "",                  2, "",       "",                                              2, 700, "",                  35, 2, "+35%",                                   ""],
@@ -73,10 +73,14 @@ def gen_resource():
     rows = [
         ["spirit_stone",   "灵石",     "res://art/m3/icons/spirit_stone.png", "currency",   0,    "宗门基础货币，建造/招募/炼丹皆需要", ""],
         ["spirit_herb",    "灵草",     "res://art/m3/icons/herb.png",         "material",   9999, "炼丹原料，野外历练采集",            ""],
-        ["mortal_pill",    "凡品丹药", "",                                    "consumable", 999,  "回复体力 / 消除轻伤 / 短期 buff",   ""],
-        ["yellow_pill",    "黄品丹药", "",                                    "consumable", 999,  "中阶丹药",                            ""],
-        ["mystic_pill",    "玄品丹药", "",                                    "consumable", 99,   "高阶丹药",                            ""],
-        ["breakthrough_pill_qi", "炼气突破丹", "",                            "consumable", 99,   "炼气境突破检定时消耗，提升基础概率",  ""],
+        ["beast_blood",    "兽血",     "",                                    "material",   999,  "炼丹原料，历练战利品",              ""],
+        ["demon_core",     "妖丹",     "",                                    "material",   999,  "妖兽内丹，高阶炼丹原料",            ""],
+        ["fire_essence",   "火精",     "",                                    "material",   999,  "火属性精华，灵根丹原料",            ""],
+        ["millennium_herb","千年灵芝", "",                                    "material",   99,   "稀有药材，寿元丹原料",              ""],
+        ["mortal_pill",    "凡品丹药", "res://art/m3/icons/pill_mortal.png",  "consumable", 999,  "回复体力 / 消除轻伤 / 短期 buff",   ""],
+        ["yellow_pill",    "黄品丹药", "res://art/m3/icons/pill_yellow.png",  "consumable", 999,  "中阶丹药",                            ""],
+        ["mystic_pill",    "玄品丹药", "res://art/m3/icons/pill_mystic.png",  "consumable", 99,   "高阶丹药",                            ""],
+        ["breakthrough_pill_qi", "炼气突破丹", "res://art/m3/icons/pill_breakthrough.png", "consumable", 99, "炼气境突破检定时消耗，提升基础概率", ""],
         ["sect_token",     "宗门令牌", "",                                    "treasure",   1,    "宗门权柄象征",                        ""],
     ]
     write_sheet(wb, "资源", headers_cn, headers_en, rows)
@@ -147,8 +151,32 @@ def gen_realm_curve():
     print(f"[ok] {out.name}: {len(rows)} rows")
 
 
+# ---------------------------------------------------------------------------
+# 炼丹配方.xlsx（GDD-05 §5.3）
+# ---------------------------------------------------------------------------
+def gen_alchemy():
+    wb = Workbook()
+    wb.remove(wb.active)
+    headers_cn = ["配方ID", "中文名", "产物图标", "材料1ID", "材料1数量", "材料2ID", "材料2数量",
+                  "所需炼丹值", "所需丹房等级", "炼制月数", "成功率", "产物ID", "产物数量", "描述", "备注"]
+    headers_en = ["recipe_id", "name_cn", "icon_path", "material1_id", "material1_count", "material2_id", "material2_count",
+                  "required_alchemy_skill", "required_room_level", "duration_months", "success_rate", "output_id", "output_count", "desc_cn", ""]
+    rows = [
+        ["recipe_qi_pill",          "聚气丹",   "res://art/m3/icons/pill_mortal.png", "spirit_herb", 2, "",            0, 10, 1, 1, 0.90, "mortal_pill",          3, "闭关加速丹药，新手即可炼", ""],
+        ["recipe_healing_pill",     "疗伤丹",   "res://art/m3/icons/pill_mortal.png", "spirit_herb", 1, "beast_blood", 1, 20, 1, 1, 0.80, "yellow_pill",          2, "治疗重伤", ""],
+        ["recipe_breakthrough_pill","突破丹",   "res://art/m3/icons/pill_breakthrough.png", "spirit_herb", 3, "demon_core", 1, 40, 2, 2, 0.60, "breakthrough_pill_qi", 1, "突破成功率 +10%", ""],
+        ["recipe_root_boost_fire",  "火灵根丹", "res://art/m3/icons/pill_mystic.png", "fire_essence", 2, "demon_core",  2, 60, 3, 2, 0.45, "mystic_pill",          1, "火灵根 +1", ""],
+        ["recipe_lifespan_pill",    "寿元丹",   "res://art/m3/icons/pill_yellow.png", "millennium_herb", 1, "demon_core", 3, 80, 3, 3, 0.30, "yellow_pill",          1, "寿元 +5 年（M4 启用）", ""],
+    ]
+    write_sheet(wb, "炼丹配方", headers_cn, headers_en, rows)
+    out = TABLE_DIR / "炼丹配方.xlsx"
+    wb.save(out)
+    print(f"[ok] {out.name}: {len(rows)} rows")
+
+
 if __name__ == "__main__":
     gen_building()
     gen_resource()
     gen_realm_curve()
+    gen_alchemy()
     print("[done] M3 配表 xlsx 生成完毕")

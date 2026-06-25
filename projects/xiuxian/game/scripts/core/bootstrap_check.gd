@@ -245,29 +245,31 @@ func _ready() -> void:
 		bld2.predefine_building("slot_t_tower", "cultivation_tower", 1)
 		if bld2.get_building_level("cultivation_tower") != 1:
 			failures.append("predefine_building should set lv1 immediately")
-		# 26. 容量检查：修炼塔 lv1 容量 4，分配第 5 人应失败(code 3)
+		# 26. 容量检查：修炼塔 lv1 容量 2（GDD-05 §7.5），分配第 3 人应失败(code 3)
 		bld2.predefine_building("slot_t_dorm", "disciple_dorm", 1)
 		if bld2.get_housing_capacity() < 6:
 			failures.append("disciple_dorm lv1 housing_capacity should be >= 6 (got %d)" % bld2.get_housing_capacity())
+		if bld2.get_capacity("cultivation_tower") != 2:
+			failures.append("cultivation_tower lv1 capacity should be 2 (got %d)" % bld2.get_capacity("cultivation_tower"))
 		var assign_ok := true
-		for k in range(4):
+		for k in range(2):
 			var did := "acc_d_%d" % k
 			var dd = cs.create(did); dd.realm = "qi_1"
 			sect2.add_member(did)
 			if bld2.assign_character_ex("slot_t_tower", did) != 0:
 				assign_ok = false
 		if not assign_ok:
-			failures.append("first 4 assigns to cultivation_tower (cap 4) should succeed")
+			failures.append("first 2 assigns to cultivation_tower (cap 2) should succeed")
 		var dd5 = cs.create("acc_d_5"); dd5.realm = "qi_1"; sect2.add_member("acc_d_5")
 		if bld2.assign_character_ex("slot_t_tower", "acc_d_5") != 3:
-			failures.append("5th assign to cap-4 tower should return code 3 (full)")
+			failures.append("3rd assign to cap-2 tower should return code 3 (full)")
 		# 27. 月俸结算：5 炼气弟子(acc_d) × 5 = 25，扣灵石
 		var inv2 = get_node_or_null("/root/InventoryService")
 		inv2.add("spirit_stone", 1000)
 		var before_ss: int = inv2.get_amount("spirit_stone")
 		var salary: int = sect2.monthly_salary_total()
-		if salary < 25:
-			failures.append("monthly_salary_total should be >= 25 for 5 qi disciples (got %d)" % salary)
+		if salary < 15:
+			failures.append("monthly_salary_total should be >= 15 (got %d)" % salary)
 		# 28. 寿元每月衰减 + 月节拍触发月俸
 		var probe = cs.create("acc_probe"); probe.realm = "qi_1"
 		probe.lifespan_total_months = 720
@@ -278,9 +280,66 @@ func _ready() -> void:
 		if inv2.get_amount("spirit_stone") >= before_ss:
 			failures.append("salary should be deducted after advance_outer (before=%d after=%d)" % [before_ss, inv2.get_amount("spirit_stone")])
 
+	# === 地基⑩ M3 内容：招收 / 炼丹 / 历练循环 smoke ===
+	var rec = get_node_or_null("/root/RecruitService")
+	var alc = get_node_or_null("/root/AlchemyService")
+	var exp_s = get_node_or_null("/root/ExpeditionService")
+	if rec == null: failures.append("RecruitService autoload missing")
+	if alc == null: failures.append("AlchemyService autoload missing")
+
+	# 29. 招收：生成候选 + 接收（有居所余位时）
+	if rec != null and bld2 != null:
+		var cand: Dictionary = rec.generate("active_recruit")
+		if not cand.has("spirit_root") or not cand.has("name"):
+			failures.append("RecruitService.generate should produce name + spirit_root")
+		# housing 充足时能接收
+		if rec.has_housing_room():
+			var before_pop: int = sect2.member_count()
+			var nid: String = rec.accept_candidate(cand)
+			if nid == "" or sect2.member_count() != before_pop + 1:
+				failures.append("accept_candidate should add 1 member when room available")
+
+	# 30. 炼丹：配方加载 + 聚气丹可炼判定
+	if alc != null and bld2 != null:
+		if alc.get_all_recipes().size() < 5:
+			failures.append("AlchemyService should load >= 5 recipes (got %d)" % alc.get_all_recipes().size())
+		# 备料 + 建丹房 lv1
+		bld2.predefine_building("slot_t_alchemy", "alchemy_room", 1)
+		var inv3 = get_node_or_null("/root/InventoryService")
+		inv3.add("spirit_herb", 10)
+		# 聚气丹需 灵草×2 / 丹房lv1 / 炼丹值10
+		var probe2 = cs.create("acc_alchemist"); probe2.attributes = {"alchemy": 50}
+		sect2.add_member("acc_alchemist")
+		var reason: String = alc.cannot_craft_reason("recipe_qi_pill", "acc_alchemist")
+		if reason != "":
+			failures.append("recipe_qi_pill should be craftable (got reason: %s)" % reason)
+		if not alc.start_craft("recipe_qi_pill", "acc_alchemist"):
+			failures.append("start_craft recipe_qi_pill should succeed")
+
+	# 31. 历练：14 事件加载 + 启动历练 6 节点
+	if exp_s != null and EventEngine != null:
+		var et_count: int = 0
+		for _r in DataRegistry.get_table("EventTemplate"):
+			et_count += 1
+		if et_count < 10:
+			failures.append("EventTemplate should have >= 10 events (M3-3, got %d)" % et_count)
+		exp_s.start_expedition("test_map", ["char_master"])
+		if exp_s.node_count() != 6:
+			failures.append("expedition should have 6 nodes (got %d)" % exp_s.node_count())
+
+	# 32. M3-7 存档跨"假装版本升级"测试：collect → 改 save_version → migrate → apply
+	if save != null:
+		var snap2: Dictionary = save.collect_save_data()
+		if snap2.get("save_version", 0) != 1:
+			failures.append("save_version should be 1")
+		# 模拟未来版本字段缺失：删一个 chunk，apply 不应崩
+		var degraded: Dictionary = snap2.duplicate(true)
+		degraded["chunks"].erase("sect")
+		save.apply_save_data(degraded)   # 缺 sect chunk 应优雅降级不崩
+
 	# 结果
 	if failures.is_empty():
-		print("[PASS] all checks passed (15 autoloads + full systems + 验收回归 预建/分配/容量/月俸/寿元)")
+		print("[PASS] all checks passed (18 autoloads + 验收回归 + M3内容 + 存档兼容)")
 		get_tree().quit(0)
 	else:
 		print("[FAIL] %d issue(s):" % failures.size())

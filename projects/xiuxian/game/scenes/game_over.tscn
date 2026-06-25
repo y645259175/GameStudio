@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0xiuxiangameover"]
+
+[ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1_script"]
+
+[node name="GameOver" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.103, 0.094, 0.078, 1)
+
+[node name="CenterBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CenterBox"]
+layout_mode = 2
+text = "宗  门  覆  灭"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.66, 0.196, 0.149, 1)
+theme_override_font_sizes/font_size = 48
+
+[node name="SummaryLabel" type="Label" parent="CenterBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.84, 0.8, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="Gap" type="Control" parent="CenterBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+
+[node name="RestartBtn" type="Button" parent="CenterBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "重开宗门"
+theme_override_font_sizes/font_size = 18
+
+[node name="MenuBtn" type="Button" parent="CenterBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "返回主菜单"
+theme_override_font_sizes/font_size = 18
+
+[node name="QuitBtn" type="Button" parent="CenterBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "退出"
+theme_override_font_sizes/font_size = 18
+
+[connection signal="pressed" from="CenterBox/RestartBtn" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="CenterBox/MenuBtn" to="." method="_on_menu_pressed"]
+[connection signal="pressed" from="CenterBox/QuitBtn" to="." method="_on_quit_pressed"]

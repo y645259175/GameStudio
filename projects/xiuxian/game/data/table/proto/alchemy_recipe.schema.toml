@@ -1,0 +1,70 @@
+# =============================================================================
+# Schema · 炼丹配方.xlsx
+# 关联：GDD-05 §5 炼丹系统；ProductionService 读配方滚成功率
+# =============================================================================
+
+schema_version = 1
+target_xlsx    = "炼丹配方.xlsx"
+output_baked   = "alchemy_recipe.tres"
+
+[tables.AlchemyRecipe]
+sheet = "炼丹配方"
+pkey  = "recipe_id"
+cn    = "炼丹配方"
+desc  = "M3 五个配方（聚气丹/疗伤丹/突破丹/火灵根丹/寿元丹）"
+
+[tables.AlchemyRecipe.fields.recipe_id]
+type = "string"
+cn   = "配方ID"
+
+[tables.AlchemyRecipe.fields.name_cn]
+type = "string"
+cn   = "中文名"
+
+[tables.AlchemyRecipe.fields.icon_path]
+type = "string"
+cn   = "产物图标"
+
+[tables.AlchemyRecipe.fields.material1_id]
+type = "string"
+cn   = "材料1ID"
+
+[tables.AlchemyRecipe.fields.material1_count]
+type = "int"
+cn   = "材料1数量"
+
+[tables.AlchemyRecipe.fields.material2_id]
+type = "string"
+cn   = "材料2ID"
+
+[tables.AlchemyRecipe.fields.material2_count]
+type = "int"
+cn   = "材料2数量"
+
+[tables.AlchemyRecipe.fields.required_alchemy_skill]
+type = "int"
+cn   = "所需炼丹值"
+
+[tables.AlchemyRecipe.fields.required_room_level]
+type = "int"
+cn   = "所需丹房等级"
+
+[tables.AlchemyRecipe.fields.duration_months]
+type = "int"
+cn   = "炼制月数"
+
+[tables.AlchemyRecipe.fields.success_rate]
+type = "float"
+cn   = "成功率"
+
+[tables.AlchemyRecipe.fields.output_id]
+type = "string"
+cn   = "产物ID"
+
+[tables.AlchemyRecipe.fields.output_count]
+type = "int"
+cn   = "产物数量"
+
+[tables.AlchemyRecipe.fields.desc_cn]
+type = "string"
+cn   = "描述"
