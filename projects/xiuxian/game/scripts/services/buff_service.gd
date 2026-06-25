@@ -113,7 +113,7 @@ func remove_by_source(target: IBuffable, source_tag: String) -> int:
 	var removed := 0
 	for i in range(target.buffs.size() - 1, -1, -1):
 		var b = target.buffs[i]
-		if b.source_tag == source_tag:
+		if b.source == source_tag:
 			target.buffs.remove_at(i)
 			buff_removed.emit(target, b, "manual")
 			removed += 1

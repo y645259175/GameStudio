@@ -66,6 +66,14 @@ func _reset_all_services() -> void:
 	SectService.init_new_sect("青云宗", 1)
 	# TimeService 归零
 	TimeService.from_dict({"current_month": 1})
+	# Inventory 由 sect.resources 持有，init_new_sect 已清空
+
+
+# 暴露给 e2e/测试调用：不切场景，仅重置 + 初始化数据
+func _init_world_data() -> void:
+	_reset_all_services()
+	_init_world()
+	_game_over_emitted = false
 
 
 # -----------------------------------------------------------------------------
