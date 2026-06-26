@@ -23,12 +23,47 @@ func _ready() -> void:
 
 func is_active() -> bool: return _active
 func get_current_node() -> int: return _current_node
+func get_participants() -> Array: return _participants.duplicate()
+func get_node_events() -> Array: return _node_events.duplicate()
+func get_map_id() -> String: return _map_id
+
+
+# 当前节点 event_id（UI 用）
+func current_event_id() -> String:
+	if _current_node >= 0 and _current_node < _node_events.size():
+		return _node_events[_current_node]
+	return ""
+
+
+# 某节点的事件类别（UI 选节点图标用）
+func node_event_type(node_index: int) -> String:
+	if node_index < 0 or node_index >= _node_events.size():
+		return "story"
+	var eid: String = _node_events[node_index]
+	if DataRegistry and DataRegistry.is_loaded():
+		for row in DataRegistry.get_table("EventTemplate"):
+			if row.get("event_id") == eid:
+				return row.get("event_type", "story")
+	return "story"
 
 
 # -----------------------------------------------------------------------------
 # 启动历练
 # -----------------------------------------------------------------------------
 func start_expedition(map_id: String, participant_ids: Array) -> void:
+	_setup(map_id, participant_ids)
+	expedition_started.emit(map_id, participant_ids)
+	# 自动推进第 1 个节点（headless / 旧 UI 兼容）
+	advance_node()
+
+
+## UI 模式：只准备节点，不自动推进（由 ExpeditionScreen 逐节点驱动）
+func start_expedition_ui(map_id: String, participant_ids: Array) -> void:
+	_setup(map_id, participant_ids)
+	expedition_started.emit(map_id, participant_ids)
+
+
+func _setup(map_id: String, participant_ids: Array) -> void:
 	_active = true
 	_map_id = map_id
 	_participants.clear()
@@ -37,14 +72,26 @@ func start_expedition(map_id: String, participant_ids: Array) -> void:
 	_current_node = -1
 	_total_rewards.clear()
 	_node_events.clear()
-
-	# 三层事件池抽 6 节点
 	var events := _pick_node_events(participant_ids)
 	for ev in events:
 		_node_events.append(str(ev))
-	expedition_started.emit(map_id, participant_ids)
-	# 自动推进第 1 个节点
-	advance_node()
+
+
+## UI 模式逐节点推进：进到下一节点并用 UI delegate 跑事件，返回 event_id（""=已结束）
+func advance_node_ui(ui_delegate: Object) -> String:
+	if not _active: return ""
+	_current_node += 1
+	if _current_node >= _node_events.size():
+		_finish_expedition("cleared")
+		return ""
+	var event_id: String = _node_events[_current_node]
+	node_entered.emit(_current_node, event_id)
+	var ctx: EventContext = await EventEngine.resolve_event_ui(event_id, _participants, ui_delegate)
+	if _is_party_wiped():
+		_finish_expedition("defeat")
+	elif ctx.flag("expedition_complete", false):
+		_finish_expedition("timeout")
+	return event_id
 
 
 # -----------------------------------------------------------------------------

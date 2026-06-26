@@ -220,38 +220,19 @@ func _on_breakthrough_failed(cid: String, _info: Dictionary) -> void:
 # -----------------------------------------------------------------------------
 # 历练（ExpeditionService signal 回调）
 # -----------------------------------------------------------------------------
-func _on_expedition_started(map_id: String, _participant_ids: Array) -> void:
-	_log("[color=#A93226]✦ 出发历练：%s（共 %d 处秘地）✦[/color]" % [map_id, ExpeditionService.node_count()])
-	expedition_btn.visible = false
-	expedition_advance_btn.visible = true
-	expedition_retreat_btn.visible = true
-	expedition_status.text = "准备探索..."
+func _on_expedition_started(_map_id: String, _participant_ids: Array) -> void:
+	# 全屏 ExpeditionScreen 接管展示，主界面仅置灰出发按钮
+	expedition_btn.disabled = true
 
 
-func _on_expediton_node_entered(node_index: int, event_id: String) -> void:
-	var title := event_id
-	if DataRegistry and DataRegistry.is_loaded():
-		for row in DataRegistry.get_table("EventTemplate"):
-			if row.get("event_id") == event_id:
-				title = row.get("title_cn", event_id)
-				break
-	expedition_status.text = "第 %d/%d 处 · %s" % [node_index + 1, ExpeditionService.node_count(), title]
+func _on_expediton_node_entered(_node_index: int, _event_id: String) -> void:
+	pass
 
 
-func _on_expedition_finished(reason: String) -> void:
-	expedition_btn.visible = true
-	expedition_advance_btn.visible = false
-	expedition_retreat_btn.visible = false
-	expedition_status.text = ""
-	var msg_map := {
-		"cleared": "✦ 历练圆满，满载而归 ✦",
-		"timeout": "✦ 击败守关之敌，凯旋而归 ✦",
-		"active": "✦ 主动撤离，平安归宗 ✦",
-		"defeat": "☠ 队伍折损，狼狈撤回 ☠",
-	}
-	var msg: String = msg_map.get(reason, "✦ 历练结束 ✦")
-	_log("[color=#A93226]%s[/color]" % msg)
-	_refresh_all()
+func _on_expedition_finished(_reason: String) -> void:
+	expedition_btn.disabled = false
+	# 奖励/结果由 ExpeditionScreen 展示；主界面刷新在 screen.closed 回调
+	_refresh_topbar()
 
 
 func _on_expedition_retreat_pressed() -> void:
@@ -264,7 +245,11 @@ func _on_world_event_triggered(hook_id: String, payload: Dictionary) -> void:
 		_log("[color=#4A6670]%s[/color]" % payload.get("msg", ""), false)
 
 
+const EXPEDITION_SCREEN := "res://scenes/expedition_screen.tscn"
+
 func _on_expedition_start_pressed() -> void:
+	if ExpeditionService.is_active():
+		return
 	# 自动选门主 + 所有闲居弟子
 	var party: Array[String] = []
 	for cid in SectService.get_member_ids():
@@ -274,10 +259,25 @@ func _on_expedition_start_pressed() -> void:
 	if party.size() == 0:
 		_log("[color=#A93226]无可用弟子[/color]")
 		return
-	ExpeditionService.start_expedition("青岚秘境", party)
+	# 准备历练（UI 模式：不自动推进）
+	ExpeditionService.start_expedition_ui("青岚秘境", party)
+	# 打开全屏历练界面
+	var packed: PackedScene = load(EXPEDITION_SCREEN)
+	if packed == null:
+		_log("[color=#A93226]历练界面加载失败[/color]")
+		return
+	var screen = packed.instantiate()
+	add_child(screen)
+	screen.closed.connect(_on_expedition_screen_closed)
+
+
+func _on_expedition_screen_closed() -> void:
+	_log("[color=#A93226]✦ 弟子历练归来 ✦[/color]")
+	_refresh_all()
 
 
 func _on_expedition_advance_pressed() -> void:
+	# 旧按钮保留兼容（全屏界面接管后通常不用）
 	if not ExpeditionService.is_active():
 		return
 	ExpeditionService.advance_node()

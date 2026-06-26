@@ -27,12 +27,39 @@ func registered_action_types() -> Array:
 
 
 # -----------------------------------------------------------------------------
-# resolve_event —— 核心入口
+# resolve_event —— 核心入口（headless / 测试：一次跑完，show_options 自动选 param1）
 # -----------------------------------------------------------------------------
 func resolve_event(event_id: String, participant_ids: Array = []) -> EventContext:
 	var ctx := EventContext.new()
 	ctx.event_id = event_id
 	ctx.participant_ids = participant_ids
+	_run_actions_sync(ctx)
+	return ctx
+
+
+func _run_actions_sync(ctx: EventContext) -> void:
+	var actions := _load_event_actions(ctx.event_id)
+	for action in actions:
+		if ctx.aborted: break
+		var cond: String = action.get("condition", "")
+		if not ConditionEvaluator.evaluate(cond, ctx): continue
+		var atype: String = action.get("action_type", "")
+		var handler: ActionHandler = _handlers.get(atype, null)
+		if handler == null:
+			push_warning("[EventEngine] no handler for '%s' (event %s)" % [atype, ctx.event_id])
+			continue
+		handler.execute(action, ctx)
+
+
+# -----------------------------------------------------------------------------
+# resolve_event_ui —— UI 模式（分步执行，show_options / show_text / start_battle
+# 委托给 ctx.ui_delegate 并 await 玩家交互）。返回 EventContext。
+# -----------------------------------------------------------------------------
+func resolve_event_ui(event_id: String, participant_ids: Array, ui_delegate: Object) -> EventContext:
+	var ctx := EventContext.new()
+	ctx.event_id = event_id
+	ctx.participant_ids = participant_ids
+	ctx.ui_delegate = ui_delegate
 
 	var actions := _load_event_actions(event_id)
 	for action in actions:
@@ -42,10 +69,87 @@ func resolve_event(event_id: String, participant_ids: Array = []) -> EventContex
 		var atype: String = action.get("action_type", "")
 		var handler: ActionHandler = _handlers.get(atype, null)
 		if handler == null:
-			push_warning("[EventEngine] no handler for '%s' (event %s)" % [atype, event_id])
 			continue
-		handler.execute(action, ctx)
+		# 交互型 action 走 await 分支
+		match atype:
+			"show_text":
+				await _ui_show_text(action, ctx)
+			"show_options":
+				await _ui_show_options(action, ctx)
+			"start_battle":
+				await _ui_start_battle(action, ctx)
+			"give_resource":
+				_ui_give_resource(action, ctx)
+			_:
+				handler.execute(action, ctx)
 	return ctx
+
+
+func _ui_show_text(action: Dictionary, ctx: EventContext) -> void:
+	var txt: String = action.get("param1", "")
+	ctx.set_flag("last_text", txt)
+	if ctx.has_ui() and ctx.ui_delegate.has_method("present_text"):
+		await ctx.ui_delegate.present_text(txt)
+
+
+func _ui_show_options(action: Dictionary, ctx: EventContext) -> void:
+	# 收集选项 id（param1..4 是 option_id）
+	var opt_ids: Array = []
+	for i in [1, 2, 3, 4]:
+		var oid: String = action.get("param%d" % i, "")
+		if oid != "": opt_ids.append(oid)
+	if opt_ids.is_empty():
+		return
+	var chosen: String = opt_ids[0]
+	if ctx.has_ui() and ctx.ui_delegate.has_method("present_options"):
+		chosen = await ctx.ui_delegate.present_options(opt_ids)
+	ctx.set_flag("choice", chosen)
+
+
+func _ui_give_resource(action: Dictionary, ctx: EventContext) -> void:
+	var rid: String = action.get("param1", "")
+	var amount: int = int(action.get("param2", 0))
+	if rid != "":
+		InventoryService.add(rid, amount)
+		if ctx.has_ui() and ctx.ui_delegate.has_method("present_reward"):
+			ctx.ui_delegate.present_reward(rid, amount)
+
+
+func _ui_start_battle(action: Dictionary, ctx: EventContext) -> void:
+	var chosen: String = ctx.flag("choice", "")
+	var enemy_realm := "qi"
+	var enemy_count := 1
+	if chosen != "" and DataRegistry and DataRegistry.is_loaded():
+		for row in DataRegistry.get_table("EventOption"):
+			if row.get("option_id") == chosen:
+				enemy_realm = row.get("battle_enemy_realm", "qi")
+				enemy_count = max(1, int(row.get("battle_enemy_count", 1)))
+				break
+	if action.get("param1", "") != "": enemy_realm = action["param1"]
+	if action.get("param2", "") != "": enemy_count = int(action["param2"])
+	var enemies: Array = []
+	for i in range(enemy_count):
+		var e := Character.new("exp_enemy_%d_%d" % [Time.get_ticks_msec(), i])
+		e.identity = Character.Identity.NON_SECT
+		e.character_name = EventHelpers.enemy_name(enemy_realm)
+		e.realm = "%s_3" % enemy_realm
+		e.sub_level = 3
+		e.spirit_root = {"fire": 3 + randi() % 4}
+		e.attributes = {"insight": 80}
+		enemies.append(e)
+	var attackers: Array[Character] = []
+	for cid in ctx.participant_ids:
+		var c: Character = CharacterService.get_character(cid)
+		if c != null: attackers.append(c)
+	if attackers.is_empty(): return
+	var bctx := BattleContext.new()
+	bctx.attackers = attackers; bctx.defenders = enemies
+	bctx.trigger_source = "expedition_event"; bctx.seed = randi()
+	var result := BattleService.resolve(bctx)
+	var winner: String = result.winner
+	ctx.set_flag("battle_result", "win" if winner == "ATTACKERS" else "lose")
+	if ctx.has_ui() and ctx.ui_delegate.has_method("present_battle"):
+		await ctx.ui_delegate.present_battle(enemies, winner)
 
 
 func _load_event_actions(event_id: String) -> Array:

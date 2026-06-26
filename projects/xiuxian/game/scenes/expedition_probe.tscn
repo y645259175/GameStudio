@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0xiuxianexpprobe"]
+
+[ext_resource type="Script" path="res://scripts/core/expedition_probe.gd" id="1_ep"]
+
+[node name="ExpeditionProbe" type="Node"]
+script = ExtResource("1_ep")
