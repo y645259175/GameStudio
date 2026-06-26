@@ -1,8 +1,12 @@
 # =============================================================================
-# EventEngine.gd · 历练事件引擎（autoload，GDD-03 §2）
+# EventEngine.gd · 历练事件引擎（autoload，GDD-03 §2 §3）
 #
-# 数据驱动：事件 = action 序列；引擎按 action_type 查 handler 表分发。
-# 辅助函数在 event_helpers.gd（内部类 extends ActionHandler 无法直接调父脚本 static func）。
+# 数据驱动：事件 = action 序列（order 排序 + condition 门 = 三幕语义）。
+# 选项 DSL：选项含成本(灵石/时间/血)/显示条件/启用条件/后果，详见 §3。
+#
+# 双入口共享同一批辅助函数（_build_options / _apply_cost / _do_battle）：
+#   resolve_event()     —— SYNC，headless/测试/派遣拟合用（选项自动选第一个可选）
+#   resolve_event_ui()  —— ASYNC，玩家亲历用（阻塞型 action 委托 UI 并 await）
 # =============================================================================
 extends Node
 
@@ -27,33 +31,45 @@ func registered_action_types() -> Array:
 
 
 # -----------------------------------------------------------------------------
-# resolve_event —— 核心入口（headless / 测试：一次跑完，show_options 自动选 param1）
+# SYNC 入口（headless / 测试 / 派遣拟合）：选项自动选第一个可选项
 # -----------------------------------------------------------------------------
 func resolve_event(event_id: String, participant_ids: Array = []) -> EventContext:
 	var ctx := EventContext.new()
 	ctx.event_id = event_id
 	ctx.participant_ids = participant_ids
-	_run_actions_sync(ctx)
+	var actions := _load_event_actions(event_id)
+	for action in actions:
+		if ctx.aborted: break
+		if not ConditionEvaluator.evaluate(action.get("condition", ""), ctx): continue
+		_exec_sync(action, ctx)
 	return ctx
 
 
-func _run_actions_sync(ctx: EventContext) -> void:
-	var actions := _load_event_actions(ctx.event_id)
-	for action in actions:
-		if ctx.aborted: break
-		var cond: String = action.get("condition", "")
-		if not ConditionEvaluator.evaluate(cond, ctx): continue
-		var atype: String = action.get("action_type", "")
-		var handler: ActionHandler = _handlers.get(atype, null)
-		if handler == null:
-			push_warning("[EventEngine] no handler for '%s' (event %s)" % [atype, ctx.event_id])
-			continue
-		handler.execute(action, ctx)
+func _exec_sync(action: Dictionary, ctx: EventContext) -> void:
+	var atype: String = action.get("action_type", "")
+	match atype:
+		"show_options":
+			var opts := _build_options(action, ctx)
+			var chosen: String = ""
+			for o in opts:
+				if o.get("enabled", false):
+					chosen = o.get("id", "")
+					break
+			if chosen == "" and opts.size() > 0:
+				chosen = opts[0].get("id", "")
+			if chosen != "":
+				_apply_option_cost(chosen, ctx)
+				ctx.set_flag("choice", chosen)
+		"start_battle":
+			_do_battle(action, ctx)
+		_:
+			var handler: ActionHandler = _handlers.get(atype, null)
+			if handler != null:
+				handler.execute(action, ctx)
 
 
 # -----------------------------------------------------------------------------
-# resolve_event_ui —— UI 模式（分步执行，show_options / show_text / start_battle
-# 委托给 ctx.ui_delegate 并 await 玩家交互）。返回 EventContext。
+# ASYNC 入口（玩家亲历 UI 模式）
 # -----------------------------------------------------------------------------
 func resolve_event_ui(event_id: String, participant_ids: Array, ui_delegate: Object) -> EventContext:
 	var ctx := EventContext.new()
@@ -64,13 +80,8 @@ func resolve_event_ui(event_id: String, participant_ids: Array, ui_delegate: Obj
 	var actions := _load_event_actions(event_id)
 	for action in actions:
 		if ctx.aborted: break
-		var cond: String = action.get("condition", "")
-		if not ConditionEvaluator.evaluate(cond, ctx): continue
+		if not ConditionEvaluator.evaluate(action.get("condition", ""), ctx): continue
 		var atype: String = action.get("action_type", "")
-		var handler: ActionHandler = _handlers.get(atype, null)
-		if handler == null:
-			continue
-		# 交互型 action 走 await 分支
 		match atype:
 			"show_text":
 				await _ui_show_text(action, ctx)
@@ -81,7 +92,9 @@ func resolve_event_ui(event_id: String, participant_ids: Array, ui_delegate: Obj
 			"give_resource":
 				_ui_give_resource(action, ctx)
 			_:
-				handler.execute(action, ctx)
+				var handler: ActionHandler = _handlers.get(atype, null)
+				if handler != null:
+					handler.execute(action, ctx)
 	return ctx
 
 
@@ -93,17 +106,21 @@ func _ui_show_text(action: Dictionary, ctx: EventContext) -> void:
 
 
 func _ui_show_options(action: Dictionary, ctx: EventContext) -> void:
-	# 收集选项 id（param1..4 是 option_id）
-	var opt_ids: Array = []
-	for i in [1, 2, 3, 4]:
-		var oid: String = action.get("param%d" % i, "")
-		if oid != "": opt_ids.append(oid)
-	if opt_ids.is_empty():
+	var opts := _build_options(action, ctx)
+	if opts.is_empty():
 		return
-	var chosen: String = opt_ids[0]
+	var chosen: String = ""
 	if ctx.has_ui() and ctx.ui_delegate.has_method("present_options"):
-		chosen = await ctx.ui_delegate.present_options(opt_ids)
-	ctx.set_flag("choice", chosen)
+		chosen = await ctx.ui_delegate.present_options(opts)
+	if chosen == "":
+		# 兜底：第一个可选
+		for o in opts:
+			if o.get("enabled", false):
+				chosen = o.get("id", "")
+				break
+	if chosen != "":
+		_apply_option_cost(chosen, ctx)
+		ctx.set_flag("choice", chosen)
 
 
 func _ui_give_resource(action: Dictionary, ctx: EventContext) -> void:
@@ -116,17 +133,100 @@ func _ui_give_resource(action: Dictionary, ctx: EventContext) -> void:
 
 
 func _ui_start_battle(action: Dictionary, ctx: EventContext) -> void:
+	var enemies := _do_battle(action, ctx)
+	var winner: String = "ATTACKERS" if ctx.flag("battle_result", "") == "win" else "DEFENDERS"
+	if ctx.has_ui() and ctx.ui_delegate.has_method("present_battle"):
+		await ctx.ui_delegate.present_battle(enemies, winner)
+
+
+# -----------------------------------------------------------------------------
+# 共享辅助：选项构建（含 cond_show 过滤 + enabled 计算 + 成本文案）
+# 返回 Array[Dictionary]：{id,text,desc,enabled,reason,cost_text}
+# -----------------------------------------------------------------------------
+func _build_options(action: Dictionary, ctx: EventContext) -> Array:
+	var opt_ids: Array = []
+	for i in [1, 2, 3, 4]:
+		var oid: String = action.get("param%d" % i, "")
+		if oid != "": opt_ids.append(oid)
+	var out: Array = []
+	for oid in opt_ids:
+		var row := _option_row(oid)
+		if row.is_empty():
+			out.append({"id": oid, "text": oid, "desc": "", "enabled": true, "reason": "", "cost_text": ""})
+			continue
+		# 显示条件
+		var cond_show: String = str(row.get("cond_show", ""))
+		if cond_show != "" and not ConditionEvaluator.evaluate(cond_show, ctx):
+			continue
+		# 启用条件 + 成本可负担
+		var enabled := true
+		var reason := ""
+		var cond_enable: String = str(row.get("cond_enable", ""))
+		if cond_enable != "" and not ConditionEvaluator.evaluate(cond_enable, ctx):
+			enabled = false
+			reason = str(row.get("cond_enable_hint", "条件不足"))
+		var cost_stone: int = int(row.get("cost_stone", 0))
+		if cost_stone > 0 and not InventoryService.has("spirit_stone", cost_stone):
+			enabled = false
+			if reason == "": reason = "灵石不足"
+		out.append({
+			"id": oid,
+			"text": str(row.get("text_cn", oid)),
+			"desc": str(row.get("desc_cn", "")),
+			"enabled": enabled,
+			"reason": reason,
+			"cost_text": _cost_text(row),
+		})
+	return out
+
+
+func _cost_text(row: Dictionary) -> String:
+	var parts: Array = []
+	var cs: int = int(row.get("cost_stone", 0))
+	if cs > 0: parts.append("灵石-%d" % cs)
+	var ct: int = int(row.get("cost_time", 0))
+	if ct > 0: parts.append("耗时%d%%" % ct)
+	var ch: int = int(row.get("cost_hp", 0))
+	if ch > 0: parts.append("气血-%d" % ch)
+	return "  （%s）" % "、".join(parts) if parts.size() > 0 else ""
+
+
+func _apply_option_cost(option_id: String, ctx: EventContext) -> void:
+	var row := _option_row(option_id)
+	if row.is_empty(): return
+	var cs: int = int(row.get("cost_stone", 0))
+	if cs > 0: InventoryService.consume("spirit_stone", cs)
+	# 时间/气血成本 M3 记录到 flag（内层时钟/受伤系统接入后生效）
+	var ct: int = int(row.get("cost_time", 0))
+	if ct > 0: ctx.set_flag("time_spent", int(ctx.flag("time_spent", 0)) + ct)
+	# 选项后果 flag
+	var of: String = str(row.get("outcome_flag", ""))
+	if of != "":
+		ctx.set_flag(of, str(row.get("outcome_value", "1")))
+
+
+func _option_row(option_id: String) -> Dictionary:
+	if DataRegistry == null or not DataRegistry.is_loaded(): return {}
+	for row in DataRegistry.get_table("EventOption"):
+		if row.get("option_id") == option_id:
+			return row
+	return {}
+
+
+# -----------------------------------------------------------------------------
+# 共享辅助：战斗（构造敌人 + resolve + 写 battle_result flag）。返回 enemies
+# -----------------------------------------------------------------------------
+func _do_battle(action: Dictionary, ctx: EventContext) -> Array:
 	var chosen: String = ctx.flag("choice", "")
 	var enemy_realm := "qi"
 	var enemy_count := 1
-	if chosen != "" and DataRegistry and DataRegistry.is_loaded():
-		for row in DataRegistry.get_table("EventOption"):
-			if row.get("option_id") == chosen:
-				enemy_realm = row.get("battle_enemy_realm", "qi")
-				enemy_count = max(1, int(row.get("battle_enemy_count", 1)))
-				break
-	if action.get("param1", "") != "": enemy_realm = action["param1"]
-	if action.get("param2", "") != "": enemy_count = int(action["param2"])
+	if chosen != "":
+		var orow := _option_row(chosen)
+		if not orow.is_empty():
+			if orow.get("battle_enemy_realm", "") != "": enemy_realm = orow.get("battle_enemy_realm")
+			if int(orow.get("battle_enemy_count", 0)) > 0: enemy_count = int(orow.get("battle_enemy_count"))
+	if str(action.get("param1", "")) != "": enemy_realm = str(action.get("param1"))
+	if str(action.get("param2", "")) != "": enemy_count = int(action.get("param2"))
 	var enemies: Array = []
 	for i in range(enemy_count):
 		var e := Character.new("exp_enemy_%d_%d" % [Time.get_ticks_msec(), i])
@@ -141,15 +241,17 @@ func _ui_start_battle(action: Dictionary, ctx: EventContext) -> void:
 	for cid in ctx.participant_ids:
 		var c: Character = CharacterService.get_character(cid)
 		if c != null: attackers.append(c)
-	if attackers.is_empty(): return
+	if attackers.is_empty():
+		ctx.set_flag("battle_result", "lose")
+		return enemies
 	var bctx := BattleContext.new()
-	bctx.attackers = attackers; bctx.defenders = enemies
-	bctx.trigger_source = "expedition_event"; bctx.seed = randi()
+	bctx.attackers = attackers
+	bctx.defenders = enemies
+	bctx.trigger_source = "expedition_event"
+	bctx.seed = randi()
 	var result := BattleService.resolve(bctx)
-	var winner: String = result.winner
-	ctx.set_flag("battle_result", "win" if winner == "ATTACKERS" else "lose")
-	if ctx.has_ui() and ctx.ui_delegate.has_method("present_battle"):
-		await ctx.ui_delegate.present_battle(enemies, winner)
+	ctx.set_flag("battle_result", "win" if result.winner == "ATTACKERS" else "lose")
+	return enemies
 
 
 func _load_event_actions(event_id: String) -> Array:
@@ -162,7 +264,7 @@ func _load_event_actions(event_id: String) -> Array:
 
 
 # -----------------------------------------------------------------------------
-# 内置 handler 注册
+# 内置 handler（非阻塞型 action）
 # -----------------------------------------------------------------------------
 func _register_builtin_handlers() -> void:
 	register_handler("show_text", ShowTextHandler.new())
@@ -175,9 +277,6 @@ func _register_builtin_handlers() -> void:
 	register_handler("extraction", ExtractionHandler.new())
 
 
-# -----------------------------------------------------------------------------
-# 内置 handler 实现（全部通过 EventHelpers 调辅助）
-# -----------------------------------------------------------------------------
 class ShowTextHandler extends ActionHandler:
 	func execute(action: Dictionary, ctx: EventContext) -> void:
 		ctx.set_flag("last_text", action.get("param1", ""))
@@ -202,12 +301,11 @@ class SetFlagHandler extends ActionHandler:
 		ctx.set_flag(action.get("param1", ""), action.get("param2", ""))
 
 
-# --- show_options：headless 自动取 param1 ---
 class ShowOptionsHandler extends ActionHandler:
 	func execute(action: Dictionary, ctx: EventContext) -> void:
+		# sync 兜底（仅在被 handler 表直接调用时；正常走 _exec_sync）
 		var chosen: String = action.get("param1", "")
 		ctx.set_flag("choice", chosen)
-		EventHelpers.emit_log(ctx, ">>> 选择：%s" % EventHelpers.option_text(chosen))
 
 
 class RandomBranchHandler extends ActionHandler:
@@ -219,47 +317,14 @@ class RandomBranchHandler extends ActionHandler:
 		if opts.size() == 0: return
 		var chosen: String = opts[randi() % opts.size()]
 		ctx.set_flag("choice", chosen)
-		EventHelpers.emit_log(ctx, ">>> 随机：%s" % EventHelpers.option_text(chosen))
 
 
-# --- start_battle ---
 class StartBattleHandler extends ActionHandler:
 	func execute(_action: Dictionary, ctx: EventContext) -> void:
-		var chosen: String = ctx.flag("choice", "")
-		var enemy_realm := "qi"
-		var enemy_count := 1
-		if chosen != "" and DataRegistry and DataRegistry.is_loaded():
-			for row in DataRegistry.get_table("EventOption"):
-				if row.get("option_id") == chosen:
-					enemy_realm = row.get("battle_enemy_realm", "qi")
-					enemy_count = max(1, int(row.get("battle_enemy_count", 1)))
-					break
-		if _action.get("param1", "") != "": enemy_realm = _action["param1"]
-		if _action.get("param2", "") != "": enemy_count = int(_action["param2"])
-		var enemies: Array = []
-		for i in range(enemy_count):
-			var e := Character.new("exp_enemy_%d_%d" % [Time.get_ticks_msec(), i])
-			e.identity = Character.Identity.NON_SECT
-			e.character_name = EventHelpers.enemy_name(enemy_realm)
-			e.realm = "%s_3" % enemy_realm
-			e.sub_level = 3
-			e.spirit_root = {"fire": 3 + randi() % 4}
-			e.attributes = {"insight": 80}
-			enemies.append(e)
-		var attackers: Array[Character] = []
-		for cid in ctx.participant_ids:
-			var c: Character = CharacterService.get_character(cid)
-			if c != null: attackers.append(c)
-		if attackers.size() == 0: return
-		var bctx := BattleContext.new()
-		bctx.attackers = attackers; bctx.defenders = enemies
-		bctx.trigger_source = "expedition_event"; bctx.seed = randi()
-		var result := BattleService.resolve(bctx)
-		ctx.set_flag("battle_result", "win" if result.winner == "ATTACKERS" else "lose")
-		EventHelpers.emit_log(ctx, "⚔ 战斗胜利！" if result.winner == "ATTACKERS" else "⚔ 败退...")
+		# sync 兜底；正常走 _exec_sync 的 _do_battle
+		ctx.set_flag("battle_result", "win")
 
 
-# --- extraction ---
 class ExtractionHandler extends ActionHandler:
 	func execute(_action: Dictionary, ctx: EventContext) -> void:
 		ctx.set_flag("expedition_complete", true)

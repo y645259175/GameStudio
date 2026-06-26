@@ -37,7 +37,8 @@ const NODE_ICON := {
 
 var _option_chosen := ""
 var _waiting_continue := false
-
+var _advancing := false
+var _finished := false
 
 var _stone_base := 0
 var _herb_base := 0
@@ -149,19 +150,25 @@ func _build_party() -> void:
 # 继续探索：推进下一节点
 # -----------------------------------------------------------------------------
 func _on_continue_pressed() -> void:
+	if _finished:
+		return
 	if _waiting_continue:
-		# 当前正在等待"继续"以关闭文本，恢复推进
+		# 事件内文本/战斗后等待"继续" → 解除
 		_waiting_continue = false
 		return
-	continue_btn.disabled = true
+	if _advancing:
+		return
+	_advancing = true
 	var eid := await ExpeditionService.advance_node_ui(self)
-	continue_btn.disabled = false
+	_advancing = false
 	if eid == "":
-		# 已结束（finished 信号会处理）
 		pass
 
 
 func _on_retreat_pressed() -> void:
+	if _finished:
+		return
+	_waiting_continue = false
 	ExpeditionService.retreat()
 
 
@@ -188,22 +195,37 @@ func present_text(text: String) -> void:
 	await _await_continue()
 
 
-func present_options(option_ids: Array) -> String:
+func present_options(options: Array) -> String:
 	option_box.visible = true
 	for child in option_box.get_children():
 		child.queue_free()
 	_option_chosen = ""
-	for oid in option_ids:
+	# 选项期间禁用"继续"，强制玩家做选择
+	continue_btn.disabled = true
+	for opt in options:
+		var oid: String = opt.get("id", "")
+		var enabled: bool = opt.get("enabled", true)
 		var btn := Button.new()
-		btn.text = _option_text(oid)
-		btn.custom_minimum_size = Vector2(0, 40)
+		var label: String = opt.get("text", oid) + opt.get("cost_text", "")
+		if not enabled and opt.get("reason", "") != "":
+			label += "  〔%s〕" % opt.get("reason", "")
+		btn.text = label
+		btn.custom_minimum_size = Vector2(0, 46)
 		btn.add_theme_font_size_override("font_size", 16)
-		btn.pressed.connect(func(): _option_chosen = oid)
+		btn.disabled = not enabled
+		if opt.get("desc", "") != "":
+			btn.tooltip_text = opt.get("desc", "")
+		UITheme.skin_button(btn)
+		if enabled:
+			btn.pressed.connect(func(): _option_chosen = oid)
 		option_box.add_child(btn)
 	# 等玩家选
 	while _option_chosen == "":
 		await get_tree().process_frame
+		if _finished or not ExpeditionService.is_active():
+			break
 	option_box.visible = false
+	continue_btn.disabled = false
 	return _option_chosen
 
 
@@ -235,15 +257,21 @@ func present_reward(resource_id: String, amount: int) -> void:
 
 
 func _await_continue() -> void:
+	# 确保"继续"按钮可点（事件内文本/战斗后等待玩家确认）
+	continue_btn.disabled = false
 	_waiting_continue = true
 	while _waiting_continue:
 		await get_tree().process_frame
+		if _finished or not ExpeditionService.is_active():
+			_waiting_continue = false
 
 
 # -----------------------------------------------------------------------------
 # 历练结束
 # -----------------------------------------------------------------------------
 func _on_expedition_finished(reason: String) -> void:
+	_finished = true
+	_waiting_continue = false
 	var msg_map := {
 		"cleared": "✦ 历练圆满，满载而归 ✦",
 		"timeout": "✦ 击败守关之敌，凯旋而归 ✦",
@@ -262,6 +290,7 @@ func _on_expedition_finished(reason: String) -> void:
 	option_box.visible = false
 	enemy_portrait.visible = false
 	continue_btn.text = "返回宗门"
+	continue_btn.disabled = false
 	# 复用 continue_btn 关闭界面
 	for c in continue_btn.pressed.get_connections():
 		continue_btn.pressed.disconnect(c.callable)

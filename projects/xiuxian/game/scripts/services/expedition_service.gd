@@ -15,6 +15,15 @@ var _map_id: String = ""
 var _participants: Array[String] = []
 var _node_events: Array[String] = []   # 每节点的 event_id
 var _total_rewards: Dictionary = {}    # {resource_id: amount}
+var _exp_flags: Dictionary = {}        # 历练级 flag（跨事件，GDD-03 §2.6）
+
+
+func set_exp_flag(key: String, value: Variant) -> void:
+	_exp_flags[key] = value
+
+
+func get_exp_flag(key: String, default_value: Variant = null) -> Variant:
+	return _exp_flags.get(key, default_value)
 
 
 func _ready() -> void:
@@ -72,6 +81,7 @@ func _setup(map_id: String, participant_ids: Array) -> void:
 	_current_node = -1
 	_total_rewards.clear()
 	_node_events.clear()
+	_exp_flags.clear()
 	var events := _pick_node_events(participant_ids)
 	for ev in events:
 		_node_events.append(str(ev))

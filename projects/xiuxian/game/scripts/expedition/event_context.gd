@@ -1,26 +1,20 @@
 # =============================================================================
-# event_context.gd · 事件运行时上下文（GDD-03 §2）
+# event_context.gd · 事件运行时上下文（GDD-03 §2.6）
 #
-# 承载一次事件解析期间的 flag（local.choice / local.last_loot 等）+ 参与者引用。
-# action handler 读写 flag，条件门用 ConditionEvaluator 求值。
+# 承载一次事件解析的 local flag + 参与者。
+# - flag(): 事件内 local flag（choice / battle_result / ...）
+# - expedition_flag(): 历练内 flag（跨事件，存 ExpeditionService）
+# - get_actor(): 当前在场主角（境界/灵根/属性，供 condition DSL 读）
 #
-# UI 模式：ui_delegate != null 时，show_options 等交互型 handler 会委托给 UI
-# 弹真选项并 await 玩家选择（而非 headless 自动选 param1）。
+# UI 模式：ui_delegate != null 时阻塞型 action 委托 UI 并 await 玩家。
 # =============================================================================
 class_name EventContext
 extends RefCounted
 
 var event_id: String = ""
-var participant_ids: Array = []        # 参与此事件的角色 id
-var flags: Dictionary = {}             # local flag（choice / last_loot / ...）
-var aborted: bool = false              # 事件是否被中断（如战斗失败触发系统事件）
-
-# UI 委托（可空）。UI 模式下由 ExpeditionScreen 设置。
-# 必须实现：
-#   await present_text(text: String) -> void
-#   await present_options(option_ids: Array) -> String   # 返回玩家选的 option_id
-#   await present_battle(enemies: Array, result_winner: String) -> void
-#   present_reward(resource_id: String, amount: int) -> void
+var participant_ids: Array = []
+var flags: Dictionary = {}             # local flag
+var aborted: bool = false
 var ui_delegate: Object = null
 
 
@@ -30,6 +24,30 @@ func set_flag(key: String, value: Variant) -> void:
 
 func flag(key: String, default_value: Variant = null) -> Variant:
 	return flags.get(key, default_value)
+
+
+# 历练级 flag（跨事件，存 ExpeditionService）
+func set_expedition_flag(key: String, value: Variant) -> void:
+	var es: Node = Engine.get_main_loop().root.get_node_or_null("/root/ExpeditionService")
+	if es and es.has_method("set_exp_flag"):
+		es.set_exp_flag(key, value)
+
+
+func expedition_flag(key: String, default_value: Variant = null) -> Variant:
+	var es: Node = Engine.get_main_loop().root.get_node_or_null("/root/ExpeditionService")
+	if es and es.has_method("get_exp_flag"):
+		return es.get_exp_flag(key, default_value)
+	return default_value
+
+
+# 当前在场主角（M3 = participant_ids[0]）
+func get_actor() -> Character:
+	if participant_ids.is_empty():
+		return null
+	var cs: Node = Engine.get_main_loop().root.get_node_or_null("/root/CharacterService")
+	if cs == null:
+		return null
+	return cs.get_character(str(participant_ids[0]))
 
 
 func has_ui() -> bool:
