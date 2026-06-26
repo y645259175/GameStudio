@@ -39,7 +39,13 @@ var _option_chosen := ""
 var _waiting_continue := false
 
 
+var _stone_base := 0
+var _herb_base := 0
+
+
 func _ready() -> void:
+	_stone_base = InventoryService.get_amount("spirit_stone")
+	_herb_base = InventoryService.get_amount("spirit_herb")
 	_build_node_map()
 	_build_party()
 	map_title.text = "✦ %s ✦" % ExpeditionService.get_map_id()
@@ -176,7 +182,7 @@ func _on_node_entered(node_index: int, event_id: String) -> void:
 # ui_delegate 协议实现（被 EventEngine await 调用）
 # -----------------------------------------------------------------------------
 func present_text(text: String) -> void:
-	event_text.text = "[color=#1a1814]%s[/color]" % text
+	event_text.text = "[font_size=18][color=#1a1814]%s[/color][/font_size]" % text
 	# 等玩家点"继续"
 	continue_btn.text = "继续 ▶"
 	await _await_continue()
@@ -245,8 +251,14 @@ func _on_expedition_finished(reason: String) -> void:
 		"defeat": "☠ 队伍折损，狼狈撤回 ☠",
 	}
 	var msg: String = msg_map.get(reason, "✦ 历练结束 ✦")
+	# 本次历练净收益汇总
+	var stone_gain := InventoryService.get_amount("spirit_stone") - _stone_base
+	var herb_gain := InventoryService.get_amount("spirit_herb") - _herb_base
+	var summary := "[center][font_size=24][color=#A93226]%s[/color][/font_size]\n\n" % msg
+	summary += "[font_size=16][color=#1a1814]── 此行收获 ──[/color]\n"
+	summary += "[color=#b8860b]灵石 %+d[/color]    [color=#2d6a2d]灵草 %+d[/color][/font_size][/center]" % [stone_gain, herb_gain]
 	event_title.text = ""
-	event_text.text = "[center][color=#A93226]%s[/color][/center]" % msg
+	event_text.text = summary
 	option_box.visible = false
 	enemy_portrait.visible = false
 	continue_btn.text = "返回宗门"

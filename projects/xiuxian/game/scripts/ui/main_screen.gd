@@ -71,17 +71,21 @@ func _connect_signals() -> void:
 # 招收（GDD-05 §8）
 # -----------------------------------------------------------------------------
 func _on_recruit_pressed() -> void:
-	if RecruitService.is_recruiting():
-		_log("[color=#8C6D3F]已在开门收徒中，请等待月末…[/color]")
-		return
 	if not RecruitService.has_housing_room():
 		_log("[color=#A93226]弟子居所已满，无法招收（可升级居所扩容）[/color]")
 		return
-	if RecruitService.start_active_recruit():
-		_log("[color=#A93226]开门收徒，需 %d 灵石，月末有缘者将至…[/color]" % RecruitService.ACTIVE_RECRUIT_COST)
-		_refresh_topbar()
-	else:
+	if not InventoryService.has("spirit_stone", RecruitService.ACTIVE_RECRUIT_COST):
 		_log("[color=#A93226]灵石不足，无法开门收徒（需 %d）[/color]" % RecruitService.ACTIVE_RECRUIT_COST)
+		return
+	# 即时招收：扣灵石 → 立即生成候选弹窗（GDD-05 §8.3 体验优化）
+	InventoryService.consume("spirit_stone", RecruitService.ACTIVE_RECRUIT_COST)
+	_refresh_topbar()
+	var n := 1 + (randi() % 3)
+	var candidates: Array = []
+	for i in range(n):
+		candidates.append(RecruitService.generate("active_recruit"))
+	_log("[color=#A93226]开门收徒，%d 位有缘者前来求收……[/color]" % n)
+	_show_recruit_dialog("开门收徒 · 有缘者求收", candidates)
 
 
 func _on_recruit_candidates(candidates: Array) -> void:
@@ -106,6 +110,7 @@ func _show_recruit_dialog(title: String, candidates: Array) -> void:
 	for cand in candidates:
 		vb.add_child(_make_candidate_row(cand, dlg))
 	dlg.add_child(vb)
+	UITheme.skin_dialog(dlg)
 	add_child(dlg)
 	dlg.popup_centered(Vector2i(460, 120 + candidates.size() * 90))
 	dlg.confirmed.connect(func(): dlg.queue_free())
@@ -341,8 +346,8 @@ func _wrap_card(content: Control) -> PanelContainer:
 	sb.set_corner_radius_all(4)
 	sb.content_margin_left = 10
 	sb.content_margin_right = 10
-	sb.content_margin_top = 8
-	sb.content_margin_bottom = 8
+	sb.content_margin_top = 5
+	sb.content_margin_bottom = 5
 	panel.add_theme_stylebox_override("panel", sb)
 	panel.add_child(content)
 	return panel
@@ -371,7 +376,7 @@ func _make_building_item(building_id: String) -> Control:
 	var cfg_for_icon := BuildingService.get_level_config(building_id, max(current_lv, 1))
 	var icon_path: String = cfg_for_icon.get("icon_path", "")
 	var icon := TextureRect.new()
-	icon.custom_minimum_size = Vector2(72, 72)
+	icon.custom_minimum_size = Vector2(54, 54)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	if icon_path != "" and ResourceLoader.exists(icon_path):
@@ -491,6 +496,7 @@ func _show_alchemy_dialog() -> void:
 		vb.add_child(_make_recipe_row(r, best_disciple, dlg))
 
 	dlg.add_child(vb)
+	UITheme.skin_dialog(dlg)
 	add_child(dlg)
 	dlg.popup_centered(Vector2i(480, 160 + AlchemyService.get_all_recipes().size() * 40))
 	dlg.confirmed.connect(func(): dlg.queue_free())
