@@ -17,7 +17,7 @@ extends RefCounted
 const REALM_RANK := {"qi": 1, "foundation": 2, "golden": 3, "nascent": 4, "spirit": 5}
 
 
-static func evaluate(expr: String, ctx: EventContext) -> bool:
+static func evaluate(expr: String, ctx: EventContext = null) -> bool:
 	expr = expr.strip_edges()
 	if expr == "":
 		return true
@@ -105,15 +105,22 @@ static func _call_func(fname: String, args_str: String, ctx: EventContext) -> Va
 	var args: Array = _split_args(args_str)
 	match fname:
 		"flag":
+			if ctx == null: return null
 			var k: String = _as_string(args[0]) if args.size() > 0 else ""
 			return ctx.flag(k)
 		"expedition_flag", "exp_flag":
+			if ctx == null: return null
 			var k2: String = _as_string(args[0]) if args.size() > 0 else ""
 			return ctx.expedition_flag(k2)
 		"choice":
-			return ctx.flag("choice")
+			return ctx.flag("choice") if ctx != null else null
 		"battle_won":
-			return ctx.flag("battle_result") == "win"
+			return ctx != null and ctx.flag("battle_result") == "win"
+		"disciple_count":
+			var sect: Node = Engine.get_main_loop().root.get_node_or_null("/root/SectService")
+			if sect and sect.has_method("get_member_ids"):
+				return sect.get_member_ids().size()
+			return 0
 		"realm_at_least":
 			return _realm_at_least(_as_string(args[0]) if args.size() > 0 else "qi", ctx)
 		"attribute", "attr":
@@ -145,6 +152,8 @@ static func _as_string(v: Variant) -> String:
 
 
 static func _realm_at_least(tier: String, ctx: EventContext) -> bool:
+	if ctx == null:
+		return false
 	var actor: Character = ctx.get_actor()
 	if actor == null:
 		return false
@@ -155,6 +164,8 @@ static func _realm_at_least(tier: String, ctx: EventContext) -> bool:
 
 
 static func _attribute(attr_name: String, ctx: EventContext) -> int:
+	if ctx == null:
+		return 0
 	var actor: Character = ctx.get_actor()
 	if actor == null:
 		return 0
